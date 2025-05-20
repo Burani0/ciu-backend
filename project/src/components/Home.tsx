@@ -9,7 +9,7 @@ function Home() {
   const handleJoinAsStreamer = (e: React.FormEvent) => {
     e.preventDefault();
     if (roomId.trim()) {
-      navigate(`/stream/${roomId.trim()}`);
+      navigate(`/exam/${roomId.trim()}`);
     }
   };
 

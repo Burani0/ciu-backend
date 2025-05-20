@@ -2,9 +2,11 @@ import React, { Suspense, useEffect, useState, useCallback, createContext } from
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Camera, AlertCircle } from 'lucide-react';
 import { socket } from './config/socket';
+import ProctoringPage from './components/ProctoringPage';
+import ExamInterface from './components/ExamInterface '; 
+import ExamPage from './components/ExamPage'; 
 
-const Home = React.lazy(() => import('./components/Home'));
-const Streamer = React.lazy(() => import('./components/Streamer'));
+const Home = React.lazy(() => import('./components/Home'))
 const Viewer = React.lazy(() => import('./components/Viewer'));
 
 class ErrorBoundary extends React.Component<
@@ -125,12 +127,12 @@ function App() {
 
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Home />} />
                 <Route
-                  path="/stream/:roomId"
+                  path="/exam/:roomId"
                   element={
                     <ErrorBoundary>
-                      <Streamer />
+                      <ExamPage />
                     </ErrorBoundary>
                   }
                 />
@@ -142,6 +144,9 @@ function App() {
                     </ErrorBoundary>
                   }
                 />
+                <Route path="/proctoring" element={<ProctoringPage />} />
+        <Route path="/" element={<ExamInterface />} />
+            {/* <Route path="/exam" element={<ExamPage />} /> */}
               </Routes>
             </Suspense>
           </div>
