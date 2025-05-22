@@ -5,7 +5,7 @@ import { socket } from './config/socket';
 import ProctoringPage from './components/ProctoringPage';
 import ExamInterface from './components/ExamInterface '; 
 import ExamPage from './components/ExamPage'; 
-import StudentLogin from './pages/StudentLogin';
+import StudentLogin from './pages/Login';
 
 
 
