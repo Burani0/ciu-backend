@@ -180,7 +180,7 @@ const ProctoringPage: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100 px-4">
+    <div className="flex justify-center  items-center h-screen bg-gray-100 px-4">
       <div className="w-full max-w-xl bg-white shadow-xl rounded-lg p-6">
         <h1 className="text-center text-2xl font-bold mb-4">PROCTORING WINDOW</h1>
 

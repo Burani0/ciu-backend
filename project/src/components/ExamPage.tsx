@@ -518,54 +518,97 @@ const ExamPage: React.FC = () => {
 
   // Enhanced camera container with improved status display
   const renderCameraContainer = (): JSX.Element => (
-    <div className={styles.cameraContainer}>
-      <h4>Proctoring Camera</h4>
-      <div className={styles.videoWrapper}>
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className={styles.cameraVideo}
-        />
-        <div className={`${styles.detectionOverlay} ${
-          !isModelLoaded ? styles.loading :
-          showMultiFaceWarning ? styles.warning :
-          showFaceDetected ? styles.detected :
-          showNoFaceWarning ? styles.warning :
-          styles.noFace
-        }`}>
-          <div className={styles.detectionStatus}>
-            {!isModelLoaded ? (
-              <div className={styles.loadingMessage}>
-                <span className={styles.loadingIcon}>⌛</span> Loading face detection...
-              </div>
-            ) : faceDetectionError ? (
-              <div className={styles.errorMessage}>
-                <span className={styles.errorIcon}>⚠️</span>
-                {faceDetectionError}
-              </div>
-            ) : showNoFaceWarning ? (
-              <div className={styles.warningMessage}>
-                <span className={styles.warningIcon}>⚠️ No Face Detected for {noFaceTimer}s</span>
-              </div>
-            ) : showMultiFaceWarning ? (
-              <div className={styles.warningMessage}>
-                <span className={styles.warningIcon}>⚠️ Multiple Faces Detected for {multiFaceTimer}s</span>
-              </div>
-            ) : showFaceDetected ? (
-              <div className={styles.successMessage}>
-                <span className={styles.successIcon}>✓ Face Detected</span>
-              </div>
-            ) : (
-              <div className={styles.statusMessage}>
-                <span className={styles.warningIcon}>⚠️ Detecting...</span>
-              </div>
-            )}
-          </div>
+    // <div className={styles.cameraContainer}>
+    //   <h4>Proctoring Camera</h4>
+    //   <div className={styles.videoWrapper}>
+    //     <video
+    //       ref={videoRef}
+    //       autoPlay
+    //       playsInline
+    //       muted
+    //       className={styles.cameraVideo}
+    //     />
+    //     <div className={`${styles.detectionOverlay} ${
+    //       !isModelLoaded ? styles.loading :
+    //       showMultiFaceWarning ? styles.warning :
+    //       showFaceDetected ? styles.detected :
+    //       showNoFaceWarning ? styles.warning :
+    //       styles.noFace
+    //     }`}>
+    //       <div className={styles.detectionStatus}>
+    //         {!isModelLoaded ? (
+    //           <div className={styles.loadingMessage}>
+    //             <span className={styles.loadingIcon}>⌛</span> Loading face detection...
+    //           </div>
+    //         ) : faceDetectionError ? (
+    //           <div className={styles.errorMessage}>
+    //             <span className={styles.errorIcon}>⚠️</span>
+    //             {faceDetectionError}
+    //           </div>
+    //         ) : showNoFaceWarning ? (
+    //           <div className={styles.warningMessage}>
+    //             <span className={styles.warningIcon}>⚠️ No Face Detected for {noFaceTimer}s</span>
+    //           </div>
+    //         ) : showMultiFaceWarning ? (
+    //           <div className={styles.warningMessage}>
+    //             <span className={styles.warningIcon}>⚠️ Multiple Faces Detected for {multiFaceTimer}s</span>
+    //           </div>
+    //         ) : showFaceDetected ? (
+    //           <div className={styles.successMessage}>
+    //             <span className={styles.successIcon}>✓ Face Detected</span>
+    //           </div>
+    //         ) : (
+    //           <div className={styles.statusMessage}>
+    //             <span className={styles.warningIcon}>⚠️ Detecting...</span>
+    //           </div>
+    //         )}
+    //       </div>
+    //     </div>
+    //   </div>
+    // </div>
+    <div className="fixed top-5 right-5 w-[250px] bg-[#f5f5f5] border border-[#ddd] rounded-lg p-2.5 shadow-[0_2px_10px_rgba(0,0,0,0.1)] z-[1000] mt-10">
+  <h4 className="mb-2.5 text-[16px] text-[#333]">Proctoring Camera</h4>
+
+  <div className="relative">
+    <video
+      ref={videoRef}
+      autoPlay
+      playsInline
+      muted
+      className="w-full rounded bg-black"
+    />
+
+    {/* Detection Message - bottom-left */}
+    <div className="absolute left-2 bottom-2 text-[14px]">
+      {!isModelLoaded ? (
+        <div className="text-[#004d47] italic">
+          <span className="mr-1">⌛</span> Loading face detection...
         </div>
-      </div>
+      ) : faceDetectionError ? (
+        <div className="text-[#f44336] font-medium">
+          <span className="mr-1">⚠️</span> {faceDetectionError}
+        </div>
+      ) : showNoFaceWarning ? (
+        <div className="text-[#f44336] font-medium">
+          <span className="mr-1">⚠️</span> No Face Detected for {noFaceTimer}s
+        </div>
+      ) : showMultiFaceWarning ? (
+        <div className="text-[#f44336] font-medium">
+          <span className="mr-1">⚠️</span> Multiple Faces Detected for {multiFaceTimer}s
+        </div>
+      ) : showFaceDetected ? (
+        <div className="text-[#4CAF50] font-medium">
+          <span className="mr-1">✓</span> Face Detected
+        </div>
+      ) : (
+        <div className="text-[#f44336] font-medium">
+          <span className="mr-1">⚠️</span> Detecting...
+        </div>
+      )}
     </div>
+  </div>
+</div>
+
   );
 
   const handleReady = async (): Promise<void> => {
@@ -651,31 +694,38 @@ const ExamPage: React.FC = () => {
   }
   if (showInstructions && examData) {
     return (
-      <div className={styles.examContainer}>
-        <div className={styles.instructionsContainer}>
-          <div className={styles.universityLogo}>
-            <h2>{examData.instructions.title}</h2>
-          </div>
-          <h1 className={styles.examTitle}>{examData.instructions.content[0]}</h1>
-          <div className={styles.examMeta}>
-            {examData.instructions.content.slice(1, 5).map((line, i) => <div key={i}>{line}</div>)}
-          </div>
-          <div className={styles.instructionsBlock}>
-            <h3>INSTRUCTIONS TO CANDIDATES</h3>
-            <ol className={styles.instructionsList}>
-              {examData.instructions.content.slice(6).map((line, i) => <li key={i}>{line}</li>)}
-            </ol>
-          </div>
-          <div className={styles.startButtonContainer}>
-            <button className={styles.startButton} onClick={handleReady}>
-              Start Exam
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    <div className="flex flex-col h-screen w-screen bg-[#f5f5f5] font-[Segoe_UI] fixed top-0 left-0 overflow-hidden">
+   <div className="max-w-[800px] mx-auto mt-20 p-8 bg-white rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.1)] max-h-[80vh] overflow-y-auto">
+    <div className="text-center mb-4 text-[#106053] border-b-2 border-[#106053] pb-2">
+      <h2>{examData.instructions.title}</h2>
+    </div>
+    <h1 className="text-2xl font-semibold my-6 leading-relaxed">{examData.instructions.content[0]}</h1>
+    <div className="space-y-2">
+      {examData.instructions.content.slice(1, 5).map((line, i) => (
+        <div key={i}>{line}</div>
+      ))}
+    </div>
+    <div className="mt-6">
+      <h3 className="font-bold text-lg mb-2">INSTRUCTIONS TO CANDIDATES</h3>
+      <ol className="list-decimal pl-5 space-y-1">
+        {examData.instructions.content.slice(6).map((line, i) => (
+          <li key={i}>{line}</li>
+        ))}
+      </ol>
+    </div>
+    <div className="text-center mt-8">
+      <button
+        onClick={handleReady}
+        className="bg-[#106053] text-white px-8 py-3 rounded font-bold text-base hover:bg-[#004d47] transition-colors duration-300"
+      >
+        Start Exam
+      </button>
+    </div>
+  </div>
+</div>
 
+      );
+}
   const currentSectionQuestions = examData?.sections[currentSection]?.questions || [];
   const currentQuestionIndex = currentQuestion ? 
     currentSectionQuestions.findIndex(q => q.id === currentQuestion.id) : -1;
@@ -683,63 +733,70 @@ const ExamPage: React.FC = () => {
   const hasNextQuestion = currentQuestionIndex < currentSectionQuestions.length - 1;
 
   return (
-    <div className={styles.examContainer}>
-      {!isReady ? (
-        <div className={styles.readyScreen}>
-          <h2>Exam Instructions</h2>
-          <div className={styles.instructions}>
-            {/* Render instructions dynamically from examData */}
-            <h3>{examData?.instructions.title}</h3>
-            <ul>
-              {examData?.instructions.content.map((line, idx) => (
-                <li key={idx}>{line}</li>
-              ))}
-            </ul>
-            <p>Before starting the exam, please ensure:</p>
-            <ul>
-              <li>You are in a quiet, well-lit environment</li>
-              <li>Your camera is working properly</li>
-              <li>You have a stable internet connection</li>
-              <li>You have read and understood the exam rules</li>
-            </ul>
-            <p>Click the "I'm Ready" button to start the exam in full-screen mode.</p>
-            <button className={styles.readyButton} onClick={handleReady}>
-              I'm Ready
-            </button>
-          </div>
+    <div className="flex flex-col h-screen w-screen bg-[#f5f5f5] font-[Segoe_UI] fixed top-0 left-0 overflow-hidden">
+  {!isReady ? (
+    <div className="max-w-[800px] mx-auto mt-8 p-8 bg-white rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.1)] max-h-[80vh] overflow-y-auto">
+      <h2 className="text-2xl font-bold mb-4 text-center">Exam Instructions</h2>
+      <div className="my-6 leading-relaxed">
+        <h3 className="text-lg font-semibold mb-2">{examData?.instructions.title}</h3>
+        <ul className="list-disc pl-5 space-y-1 mb-4">
+          {examData?.instructions.content.map((line, idx) => (
+            <li key={idx}>{line}</li>
+          ))}
+        </ul>
+        <p className="mb-2 font-medium">Before starting the exam, please ensure:</p>
+        <ul className="list-disc pl-5 space-y-1 mb-4">
+          <li>You are in a quiet, well-lit environment</li>
+          <li>Your camera is working properly</li>
+          <li>You have a stable internet connection</li>
+          <li>You have read and understood the exam rules</li>
+        </ul>
+        <p className="mb-6">Click the "I'm Ready" button to start the exam in full-screen mode.</p>
+        <div className="text-center mt-8">
+          <button
+            onClick={handleReady}
+            className="bg-[#106053] text-white px-8 py-3 rounded font-bold text-base hover:bg-[#004d47] transition-colors duration-300"
+          >
+            I'm Ready
+          </button>
         </div>
+      </div>
+    </div>
       ) : (
         examData && (
           <>
-            <div className={styles.examHeader}>
-              <div className={styles.universityLogo}>
-                <h3>Clarke International University</h3>
-              </div>
-              <div className={styles.examTimer}>
+            <div className="flex justify-between items-center px-4 py-2 bg-teal-800 text-white">
+              <div className="text-lg font-semibold">Clarke International University</div>
+              <div className="text-sm font-bold bg-white/20 px-4 py-1 rounded">
                 Time Remaining: {String(timer.hours).padStart(2, '0')}:
                 {String(timer.minutes).padStart(2, '0')}:
                 {String(timer.seconds).padStart(2, '0')}
               </div>
             </div>
-            <div className={styles.examContent}>
-              <div className={styles.sidebar}>
-                {Object.keys(examData.sections).map(sectionKey => (
-                  <div key={sectionKey} className={styles.sectionNav}>
+            <div className="flex flex-1 overflow-hidden h-[calc(100vh-60px)] mt-8">
+              {/* Sidebar */}
+              <div className="w-64 bg-gray-100 border-r border-gray-300 flex flex-col overflow-y-auto">
+                {Object.keys(examData.sections).map((sectionKey) => (
+                  <div key={sectionKey} className="mb-2">
                     <div
-                      className={`${styles.sectionHeader} ${currentSection === sectionKey ? styles.activeSectionHeader : ''}`}
+                      className={`px-4 py-3 font-bold cursor-pointer border-l-4 ${
+                        currentSection === sectionKey ? 'bg-gray-300 border-teal-800' : 'bg-gray-200 border-transparent'
+                      }`}
                       onClick={() => handleSectionChange(sectionKey)}
                     >
                       {examData.sections[sectionKey].title}
                     </div>
                     {currentSection === sectionKey && (
-                      <div className={styles.questionList}>
+                      <div className="py-2">
                         {examData.sections[sectionKey].questions.length === 0 ? (
-                          <div className={styles.noQuestionsMsg}>No questions in this section.</div>
+                          <div className="text-center text-sm text-gray-500">No questions in this section.</div>
                         ) : (
-                          examData.sections[sectionKey].questions.map(question => (
+                          examData.sections[sectionKey].questions.map((question) => (
                             <div
                               key={question.id}
-                              className={`${styles.questionItem} ${currentQuestion?.id === question.id ? styles.activeQuestion : ''}`}
+                              className={`pl-8 pr-4 py-2 cursor-pointer border-l-4 ${
+                                currentQuestion?.id === question.id ? 'bg-blue-100 border-teal-400' : 'border-transparent'
+                              }`}
                               onClick={() => handleQuestionChange(question)}
                             >
                               {question.id}
@@ -750,105 +807,123 @@ const ExamPage: React.FC = () => {
                     )}
                   </div>
                 ))}
-                <div className={styles.proctoringStatus}>
-                  <h4>Proctoring Status</h4>
-                  <div className={styles.statusItem}>
+
+                {/* Proctoring Status */}
+                <div className="p-4 text-sm">
+                  <h4 className="font-semibold mb-2">Proctoring Status</h4>
+                  <div className="flex justify-between mb-1">
                     <span>Security Status:</span>
-                    <span className={Object.values(securityChecks).every(check => check) ? styles.statusActive : styles.statusWarning}>
+                    <span className={`${Object.values(securityChecks).every(check => check) ? 'text-green-600' : 'text-red-500'}`}>
                       {Object.values(securityChecks).every(check => check) ? 'All Secure' : 'Security Compromised'}
                     </span>
                   </div>
-                  <div className={styles.statusItem}>
+                  <div className="flex justify-between mb-1">
                     <span>Browser:</span>
-                    <span className={isSupportedBrowser() ? styles.statusActive : styles.statusInactive}>
+                    <span className={`${isSupportedBrowser() ? 'text-green-600' : 'text-red-500'}`}>
                       {isSupportedBrowser() ? 'Supported' : 'Unsupported'}
                     </span>
                   </div>
-                  <div className={styles.statusItem}>
+                  <div className="flex justify-between mb-1">
                     <span>Camera:</span>
-                    <span className={cameraActive ? styles.statusActive : styles.statusInactive}>
+                    <span className={`${cameraActive ? 'text-green-600' : 'text-red-500'}`}>
                       {cameraActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                  <div className={styles.statusItem}>
+                  <div className="flex justify-between mb-1">
                     <span>Screen Capture:</span>
-                    <span className={screenCaptureAttempts === 0 ? styles.statusActive : styles.statusWarning}>
+                    <span className={`${screenCaptureAttempts === 0 ? 'text-green-600' : 'text-red-500'}`}>
                       {screenCaptureAttempts === 0 ? 'Blocked' : 'Attempted'}
                     </span>
                   </div>
-                  <div className={styles.statusItem}>
+                  <div className="flex justify-between mb-1">
                     <span>Dev Tools:</span>
-                    <span className={!isDevToolsOpen() ? styles.statusActive : styles.statusWarning}>
+                    <span className={`${!isDevToolsOpen() ? 'text-green-600' : 'text-red-500'}`}>
                       {!isDevToolsOpen() ? 'Blocked' : 'Detected'}
                     </span>
                   </div>
-                  <div className={styles.statusItem}>
+                  <div className="flex justify-between mb-1">
                     <span>Multiple Windows:</span>
-                    <span className={window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth ? styles.statusActive : styles.statusWarning}>
+                    <span className={`${window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth ? 'text-green-600' : 'text-red-500'}`}>
                       {window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth ? 'Blocked' : 'Detected'}
                     </span>
                   </div>
-                  <div className={styles.statusItem}>
+                  <div className="flex justify-between mb-1">
                     <span>Violations:</span>
-                    <span className={violations.length > 0 ? styles.statusWarning : styles.statusGood}>
-                      {violations.length}
-                    </span>
+                    <span className={`${violations.length > 0 ? 'text-red-500' : 'text-green-600'}`}>{violations.length}</span>
                   </div>
                 </div>
-                <button className={styles.submitButton} onClick={submitExam}>
+
+                <button
+                  className="mt-auto mx-4 mb-4 bg-teal-800 text-white py-2 px-4 font-bold hover:bg-[#004d47]"
+                  onClick={submitExam}
+                >
                   Submit Exam
                 </button>
               </div>
-              <div className={styles.questionContainer}>
+
+              {/* Question Container */}
+              <div className="flex-1 p-6 overflow-y-auto">
                 {currentQuestion ? (
                   <>
-                    <div className={styles.questionHeader}>
-                      <h3>{examData.sections[currentSection].title}: Question {currentQuestion.id}</h3>
-                      <p className={styles.questionType}>{examData.sections[currentSection].description}</p>
+                    <div className="mb-6">
+                      <h3 className="text-xl font-semibold">
+                        {examData.sections[currentSection].title}: Question {currentQuestion.id}
+                      </h3>
+                      <p className="text-sm italic text-gray-600">
+                        {examData.sections[currentSection].description}
+                      </p>
                     </div>
-                    <div className={styles.questionContent}>
-                      <p className={styles.questionText}>{currentQuestion.text}</p>
+                    <div className="bg-white p-6 rounded-lg shadow">
+                      <p className="text-lg mb-4 leading-relaxed">{currentQuestion.text}</p>
                       {currentQuestion.type === 'multiple-choice' && currentQuestion.options && (
-                        <div className={styles.multipleChoiceContainer}>
+                        <div className="flex flex-col gap-3">
                           {currentQuestion.options.map((option, index) => (
                             <div
                               key={index}
-                              className={`${styles.optionItem} ${answers[currentQuestion.id] === option ? styles.selectedOption : ''}`}
+                              className={`flex items-center p-3 border rounded cursor-pointer transition-colors ${
+                                answers[currentQuestion.id] === option ? 'bg-blue-100 border-teal-400' : 'hover:bg-gray-100'
+                              }`}
                               onClick={() => handleMultipleChoiceAnswer(option)}
                             >
-                              <span className={styles.optionLetter}>{String.fromCharCode(65 + index)}</span>
-                              <span className={styles.optionText}>{option}</span>
+                              <span className={`w-8 h-8 flex items-center justify-center rounded-full mr-3 font-bold ${
+                                answers[currentQuestion.id] === option ? 'bg-teal-400 text-white' : 'bg-gray-200'
+                              }`}>
+                                {String.fromCharCode(65 + index)}
+                              </span>
+                              <span>{option}</span>
                             </div>
                           ))}
                         </div>
                       )}
                       {(currentQuestion.type === 'short-answer' || currentQuestion.type === 'essay') && (
                         <textarea
-                          className={`${styles.answerTextarea} ${currentQuestion.type === 'essay' ? styles.essayTextarea : ''}`}
+                          className={`w-full mt-4 p-3 border rounded resize-y font-sans ${
+                            currentQuestion.type === 'essay' ? 'min-h-[200px]' : 'min-h-[150px]'
+                          }`}
                           value={answers[currentQuestion.id] || ''}
                           onChange={handleAnswerChange}
                           placeholder={`Type your ${currentQuestion.type === 'essay' ? 'essay' : 'answer'} here...`}
                         />
                       )}
                     </div>
-                    <div className={styles.questionNavigation}>
+                    <div className="mt-4 flex justify-between">
                       {hasPrevQuestion && (
                         <button
-                          className={styles.navButton}
+                          className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
                           onClick={() => handleQuestionChange(currentSectionQuestions[currentQuestionIndex - 1])}
                         >
                           Previous Question
                         </button>
                       )}
                       <button
-                        className={styles.saveButton}
+                        className="bg-[#106053] text-white px-4 py-2 rounded hover:bg-[#004d47]"
                         onClick={handleSaveAnswer}
                       >
                         Save Answer
                       </button>
                       {hasNextQuestion && (
                         <button
-                          className={styles.navButton}
+                          className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
                           onClick={() => handleQuestionChange(currentSectionQuestions[currentQuestionIndex + 1])}
                         >
                           Next Question
@@ -857,7 +932,7 @@ const ExamPage: React.FC = () => {
                     </div>
                   </>
                 ) : (
-                  <div className={styles.noQuestionsMsg}>No question selected or available in this section.</div>
+                  <div className="text-center text-gray-500">No question selected or available in this section.</div>
                 )}
               </div>
               {renderCameraContainer()}
@@ -866,7 +941,9 @@ const ExamPage: React.FC = () => {
         )
       )}
     </div>
+    
   );
-};
+}
+
 
 export default ExamPage;

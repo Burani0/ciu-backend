@@ -5,6 +5,9 @@ import { socket } from './config/socket';
 import ProctoringPage from './components/ProctoringPage';
 import ExamInterface from './components/ExamInterface '; 
 import ExamPage from './components/ExamPage'; 
+import StudentLogin from './pages/StudentLogin';
+
+
 
 const Home = React.lazy(() => import('./components/Home'))
 const Viewer = React.lazy(() => import('./components/Viewer'));
@@ -103,7 +106,7 @@ function App() {
       <SocketContext.Provider value=
       {{ isConnected, reconnect }}>
       <BrowserRouter>
-        <ErrorBoundary>
+        {/* <ErrorBoundary>
           <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
             <nav className="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -123,7 +126,30 @@ function App() {
                   </div>
                 </div>
               </div>
-            </nav>
+            </nav> */}
+            <ErrorBoundary>
+      {/* <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800"> */}
+      <div className="min-h-screen bg-[linear-gradient(to_bottom_right,_#0b1e1b,_#496863)]">
+        <nav className="bg-[#2c484380] backdrop-blur-md sticky top-0 z-50 shadow-md">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-between h-16">
+      <Link to="/" className="flex items-center text-[#edf2f7] font-bold text-xl">
+        <Camera className="h-8 w-8 text-[#4c51bf] mr-2" />
+        ProctorStream
+      </Link>
+      <div className="flex items-center space-x-4">
+        <span
+          className={`px-4 py-2 rounded-full text-sm font-medium ${
+            isConnected ? 'bg-[#48bb78] text-white' : 'bg-[#f56565] text-white'
+          }`}
+        >
+          {isConnected ? 'Connected' : 'Disconnected'}
+        </span>
+      </div>
+    </div>
+  </div>
+</nav>
+
 
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
@@ -145,6 +171,8 @@ function App() {
                   }
                 />
                 <Route path="/proctoring" element={<ProctoringPage />} />
+                <Route path="/student-login" element={<StudentLogin />} />
+               
         <Route path="/" element={<ExamInterface />} />
             {/* <Route path="/exam" element={<ExamPage />} /> */}
               </Routes>
