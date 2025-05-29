@@ -5,11 +5,42 @@ import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
+
+
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { connectDB } from './config/db.js';
+import adminRoutes from './routes/adminRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+
+
+
+// const examRoutes = require('./routes/exams');
+
+
+dotenv.config();
+
 const filename = fileURLToPath(import.meta.url);
 const currentDirname = dirname(filename);
 
 const app = express();
 const httpServer = createServer(app);
+
+
+app.use(cors());
+app.use(express.json());
+connectDB();
+
+
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error(err));
+
+app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+// app.use('/api/exams', examRoutes);
 
 const io = new Server(httpServer, {
   cors: {
