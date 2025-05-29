@@ -8,6 +8,12 @@ import ExamPage from './components/ExamPage';
 
 const Home = React.lazy(() => import('./components/Home'))
 const Viewer = React.lazy(() => import('./components/Viewer'));
+const CreateAdminPage = React.lazy(() => import('./components/CreateAdminPage'));
+const AdminLoginPage = React.lazy(() => import('./components/AdminLoginPage'));
+const TokenVerificationPage = React.lazy(() => import('./components/TokenVerificationPage'));
+const LoginPage = React.lazy(() => import('./components/LoginPage'));
+const CreateCoursePage = React.lazy(() => import('./components/CreateCoursePage'));
+const CreateLecturerPage = React.lazy(() => import('./components/CreateLecturerPage'));
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -147,6 +153,12 @@ function App() {
                 <Route path="/proctoring" element={<ProctoringPage />} />
         <Route path="/" element={<ExamInterface />} />
             {/* <Route path="/exam" element={<ExamPage />} /> */}
+                <Route path="/login" element={<LoginPage />} />
+        <Route path="/create-course" element={<CreateCoursePage />} />
+        <Route path="/register-lecturer" element={<CreateLecturerPage />} />
+        <Route path="/verify-token" element={<TokenVerificationPage />} />
+        <Route path="/admin-login" element={<AdminLoginPage />} />
+        <Route path="/admin-create" element={<CreateAdminPage />} />
               </Routes>
             </Suspense>
           </div>
