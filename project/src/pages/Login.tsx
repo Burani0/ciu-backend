@@ -50,7 +50,7 @@ export default function StudentLogin(): JSX.Element {
           <BiSolidUserRectangle className="text-[#106053]" size={42} />
         </div>
       </div>
-
+ 
 
             <div className="relative w-full h-[50px] bg-[#ebebeb] mb-8">
               <input

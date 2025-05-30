@@ -6,8 +6,10 @@ import jwt from 'jsonwebtoken';
 import { sendEmail } from '../utils/mailer.js';
 
 export const createCourse = async (req, res) => {
-  const { courseTitle, courseCode } = req.body;
-  const course = new Course({ courseTitle, courseCode });
+
+  console.log("Received course data:", req.body);
+  const { faculty, program, courseTitle, courseCode } = req.body;
+  const course = new Course({ faculty, program, courseTitle, courseCode });
   await course.save();
   res.status(201).json(course);
 };
