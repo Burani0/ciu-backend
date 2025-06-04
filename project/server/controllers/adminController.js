@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { sendEmail } from '../utils/mailer.js';
 
+
 export const createCourse = async (req, res) => {
 
   console.log("Received course data:", req.body);
@@ -97,4 +98,113 @@ export const adminLogin = async (req, res) => {
   if (!isMatch) return res.status(401).json({ message: 'Incorrect password' });
 
   res.status(200).json({ message: 'Login successful' });
+};
+
+// GET all lecturers
+export const getAllLecturers = async (req, res) => {
+  const lecturers = await Lecturer.find().populate('assignedCourses');
+  res.status(200).json(lecturers);
+};
+
+// get lecturer by IDs
+export const getLecturerById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const lecturer = await Lecturer.findById(id).populate('assignedCourses'); // if using mongoose
+    if (!lecturer) {
+      return res.status(404).json({ message: 'Lecturer not found' });
+    }
+    res.status(200).json(lecturer);
+  } catch (error) {
+    console.error('Error fetching lecturer by ID:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// GET all admins
+export const getAllAdmins = async (req, res) => {
+  const admins = await Admin.find();
+  res.status(200).json(admins);
+};
+
+// UPDATE course
+export const updateCourse = async (req, res) => {
+  const { id } = req.params;
+  const { courseTitle, courseCode } = req.body;
+
+  const updated = await Course.findByIdAndUpdate(id, { courseTitle, courseCode }, { new: true });
+  if (!updated) return res.status(404).json({ message: 'Course not found' });
+
+  res.status(200).json(updated);
+};
+
+// get courses by ID
+
+export const getCourseById = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+    res.json(course);
+  } catch (error) {
+    console.error('Error fetching course by ID:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+// UPDATE lecturer
+export const updateLecturer = async (req, res) => {
+  const { id } = req.params;
+  const { firstName, lastName, email, universityNumber, courseIds } = req.body;
+
+  const updated = await Lecturer.findByIdAndUpdate(
+    id,
+    { firstName, lastName, email, universityNumber, assignedCourses: courseIds },
+    { new: true }
+  );
+  if (!updated) return res.status(404).json({ message: 'Lecturer not found' });
+
+  res.status(200).json(updated);
+};
+
+// UPDATE admin
+export const updateAdmin = async (req, res) => {
+  const { id } = req.params;
+  const { username, password } = req.body;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const updated = await Admin.findByIdAndUpdate(id, { username, password: hashedPassword }, { new: true });
+  if (!updated) return res.status(404).json({ message: 'Admin not found' });
+
+  res.status(200).json(updated);
+};
+
+// DELETE course
+export const deleteCourse = async (req, res) => {
+  const { id } = req.params;
+  const deleted = await Course.findByIdAndDelete(id);
+  if (!deleted) return res.status(404).json({ message: 'Course not found' });
+
+  res.status(200).json({ message: 'Course deleted successfully' });
+};
+
+// DELETE lecturer
+export const deleteLecturer = async (req, res) => {
+  const { id } = req.params;
+  const deleted = await Lecturer.findByIdAndDelete(id);
+  if (!deleted) return res.status(404).json({ message: 'Lecturer not found' });
+
+  res.status(200).json({ message: 'Lecturer deleted successfully' });
+};
+
+// DELETE admin
+export const deleteAdmin = async (req, res) => {
+  const { id } = req.params;
+  const deleted = await Admin.findByIdAndDelete(id);
+  if (!deleted) return res.status(404).json({ message: 'Admin not found' });
+
+  res.status(200).json({ message: 'Admin deleted successfully' });
 };

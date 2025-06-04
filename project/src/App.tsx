@@ -206,6 +206,9 @@ import LecturerDashboard from './components/Lecturer/LecturerDashboard.tsx';
 // import Home from './components/Home.tsx';
 import JoinStreamer from './components/JoinStreamer.tsx';
 import JoinViewer from './components/JoinViewer.tsx';
+import EditLecturerModal from './components/admin/EditLecturerModal.tsx';
+import AdminCourses from './components/admin/AdminCourses.tsx';
+import LectCourses from './components/Lecturer/LecturerCourses.tsx';
 
 
 const Home = React.lazy(() => import('./components/Home'));
@@ -214,8 +217,8 @@ const CreateAdminPage = React.lazy(() => import('./components/CreateAdminPage'))
 const AdminLoginPage = React.lazy(() => import('./components/AdminLoginPage'));
 const TokenVerificationPage = React.lazy(() => import('./components/TokenVerificationPage'));
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
-const CreateCoursePage = React.lazy(() => import('./components/CreateCoursePage'));
-const CreateLecturerPage = React.lazy(() => import('./components/CreateLecturerPage'));
+const CreateCoursePage = React.lazy(() => import('./components/CreateCourseModal.tsx'));
+const CreateLecturerPage = React.lazy(() => import('./components/CreateLecturerModal.tsx'));
 
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
@@ -306,7 +309,7 @@ function AppWrapper() {
     }
   }, []);
 
-  const noLayoutRoutes = ['/admin', '/student-login','/register', '/register-course', '/users', '/lecturer'];
+  const noLayoutRoutes = ['/admin', '/student-login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses'];
   const isLayoutVisible = !noLayoutRoutes.includes(location.pathname);
 
   return (
@@ -344,12 +347,15 @@ function AppWrapper() {
                 <Route path="/register" element={<RegForm />} />
                 <Route path="/register-course" element={<RegCourse />} />
                 <Route path="/users" element={<Users />} />
+                <Route path="/lecturer-courses" element={< LectCourses/>} />
                 <Route path="/join-streamer" element={<JoinStreamer />} />
                 <Route path="/join-viewer" element={<JoinViewer />} />
+                <Route path="/edit-lecturer" element={<EditLecturerModal />} />
                 <Route path="/" element={<ExamInterface />} />
                 <Route path="/login" element={<LoginPage />} />
         <Route path="/create-course" element={<CreateCoursePage />} />
         <Route path="/register-lecturer" element={<CreateLecturerPage />} />
+        <Route path="/admin-courses" element = {<AdminCourses/>} />
         <Route path="/verify-token" element={<TokenVerificationPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin-create" element={<CreateAdminPage />} />
@@ -371,6 +377,9 @@ function AppWrapper() {
               <Route path="/users" element={<Users />} />
               <Route path="/join-viewer" element={<JoinViewer />} />
               <Route path="/join-streamer" element={<JoinStreamer />} />
+              <Route path="/edit-lecturer" element={<EditLecturerModal />} />
+              <Route path="/admin-courses" element = {<AdminCourses/>} />
+              <Route path="/lecturer-courses" element={< LectCourses/>} />
               <Route path="/" element={<ExamInterface />} />
             </Routes>
           </Suspense>

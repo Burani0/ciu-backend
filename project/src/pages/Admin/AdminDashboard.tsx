@@ -129,10 +129,10 @@ const Dashboard: FC = () => {
           <main className={`flex-1 overflow-auto text-[#105F53] p-6 md:p-4 ${isMobileMenuOpen ? 'opacity-50 transition-opacity duration-300 ease-in-out' : ''}`}>
             <h2 className="text-2xl font-semibold mb-4">Dashboard</h2>
             <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(200px,1fr))] md:grid-cols-1">
-              <DashboardCard title="Registered Students" value={studentCount} icon="🎓" />
+              
               <DashboardCard title="Registered Lecturers" value={lecturerCount} icon="👨‍💻" />
               <DashboardCard title="Registered Courses" value={courseCount} icon="📖" />
-              <DashboardCard title="Registered Course Units" value={courseUnitCount} icon="📖" />
+    
               <DashboardCard title="Ongoing Exams/Assessments" value={ongoingAssessmentsCount} icon="📝" />
               <DashboardCard title="Upcoming Exams/Assessments" value={upcomingAssessmentsCount} icon="📝" />
             </div>

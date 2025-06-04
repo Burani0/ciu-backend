@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import EditLecturerModal from "./EditLecturerModal"; // import the modal
+
 
 function Table({ children }) {
   return (
@@ -66,8 +68,11 @@ function UserList({ users, deleteUser }: any) {
   const [filteredUsers, setFilteredUsers] = useState(users);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const cols = ["#", "First Name", "Last Name", "Email", "Role", "Actions"];
+
+  const cols = ["#", "First Name", "Last Name", "Email", "assigned courses", "Actions"];
 
   useEffect(() => {
     const filtered = users.filter((user: any) =>
@@ -131,12 +136,16 @@ function UserList({ users, deleteUser }: any) {
               <td className="px-4 py-2 text-center">{user.email}</td>
               <td className="px-4 py-2 text-center">{user.role}</td>
               <td className="flex justify-center gap-3 px-4 py-2">
-                <button
-                  onClick={() => navigate(`/edit/${user.id}`)}
-                  className="bg-gray-600 text-white p-2 rounded hover:bg-gray-700"
-                >
-                  <FaEdit />
-                </button>
+              <button
+                onClick={() => {
+                  setEditingUser(user);
+                  setIsEditOpen(true);
+                }}
+                className="bg-gray-600 text-white p-2 rounded hover:bg-gray-700"
+              >
+                <FaEdit />
+              </button>
+
                 <button
                   onClick={() => handleDeleteClick(user)}
                   className="bg-red-600 text-white p-2 rounded hover:bg-red-700"
@@ -149,6 +158,7 @@ function UserList({ users, deleteUser }: any) {
         </TableBody>
       </Table>
     </div>
+    
   );
 }
 

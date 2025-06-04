@@ -18,7 +18,7 @@ const TokenVerificationPage = () => {
       // Optionally store auth status or lecturer ID here
       localStorage.setItem('lecturerVerified', 'true');
 
-      navigate('/dashboard');
+      navigate('/lecturer');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Verification failed');
     }

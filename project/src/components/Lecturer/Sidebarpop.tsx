@@ -17,17 +17,14 @@ const Sidebar: React.FC = () => {
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, text: 'Dashboard', path: '/lecturerdashboard' },
-    { icon: <FileText size={20} />, text: 'Courses', path: '/lect-courses' },
+    { icon: <FileText size={20} />, text: 'Courses', path: '/lecturer-courses' },
     // { icon: <HelpCircle size={20} />, text: 'Question Bank', path: '/question-bank' },
     { icon: <Video size={20} />, text: 'Proctoring', path: '/join-viewer' },
     {
       icon: <FileText size={20} />,
       text: 'Exam Management',
       subItems: [
-        // { text: 'Create Assessment', path: '/schedule-create-exams' },
-        // { text: 'Upload Assessment', path: '/schedule-upload-exams' },
-        // { text: 'View Exam List', path: '/schedule-upload-exams/exam-list' },
-        // { text: 'Published Exams', path: '/published-exam-papers' },
+
         { text: 'Completed Exams', path: '/completed-Assessments' },
       ],
     },
@@ -91,13 +88,13 @@ const Sidebar: React.FC = () => {
               <li
                 key={index}
                 className={`${
-                  activeItem === item.text ? 'bg-[#106053] text-white' : ''
+                  activeItem === item.text ? 'bg-[#E6F1EB]' : ''
                 } rounded`}
                 onClick={() => handleItemClick(item.text)}
               >
                 <Link
                   to={item.path}
-                  className="flex items-center gap-2 px-4 py-2 font-medium hover:bg-gray-100 text-[#106053]"
+                  className="flex items-center gap-2 px-4 py-2 font-medium text-[#106053]"
                 >
                   <span>{item.icon}</span>
                   <span>{item.text}</span>

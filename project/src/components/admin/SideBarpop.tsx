@@ -4,19 +4,18 @@ import {
   Users,
   LogOut,
   Library,
-  ClipboardCheck,
+  // ClipboardCheck,
   ChevronDown,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import RegCourseModal from '../modals/RegCourseModal.tsx';
-import UserContentModal from '../modals/UserContentModal.tsx';
+import CreateCourseModal from '../CreateCourseModal.tsx';
 import { useSidebar } from "./SidebarContext.tsx";
 
 export default function Sidebar() {
   const { activeItem, setActiveItem } = useSidebar();
   const location = useLocation();
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
-  const [isRegCourseOpen, setIsRegCourseOpen] = useState(false);
+  const [isCreateCourseModalOpen, setIsCreateCourseModalOpen] = useState(false);
   const [isUserContentOpen, setIsUserContentOpen] = useState(false);
 
   const menuItems = [
@@ -32,19 +31,19 @@ export default function Sidebar() {
       subItems: [
         // { text: "Manage Students", path: "/table" },
         { text: "Manage Lecturers",path:"/users"  },
-        { text: "Manage Administrators", path: "/adminuser" },
+        // { text: "Manage Administrators", path: "/adminuser" },
       ],
     },
-    {
-      icon: <ClipboardCheck size={20} />,
-      text: "Exam list",
-      path: "/admin-exam-list",
-    },
+    // {
+    //   icon: <ClipboardCheck size={20} />,
+    //   text: "Exam list",
+    //   path: "/admin-exam-list",
+    // },
     {
       icon: <Library size={20} />,
       text: "Courses",
       subItems: [
-        { text: "Register Course",  action: () => setIsRegCourseOpen(true) },
+        { text: "Register Course",  action: () => setIsCreateCourseModalOpen(true) },
         { text: "View Courses", path: "/admin-courses" },
       ],
     },
@@ -231,8 +230,8 @@ useEffect(() => {
       </aside>
 
       {/* Register Course Modal */}
-      {isRegCourseOpen && (
-        <RegCourseModal isOpen={isRegCourseOpen} onClose={() => setIsRegCourseOpen(false)} />
+      {isCreateCourseModalOpen && (
+        <CreateCourseModal isOpen={isCreateCourseModalOpen} onClose={() => setIsCreateCourseModalOpen(false)} />
       )}
       {/* {isUserContentOpen && (
         <UserContentModal isOpen={isUserContentOpen} onClose={() => setIsUserContentOpen(false)} />

@@ -184,7 +184,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
-import RegisterUserModal from "../modals/RegisterUserModal";
+import CreateLecturerModal from "../CreateLecturerModal.tsx";
+import EditLecturerModal from '../admin/EditLecturerModal.tsx';
+
 
 function Table({ children }) {
   return (
@@ -202,7 +204,7 @@ function TableHead({ cols }) {
           <th
             key={index}
             scope="col"
-            className="bg-[#E6F1EB] text-[#0F533D] px-6 py-4 text-center font-semibold uppercase tracking-wide border-b border-gray-200"
+            className="bg-[#E6F1EB] text-[#0F533D] px-2 py-2 text-center font-semibold uppercase tracking-wide border-b border-gray-200"
           >
             {col}
           </th>
@@ -217,14 +219,17 @@ function TableBody({ children }) {
 }
 
 function UserList({ users, deleteUser }) {
-  const cols = ["#", "First Name", "Last Name", "Email", "Role", "Actions"];
+  const cols = ["#", "First Name", "Last Name", "Email", "Assigned Courses", "Action"];
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState(users);
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
+  const [isCreateLecturerModalOpen, setCreateLecturerModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [editLecturerId, setEditLecturerId] = useState<string | null>(null);
+
 
   useEffect(() => {
     const filtered = users.filter((user) =>
@@ -243,7 +248,7 @@ function UserList({ users, deleteUser }) {
 
   const confirmDelete = () => {
     if (selectedUser) {
-      deleteUser(selectedUser.id);
+      deleteUser(selectedUser._id);
     }
     setDialogOpen(false);
   };
@@ -251,15 +256,26 @@ function UserList({ users, deleteUser }) {
   return (
     <div className="w-full max-w-[1200px] mx-auto pt-5">
       {/* Register User Modal */}
-      {isRegisterModalOpen && (
-  <RegisterUserModal
-    onClose={() => setRegisterModalOpen(false)}
+      {isCreateLecturerModalOpen && (
+  <CreateLecturerModal
+    onClose={() => setCreateLecturerModalOpen(false)}
     onSuccess={() => {
-      setRegisterModalOpen(false);
+      setCreateLecturerModalOpen(false);
       // You can optionally trigger a data refresh here, like calling a fetchUsers() function
     }}
   />
 )}
+  {isEditModalOpen && editLecturerId && (
+  <EditLecturerModal
+    lecturerId={editLecturerId} // ✅ Pass the ID here
+    onClose={() => setEditModalOpen(false)}
+    onSuccess={() => {
+      setEditModalOpen(false);
+      // Optional: Refresh lecturer list here
+    }}
+  />
+)}
+
 
 
       {/* Delete Confirmation Dialog */}
@@ -282,8 +298,8 @@ function UserList({ users, deleteUser }) {
       {/* Header and Search */}
       <div className="flex flex-col sm:flex-row justify-between items-center py-5 gap-4">
         <button
-          className="bg-[#0F533D] hover:bg-[#0d442f] text-white py-3 px-6 text-lg rounded shadow-md transition duration-200"
-          onClick={() => setRegisterModalOpen(true)}
+          className="bg-[#0F533D] hover:bg-[#0d442f] text-white py-3 px-4 text-sm rounded shadow-md transition duration-200"
+          onClick={() => setCreateLecturerModalOpen(true)}
         >
           Add New Lecturer
         </button>
@@ -292,11 +308,11 @@ function UserList({ users, deleteUser }) {
           placeholder="Search users..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border border-gray-300 text-gray-700 px-4 py-3 w-full sm:w-[300px] text-base rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0F533D] transition"
+          className="border border-gray-300 text-gray-700 px-3 py-2 w-full sm:w-[300px] text-base rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0F533D] transition"
         />
       </div>
 
-      <h2 className="mb-4 text-2xl font-semibold text-[#0F533D] text-left">Lecturers</h2>
+      <h2 className="mb-4 text-xl font-semibold text-[#0F533D] text-left">Lecturers</h2>
 
       <Table>
         <TableHead cols={cols} />
@@ -304,34 +320,43 @@ function UserList({ users, deleteUser }) {
           {filteredUsers.length > 0 ? (
             filteredUsers.map((user, index) => (
               <tr
-                key={user.id}
+                key={user._id}
                 className="hover:bg-[#E6F1EB] transition-colors duration-200"
               >
                 <th
                   scope="row"
-                  className="px-6 py-3 text-center font-medium text-gray-800"
+                  className="px-4 py-3 text-center font-medium text-gray-800"
                 >
                   {index + 1}
                 </th>
-                <td className="px-6 py-3 text-center">{user.first_name}</td>
-                <td className="px-6 py-3 text-center">{user.last_name}</td>
-                <td className="px-6 py-3 text-center">{user.email}</td>
-                <td className="px-6 py-3 text-center">{user.role}</td>
-                <td className="flex justify-center gap-4 px-6 py-3">
-                  <button
-                    onClick={() => navigate(`/edit/${user.id}`)}
-                    className="bg-gray-600 text-white p-2 rounded hover:bg-gray-700 transition"
-                    aria-label={`Edit ${user.first_name} ${user.last_name}`}
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(user)}
-                    className="bg-red-600 text-white p-2 rounded hover:bg-red-700 transition"
-                    aria-label={`Delete ${user.first_name} ${user.last_name}`}
-                  >
-                    <FaTrash />
-                  </button>
+                <td className="px-4 py-2 text-center">{user.firstName}</td>
+                <td className="px-4 py-2 text-center">{user.lastName}</td>
+                <td className="px-4 py-2 text-center">{user.email}</td>
+                <td className="px-4 py-2 text-center">
+                    {user.assignedCourses && user.assignedCourses.length > 0
+                      ? user.assignedCourses.map((course) => course.courseTitle).join(", ")
+                      : "No courses assigned"}
+                  </td>
+
+                <td className="flex justify-center gap-2 px-4 py-3">
+                <button
+                  onClick={() => {
+                    setEditLecturerId(user._id);
+                    setEditModalOpen(true);
+                  }}
+                  className="p-2 rounded hover:text-[#0d442f] transition"
+                  aria-label={`Edit ${user.first_name} ${user.last_name}`}
+                >
+                  <FaEdit className="text-[#0F533D]" />
+                </button>
+                <button
+                  onClick={() => handleDeleteClick(user)}
+                  className="p-2 rounded hover:text-red-700 transition"
+                  aria-label={`Delete ${user.first_name} ${user.last_name}`}
+                >
+                  <FaTrash className="text-red-600" />
+                </button>
+
                 </td>
               </tr>
             ))
@@ -348,23 +373,26 @@ function UserList({ users, deleteUser }) {
   );
 }
 
+
+
+
 export default function UsersContent() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/lecturerReg")
+    fetch("http://localhost:3001/api/admin/lecturers")
       .then((response) => response.json())
       .then((data) => setUsers(data))
       .catch((error) => console.error("Error fetching users:", error));
   }, []);
-
+  
   const deleteUser = (id) => {
-    fetch(`http://localhost:3000/lecturerReg/${id}`, {
+    fetch(`http://localhost:3001/api/admin/lecturers/${id}`, {
       method: "DELETE",
     })
       .then((response) => {
         if (response.ok) {
-          setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
+          setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
         } else {
           console.error("Failed to delete user");
         }
