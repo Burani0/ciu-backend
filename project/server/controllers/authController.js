@@ -2,15 +2,25 @@ import Lecturer from '../models/Lecturer.js';
 import Token from '../models/Token.js';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '../utils/mailer.js';
+import LecturerLoginLog from '../models/LecturerLoginLog.js';
 
 export const login = async (req, res) => {
   const { universityNumber, password } = req.body;
+
   const lecturer = await Lecturer.findOne({ universityNumber });
   if (!lecturer || !(await bcrypt.compare(password, lecturer.password))) {
     return res.status(400).json({ message: 'Invalid credentials' });
   }
+
   const token = Math.floor(100000 + Math.random() * 900000).toString();
   await new Token({ lecturerId: lecturer._id, token }).save();
+
+  // ✅ Log the login event
+  await LecturerLoginLog.create({
+    universityNumber: lecturer.universityNumber,
+    loginTime: new Date(),
+  });
+
   await sendEmail(lecturer.email, 'Login Verification Code', `Your code: ${token}`);
   res.json({ message: 'Token sent to email' });
 };

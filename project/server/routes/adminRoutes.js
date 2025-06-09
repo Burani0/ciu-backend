@@ -1,5 +1,5 @@
 import express from 'express';
-import { createCourse, registerLecturer, getDashboardStats, getAllCourses, createAdmin, adminLogin,   getAllLecturers,
+import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats, getAllCourses, createAdmin, adminLogin,   getAllLecturers,
   getAllAdmins,
   updateCourse,
   updateLecturer,
@@ -12,6 +12,7 @@ import { createCourse, registerLecturer, getDashboardStats, getAllCourses, creat
 
 
 const router = express.Router();
+router.get('/login-logs', getLecturerLoginLogs);
 router.post('/create-course', createCourse);
 router.post('/register-lecturer', registerLecturer);
 router.get('/dashboard', getDashboardStats);

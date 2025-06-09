@@ -31,6 +31,7 @@ export default function Sidebar() {
       subItems: [
         // { text: "Manage Students", path: "/table" },
         { text: "Manage Lecturers",path:"/users"  },
+        { text: "Lecturer Logs",path:"/loggs"  },
         // { text: "Manage Administrators", path: "/adminuser" },
       ],
     },
