@@ -12,7 +12,11 @@ export const login = async (req, res) => {
   const token = Math.floor(100000 + Math.random() * 900000).toString();
   await new Token({ lecturerId: lecturer._id, token }).save();
   await sendEmail(lecturer.email, 'Login Verification Code', `Your code: ${token}`);
-  res.json({ message: 'Token sent to email' });
+  // res.json({ message: 'Token sent to email' });
+  res.json({ 
+    message: 'Token sent to email',
+    lecturerId: lecturer._id  // ✅ This allows the frontend to store it
+  });
 };
 
 export const verifyToken = async (req, res) => {

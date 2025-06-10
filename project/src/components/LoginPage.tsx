@@ -6,6 +6,25 @@ const LoginPage = () => {
   const [universityNumber, setUniversityNumber] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  
+
+  // const handleLogin = async () => {
+  //   try {
+  //     const response = await axios.post('http://localhost:3001/api/auth/login', {
+  //       universityNumber,
+  //       password,
+  //     });
+
+  //     localStorage.setItem("lecturerId", response.data._id);
+  //     console.log("Stored lecturerId:", response.data._id);
+
+
+  //     alert(response.data.message); // optional
+  //     navigate('/verify-token'); // 🔁 redirect here
+  //   } catch (error: any) {
+  //     alert(error.response.data.message);
+  //   }
+  // };
 
   const handleLogin = async () => {
     try {
@@ -13,12 +32,14 @@ const LoginPage = () => {
         universityNumber,
         password,
       });
-      alert(response.data.message); // optional
-      navigate('/verify-token'); // 🔁 redirect here
+  
+      alert(response.data.message); // Token sent to email
+      navigate('/verify-token'); // redirect to verify token page
     } catch (error: any) {
-      alert(error.response.data.message);
+      alert(error.response?.data?.message || 'Login failed');
     }
   };
+  
 
   return (
     <div className="p-8 max-w-md mx-auto">

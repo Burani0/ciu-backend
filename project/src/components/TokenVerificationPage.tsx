@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,16 +8,41 @@ const TokenVerificationPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+
+  useEffect(() => {
+    const storedLecturerId = localStorage.getItem('lecturerId');
+    if (!storedLecturerId) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  // const handleVerify = async () => {
+  //   try {
+  //     await axios.post('http://localhost:3001/api/auth/verify', {
+  //       universityNumber,
+  //       token,
+  //     });
+      
+  //     localStorage.setItem('lecturerId', response.data._id);
+  //     // Optionally store auth status or lecturer ID here
+  //     localStorage.setItem('lecturerVerified', 'true');
+
+  //     navigate('/lecturer');
+  //   } catch (err: any) {
+  //     setError(err.response?.data?.message || 'Verification failed');
+  //   }
+  // };
+
   const handleVerify = async () => {
     try {
-      await axios.post('http://localhost:3001/api/auth/verify', {
+      const response = await axios.post('http://localhost:3001/api/auth/verify', {
         universityNumber,
         token,
       });
-
-      // Optionally store auth status or lecturer ID here
+  
+      localStorage.setItem('lecturerId', response.data.lecturerId);
       localStorage.setItem('lecturerVerified', 'true');
-
+  
       navigate('/lecturer');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Verification failed');
