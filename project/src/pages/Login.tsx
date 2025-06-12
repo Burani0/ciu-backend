@@ -23,7 +23,7 @@ const StudentLogin = () => {
         password,
       });
       alert(adminResponse.data.message);
-      return navigate('/admin');
+      return navigate('/cleartoken');
     } catch {
       try {
         const lecturerResponse = await axios.post('http://localhost:3001/api/auth/login', {
@@ -41,8 +41,12 @@ const StudentLogin = () => {
   return (
     <div className="font-['Roboto'] flex justify-center items-center min-h-screen bg-[#ebebeb] py-5">
       <div className="relative w-[420px] h-[600px] bg-white text-[#106053]">
-        <div className="grid place-items-center w-full h-[185px] bg-[#106053] text-white">
-          <h1 className="text-[30px] text-center">ONLINE EXAMINATION SYSTEM</h1>
+        <div className="grid place-items-center w-full h-[185px] bg-[#d6d6d6] text-white">
+        <img
+            src="/public/CIU-exam-system-logo.png"
+            alt="CIU Exam System Logo"
+            className="max-h-[120px] object-contain"
+          />
         </div>
 
         <div className="w-full p-10">
@@ -52,7 +56,7 @@ const StudentLogin = () => {
             </div>
           </div>
 
-          <div className="relative w-full h-[50px] bg-[#ebebeb] mb-8">
+          <div className="relative w-full h-[50px] bg-[#d6d6d6] mb-8">
             <input
               type="text"
               placeholder="Username / University Number"
@@ -63,7 +67,7 @@ const StudentLogin = () => {
             <FaUser className="absolute right-5 top-1/2 -translate-y-1/2 text-[16px]" />
           </div>
 
-          <div className="relative w-full h-[50px] bg-[#ebebeb] mb-8">
+          <div className="relative w-full h-[50px] bg-[#d6d6d6] mb-8">
             <input
               type="password"
               placeholder="Password"

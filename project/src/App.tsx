@@ -223,7 +223,8 @@ const TokenVerificationPage = React.lazy(() => import('./components/TokenVerific
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
 const CreateCoursePage = React.lazy(() => import('./components/CreateCourseModal.tsx'));
 const CreateLecturerPage = React.lazy(() => import('./components/CreateLecturerModal.tsx'));
-const Logs = React.lazy(() => import('./components/logs.tsx'));
+const Logs = React.lazy(() => import('./components/Logs.tsx'));
+const Cleartoken = React.lazy(() => import('./components/cleartoken'));
 
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
@@ -314,7 +315,7 @@ function AppWrapper() {
     }
   }, []);
 
-  const noLayoutRoutes = ['/admin', '/student-login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable'];
+  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/'];
   const isLayoutVisible = !noLayoutRoutes.includes(location.pathname);
 
   return (
@@ -346,7 +347,7 @@ function AppWrapper() {
                 <Route path="/exam/:roomId" element={<ExamPage />} />
                 <Route path="/view/:roomId" element={<Viewer />} />
                 <Route path="/proctoring" element={<ProctoringPage />} />
-                <Route path="/student-login" element={<StudentLogin />} />
+                <Route path="/" element={<StudentLogin />} />
                 <Route path="/admin" element={<AdminDashboard />} /> {/* ❌ No layout */}
                 <Route path="/lecturer" element={<LecturerDashboard />} />
                 <Route path="/register" element={<RegForm />} />
@@ -356,8 +357,8 @@ function AppWrapper() {
                 <Route path="/join-streamer" element={<JoinStreamer />} />
                 <Route path="/join-viewer" element={<JoinViewer />} />
                 <Route path="/edit-lecturer" element={<EditLecturerModal />} />
-                <Route path="/" element={<ExamInterface />} />
-                <Route path="/login" element={<LoginPage />} />
+                <Route path="/ExamInterface" element={<ExamInterface />} />
+                <Route path="/login2" element={<LoginPage />} />
         <Route path="/create-course" element={<CreateCoursePage />} />
         <Route path="/register-lecturer" element={<CreateLecturerPage />} />
         <Route path="/timetable" element={<LecturerTimetable />} />
@@ -366,6 +367,7 @@ function AppWrapper() {
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin-create" element={<CreateAdminPage />} />
         <Route path="/loggs" element={<Logs />} />
+        <Route path="/cleartoken" element={<Cleartoken/>}     />
         
               </Routes>
             </Suspense>
@@ -377,7 +379,7 @@ function AppWrapper() {
               <Route path="/exam/:roomId" element={<ExamPage />} />
               <Route path="/view/:roomId" element={<Viewer />} />
               <Route path="/proctoring" element={<ProctoringPage />} />
-              <Route path="/student-login" element={<StudentLogin />} /> {/* ❌ No layout */}
+              <Route path="/" element={<StudentLogin />} /> {/* ❌ No layout */}
               <Route path="/admin" element={<AdminDashboard />} /> {/* ❌ No layout */}
               <Route path="/lecturer" element={<LecturerDashboard />} />
               <Route path="/register" element={<RegForm />} />
@@ -389,8 +391,10 @@ function AppWrapper() {
               <Route path="/admin-courses" element = {<AdminCourses/>} />
               <Route path="/lecturer-courses" element={< LectCourses/>} />
               <Route path="/timetable" element={<LecturerTimetable />} />
-              <Route path="/" element={<ExamInterface />} />
+              <Route path="/ExamInterface" element={<ExamInterface />} />
                 <Route path="/loggs" element={<Logs />} />
+                <Route path="/cleartoken" element={<Cleartoken/>}     />
+                <Route path="/verify-token" element={<TokenVerificationPage />} />
             </Routes>
           </Suspense>
         )}

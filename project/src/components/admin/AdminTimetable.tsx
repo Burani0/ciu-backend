@@ -1,42 +1,3 @@
-// import { useState, useEffect } from 'react';
-// import Header from '../Lecturer/Headerpop';
-// import Sidebar from '../Lecturer/Sidebarpop';
-// import MobileMenu from "../Lecturer/MobileMenu";
-// import LecturerDashboardContent from '../Lecturer/LecturerDashboardContent';
-
-// export default function LecturerDashboard() {
-//     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-//     const [isMobile, setIsMobile] = useState(false);
-
-//     useEffect(() => {
-//         const handleResize = () => {
-//             setIsMobile(window.innerWidth <= 991);
-//         };
-
-//         window.addEventListener('resize', handleResize);
-//         handleResize();
-
-//         return () => window.removeEventListener('resize', handleResize);
-//     }, []);
-
-//     const toggleMobileMenu = () => {
-//         setIsMobileMenuOpen(!isMobileMenuOpen);
-//     };
-
-//     return (
-//         <div className="flex flex-col h-screen">
-//             <div className="flex flex-col h-screen">
-//                 <Header toggleMobileMenu={toggleMobileMenu} isMobile={isMobile} />
-//                 <div className="flex flex-1 overflow-scroll rounded-lg shadow-md bg-white 
-//                                 max-md:flex-col">
-//                     {!isMobile && <Sidebar />}
-//                     {isMobile && <MobileMenu isOpen={isMobileMenuOpen} toggleMenu={toggleMobileMenu} />}
-//                     <LecturerDashboardContent />
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Header from '../Lecturer/Headerpop';
@@ -44,28 +5,24 @@ import Sidebar from '../Lecturer/Sidebarpop';
 import MobileMenu from '../Lecturer/MobileMenu';
 import { SidebarProvider2 } from '../Lecturer/SidebarContext2';
 
-export default function LecturerDashboard() {
+interface TimetableItem {
+  ExamDate: string;
+  CourseCode: string;
+  CourseName: string;
+  StartTime: string;
+  EndTime: string;
+  LecturerName: string;
+}
+
+const Timetable = () => {
   const [academicYear, setAcademicYear] = useState('2024/2025');
   const [semester, setSemester] = useState('1');
   const [startDate, setStartDate] = useState('2025-06-09');
-  const [timetable, setTimetable] = useState<any[]>([]);
+  const [timetable, setTimetable] = useState<TimetableItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 991);
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   const fetchTimetable = async () => {
     if (!academicYear || !semester || !startDate) {
@@ -80,7 +37,6 @@ export default function LecturerDashboard() {
         academicYear
       )}&sem=${encodeURIComponent(semester)}&StartDate=${encodeURIComponent(startDate)}`;
       const response = await axios.get(url);
-
       setTimetable(response.data);
     } catch (err: any) {
       setError('Failed to fetch timetable');
@@ -90,24 +46,40 @@ export default function LecturerDashboard() {
     }
   };
 
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  // 🟡 Status Determination
+  const determineStatus = (examDate: string, startTime: string) => {
+    const now = new Date();
+    const startDateTime = new Date(`${examDate}T${startTime}`);
+
+    if (now < startDateTime) return 'Upcoming';
+    if (now >= startDateTime && now <= new Date(startDateTime.getTime() + 3 * 60 * 60 * 1000)) {
+      // assuming exam lasts max 3 hrs
+      return 'Ongoing';
+    }
+    return 'Completed';
+  };
+
   return (
     <SidebarProvider2>
-      <div className="flex flex-col h-screen font-['Roboto']">
-        <Header toggleMobileMenu={toggleMobileMenu} isMobile={isMobile} />
-        <div className="flex flex-1 overflow-scroll flex-col md:flex-row">
-          {!isMobile && <Sidebar />}
-          {isMobile && (
-            <>
-              <div
-                className={`fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-[998] ${isMobileMenuOpen ? 'block' : 'hidden'}`}
-                onClick={toggleMobileMenu}
-              ></div>
-              <MobileMenu isOpen={isMobileMenuOpen} toggleMenu={toggleMobileMenu} />
-            </>
-          )}
-         <main className="flex-1 p-6 bg-gray-100">
-              <div className="p-6 max-w-5xl mx-auto bg-white shadow-lg rounded-lg mt-4">
-                <h1 className="text-3xl font-bold mb-6 text-[#0F533D]">Exam Timetable</h1>
+      <div className="font-['Roboto'] m-0 p-0">
+        <div className={`flex flex-col h-screen ${isMobileMenuOpen ? 'pointer-events-none' : ''}`}>
+          <Header toggleMobileMenu={toggleMobileMenu} isMobile={isMobile} />
+          <div className="flex flex-1 overflow-scroll flex-col md:flex-row">
+            {!isMobile && <Sidebar />}
+            {isMobile && (
+              <>
+                <div
+                  className={`fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-[998] ${isMobileMenuOpen ? 'block' : 'hidden'}`}
+                  onClick={toggleMobileMenu}
+                ></div>
+                <MobileMenu isOpen={isMobileMenuOpen} />
+              </>
+            )}
+            <main className="flex-1 p-6 bg-gray-100 text-black">
+              <div className="p-6 max-w-6xl mx-auto bg-white shadow-lg rounded-lg mt-4">
+                <h1 className="text-3xl font-bold mb-6 text-[#0F533D]">Admin: View All Exam Timetables</h1>
 
                 {error && (
                   <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -121,12 +93,12 @@ export default function LecturerDashboard() {
                     placeholder="Academic Year (e.g. 2024/2025)"
                     value={academicYear}
                     onChange={(e) => setAcademicYear(e.target.value)}
-                    className="border border-gray-300 p-2 rounded w-full sm:w-48"
+                    className="border border-gray-300 p-2 rounded text-black"
                   />
                   <select
                     value={semester}
                     onChange={(e) => setSemester(e.target.value)}
-                    className="border border-gray-300 p-2 rounded"
+                    className="border border-gray-300 p-2 rounded text-black"
                   >
                     <option value="">Select Semester</option>
                     <option value="1">Semester 1</option>
@@ -136,7 +108,7 @@ export default function LecturerDashboard() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="border border-gray-300 p-2 rounded w-full sm:w-44"
+                    className="border border-gray-300 p-2 rounded text-black"
                   />
                   <button
                     onClick={fetchTimetable}
@@ -172,14 +144,13 @@ export default function LecturerDashboard() {
                       </thead>
                       <tbody>
                         {timetable.map((item, idx) => {
-                          const now = new Date();
-                          const start = new Date(`${item.ExamDate}T${item.StartTime}`);
-                          const end = new Date(`${item.ExamDate}T${item.EndTime}`);
-
-                          let status = '';
-                          if (now < start) status = 'Upcoming';
-                          else if (now >= start && now <= end) status = 'Ongoing';
-                          else status = 'Complete';
+                          const status = determineStatus(item.ExamDate, item.StartTime);
+                          const statusColor =
+                            status === 'Ongoing'
+                              ? 'text-green-600'
+                              : status === 'Upcoming'
+                              ? 'text-blue-600'
+                              : 'text-gray-500';
 
                           return (
                             <tr key={idx} className="hover:bg-gray-50 text-gray-800">
@@ -189,11 +160,7 @@ export default function LecturerDashboard() {
                               <td className="border px-4 py-2">{item.StartTime}</td>
                               <td className="border px-4 py-2">{item.EndTime}</td>
                               <td className="border px-4 py-2">{item.LecturerName}</td>
-                              <td className="border px-4 py-2 font-semibold">
-                                {status === 'Ongoing' && <span className="text-green-600">{status}</span>}
-                                {status === 'Upcoming' && <span className="text-blue-600">{status}</span>}
-                                {status === 'Complete' && <span className="text-gray-500">{status}</span>}
-                              </td>
+                              <td className={`border px-4 py-2 font-semibold ${statusColor}`}>{status}</td>
                             </tr>
                           );
                         })}
@@ -203,8 +170,11 @@ export default function LecturerDashboard() {
                 )}
               </div>
             </main>
+          </div>
         </div>
       </div>
     </SidebarProvider2>
   );
-}
+};
+
+export default Timetable;
