@@ -23,7 +23,7 @@ const StudentLogin = () => {
         password,
       });
       alert(adminResponse.data.message);
-      return navigate('/admin');
+      return navigate('/cleartoken');
     } catch {
       try {
         const lecturerResponse = await axios.post('http://localhost:3001/api/auth/login', {

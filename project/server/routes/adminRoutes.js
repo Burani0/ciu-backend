@@ -1,11 +1,14 @@
 import express from 'express';
-import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats, getAllCourses, createAdmin, adminLogin,   getAllLecturers,
+import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats, getAllCourses,  getAllLecturers,
   getAllAdmins,
   updateCourse,
   updateLecturer,
   updateAdmin,
   deleteCourse,
   deleteLecturer,
+  createAdmin,
+  adminLogin,  
+  clearToken,
   deleteAdmin, } from '../controllers/adminController.js';
   import { getLecturerById } from '../controllers/adminController.js';
   import { getCourseById }   from '../controllers/adminController.js';
@@ -17,8 +20,7 @@ router.post('/create-course', createCourse);
 router.post('/register-lecturer', registerLecturer);
 router.get('/dashboard', getDashboardStats);
 
-router.post('/create-admin', createAdmin);
-router.post('/admin-login', adminLogin);
+
 
 router.get('/courses', getAllCourses);
 router.get('/lecturers', getAllLecturers);
@@ -33,6 +35,11 @@ router.put('/admins/:id', updateAdmin);
 
 router.delete('/courses/:id', deleteCourse);
 router.delete('/lecturers/:id', deleteLecturer);
+
+
+router.post('/create-admin', createAdmin);
+router.post('/admin-login', adminLogin);
+router.post('/cleartoken', clearToken );
 router.delete('/admins/:id', deleteAdmin);
 
 export default router;

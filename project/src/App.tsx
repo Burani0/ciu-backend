@@ -220,7 +220,8 @@ const TokenVerificationPage = React.lazy(() => import('./components/TokenVerific
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
 const CreateCoursePage = React.lazy(() => import('./components/CreateCourseModal.tsx'));
 const CreateLecturerPage = React.lazy(() => import('./components/CreateLecturerModal.tsx'));
-const Logs = React.lazy(() => import('./components/logs.tsx'));
+const Logs = React.lazy(() => import('./components/Logs.tsx'));
+const Cleartoken = React.lazy(() => import('./components/cleartoken'));
 
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
@@ -362,6 +363,7 @@ function AppWrapper() {
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin-create" element={<CreateAdminPage />} />
         <Route path="/loggs" element={<Logs />} />
+        <Route path="/cleartoken" element={<Cleartoken/>}     />
         
               </Routes>
             </Suspense>
@@ -386,6 +388,7 @@ function AppWrapper() {
               <Route path="/lecturer-courses" element={< LectCourses/>} />
               <Route path="/" element={<ExamInterface />} />
                 <Route path="/loggs" element={<Logs />} />
+                <Route path="/cleartoken" element={<Cleartoken/>}     />
             </Routes>
           </Suspense>
         )}
