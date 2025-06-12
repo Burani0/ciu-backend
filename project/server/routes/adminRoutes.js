@@ -1,10 +1,11 @@
 import express from 'express';
-import { createCourse, registerLecturer, getDashboardStats, getAllCourses, createAdmin, adminLogin,   getAllLecturers,
+import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats, getAllCourses, createAdmin, adminLogin,   getAllLecturers,
   getAllAdmins,
   updateCourse,
   updateLecturer,
   updateAdmin,
   deleteCourse,
+  getAdminById,
   deleteLecturer,
   deleteAdmin, } from '../controllers/adminController.js';
   import { getLecturerById } from '../controllers/adminController.js';
@@ -12,6 +13,7 @@ import { createCourse, registerLecturer, getDashboardStats, getAllCourses, creat
 
 
 const router = express.Router();
+router.get('/login-logs', getLecturerLoginLogs);
 router.post('/create-course', createCourse);
 router.post('/register-lecturer', registerLecturer);
 router.get('/dashboard', getDashboardStats);
@@ -22,6 +24,7 @@ router.post('/admin-login', adminLogin);
 router.get('/courses', getAllCourses);
 router.get('/lecturers', getAllLecturers);
 router.get('/lecturers/:id', getLecturerById);
+router.get('/admins/:id', getAdminById);
 router.get('/courses/:id', getCourseById);
 router.get('/admins', getAllAdmins);
 

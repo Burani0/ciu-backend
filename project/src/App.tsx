@@ -209,6 +209,8 @@ import JoinViewer from './components/JoinViewer.tsx';
 import EditLecturerModal from './components/admin/EditLecturerModal.tsx';
 import AdminCourses from './components/admin/AdminCourses.tsx';
 import LectCourses from './components/Lecturer/LecturerCourses.tsx';
+import LecturerTimetable from './components/Lecturer/LecturerTimetable.tsx';
+
 
 
 
@@ -221,6 +223,7 @@ const TokenVerificationPage = React.lazy(() => import('./components/TokenVerific
 const LoginPage = React.lazy(() => import('./components/LoginPage'));
 const CreateCoursePage = React.lazy(() => import('./components/CreateCourseModal.tsx'));
 const CreateLecturerPage = React.lazy(() => import('./components/CreateLecturerModal.tsx'));
+const Logs = React.lazy(() => import('./components/logs.tsx'));
 
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
@@ -311,7 +314,7 @@ function AppWrapper() {
     }
   }, []);
 
-  const noLayoutRoutes = ['/admin', '/student-login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses'];
+  const noLayoutRoutes = ['/admin', '/student-login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable'];
   const isLayoutVisible = !noLayoutRoutes.includes(location.pathname);
 
   return (
@@ -357,10 +360,13 @@ function AppWrapper() {
                 <Route path="/login" element={<LoginPage />} />
         <Route path="/create-course" element={<CreateCoursePage />} />
         <Route path="/register-lecturer" element={<CreateLecturerPage />} />
+        <Route path="/timetable" element={<LecturerTimetable />} />
         <Route path="/admin-courses" element = {<AdminCourses/>} />
         <Route path="/verify-token" element={<TokenVerificationPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin-create" element={<CreateAdminPage />} />
+        <Route path="/loggs" element={<Logs />} />
+        
               </Routes>
             </Suspense>
           </div>
@@ -382,7 +388,9 @@ function AppWrapper() {
               <Route path="/edit-lecturer" element={<EditLecturerModal />} />
               <Route path="/admin-courses" element = {<AdminCourses/>} />
               <Route path="/lecturer-courses" element={< LectCourses/>} />
+              <Route path="/timetable" element={<LecturerTimetable />} />
               <Route path="/" element={<ExamInterface />} />
+                <Route path="/loggs" element={<Logs />} />
             </Routes>
           </Suspense>
         )}

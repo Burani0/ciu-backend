@@ -4,6 +4,8 @@ import Admin from '../models/Admin.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { sendEmail } from '../utils/mailer.js';
+import LecturerLoginLog from '../models/LecturerLoginLog.js';
+import PDFDocument from 'pdfkit';
 
 
 export const createCourse = async (req, res) => {
@@ -127,6 +129,29 @@ export const getAllAdmins = async (req, res) => {
   res.status(200).json(admins);
 };
 
+//get admin by id
+export const getAdminById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Check if the ID is a valid MongoDB ObjectId
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid admin ID format' });
+    }
+
+    const admin = await Admin.findById(id).select('-password'); // Exclude password from response
+
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    res.status(200).json(admin);
+  } catch (error) {
+    console.error('Error fetching admin by ID:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // UPDATE course
 export const updateCourse = async (req, res) => {
   const { id } = req.params;
@@ -207,4 +232,44 @@ export const deleteAdmin = async (req, res) => {
   if (!deleted) return res.status(404).json({ message: 'Admin not found' });
 
   res.status(200).json({ message: 'Admin deleted successfully' });
+};
+
+export const getLecturerLoginLogs = async (req, res) => {
+  const { universityNumber, startDate, endDate, download, format } = req.query;
+
+  const filter = {};
+  if (universityNumber) filter.universityNumber = universityNumber;
+  if (startDate || endDate) {
+    filter.loginTime = {};
+    if (startDate) filter.loginTime.$gte = new Date(startDate);
+    if (endDate) filter.loginTime.$lte = new Date(endDate);
+  }
+
+  const logs = await LecturerLoginLog.find(filter).sort({ loginTime: -1 });
+
+  // 📄 Generate PDF
+  if (download === 'true' && format === 'pdf') {
+    const doc = new PDFDocument();
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=login_logs.pdf');
+    doc.pipe(res);
+
+    doc.fontSize(18).text('Lecturer Login Logs', { align: 'center' });
+    doc.moveDown();
+
+    logs.forEach(log => {
+      doc
+        .fontSize(12)
+        .text(`University Number: ${log.universityNumber}`)
+        .text(`Login Time: ${new Date(log.loginTime).toLocaleString()}`)
+        .moveDown();
+    });
+
+    doc.end();
+    return;
+  }
+
+ 
+
+  res.status(200).json(logs);
 };

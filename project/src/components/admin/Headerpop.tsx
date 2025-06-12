@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Bell, Menu } from "lucide-react";
-// import UserDetailsPopup from "./UserDetailsPop";
+import AdminDetailsPopup from "./AdminDetailsPopup";
 import { Link } from 'react-router-dom';
 
 interface HeaderProps {
@@ -69,8 +69,8 @@ const Header: React.FC<HeaderProps> = ({ toggleMobileMenu, isMobile }) => {
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
           </button>
         </Link>
-{/* 
-        <UserDetailsPopup>
+
+        <AdminDetailsPopup>
           <button
             className="bg-none border-none cursor-pointer p-0 w-12 h-12 overflow-hidden rounded-full"
             aria-label="User profile"
@@ -81,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ toggleMobileMenu, isMobile }) => {
               className="w-full h-full object-cover"
             />
           </button>
-        </UserDetailsPopup> */}
+        </AdminDetailsPopup>
       </div>
     </header>
   );
