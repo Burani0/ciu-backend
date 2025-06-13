@@ -18,7 +18,7 @@ const StudentLogin = () => {
   const handleLogin = async () => {
     setErrorMessage('');
     try {
-      const adminResponse = await axios.post('http://localhost:3001/api/admin/admin-login', {
+      const adminResponse = await axios.post('https://ciu-backend.onrender.com/api/admin/admin-login', {
         username: identifier,
         password,
       });
@@ -26,7 +26,7 @@ const StudentLogin = () => {
       return navigate('/cleartoken');
     } catch {
       try {
-        const lecturerResponse = await axios.post('http://localhost:3001/api/auth/login', {
+        const lecturerResponse = await axios.post('https://ciu-backend.onrender.com/api/auth/login', {
           universityNumber: identifier,
           password,
         });
