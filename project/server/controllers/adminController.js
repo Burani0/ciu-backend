@@ -4,6 +4,10 @@ import Admin from '../models/Admin.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { sendEmail } from '../utils/mailer.js';
+import LecturerLoginLog from '../models/LecturerLoginLog.js';
+import PDFDocument from 'pdfkit';
+import AdminToken from '../models/AdminToken.js';
+
 
 
 export const createCourse = async (req, res) => {
@@ -73,32 +77,7 @@ export const getAllCourses = async (req, res) => {
   res.status(200).json(courses);
 };
 
-
-
-export const createAdmin = async (req, res) => {
-  const { username, password } = req.body;
-
-  const existing = await Admin.findOne({ username });
-  if (existing) return res.status(400).json({ message: 'Username already exists' });
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const admin = new Admin({ username, password: hashedPassword });
-
-  await admin.save();
-  res.status(201).json({ message: 'Admin created successfully' });
-};
-
-export const adminLogin = async (req, res) => {
-  const { username, password } = req.body;
-
-  const admin = await Admin.findOne({ username });
-  if (!admin) return res.status(404).json({ message: 'Admin not found' });
-
-  const isMatch = await bcrypt.compare(password, admin.password);
-  if (!isMatch) return res.status(401).json({ message: 'Incorrect password' });
-
-  res.status(200).json({ message: 'Login successful' });
-};
+ 
 
 // GET all lecturers
 export const getAllLecturers = async (req, res) => {
@@ -125,6 +104,29 @@ export const getLecturerById = async (req, res) => {
 export const getAllAdmins = async (req, res) => {
   const admins = await Admin.find();
   res.status(200).json(admins);
+};
+
+//get admin by id
+export const getAdminById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Check if the ID is a valid MongoDB ObjectId
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid admin ID format' });
+    }
+
+    const admin = await Admin.findById(id).select('-password'); // Exclude password from response
+
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    res.status(200).json(admin);
+  } catch (error) {
+    console.error('Error fetching admin by ID:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 // UPDATE course
@@ -207,4 +209,115 @@ export const deleteAdmin = async (req, res) => {
   if (!deleted) return res.status(404).json({ message: 'Admin not found' });
 
   res.status(200).json({ message: 'Admin deleted successfully' });
+};
+
+export const getLecturerLoginLogs = async (req, res) => {
+  const { universityNumber, startDate, endDate, download, format } = req.query;
+
+  const filter = {};
+  if (universityNumber) filter.universityNumber = universityNumber;
+  if (startDate || endDate) {
+    filter.loginTime = {};
+    if (startDate) filter.loginTime.$gte = new Date(startDate);
+    if (endDate) filter.loginTime.$lte = new Date(endDate);
+  }
+
+  const logs = await LecturerLoginLog.find(filter).sort({ loginTime: -1 });
+
+  // 📄 Generate PDF
+  if (download === 'true' && format === 'pdf') {
+    const doc = new PDFDocument();
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=login_logs.pdf');
+    doc.pipe(res);
+
+    doc.fontSize(18).text('Lecturer Login Logs', { align: 'center' });
+    doc.moveDown();
+
+    logs.forEach(log => {
+      doc
+        .fontSize(12)
+        .text(`University Number: ${log.universityNumber}`)
+        .text(`Login Time: ${new Date(log.loginTime).toLocaleString()}`)
+        .moveDown();
+    });
+
+    doc.end();
+    return;
+  }
+
+ 
+
+  res.status(200).json(logs);
+};
+
+export const createAdmin = async (req, res) => {
+  const { first_name, last_name,  username, email, password } = req.body;
+
+  if ( !first_name|| !last_name|| !username || !email || !password) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  const existing = await Admin.findOne({ $or: [{ username }, { email }] });
+  if (existing) {
+    return res.status(400).json({ message: 'Username or email already exists' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const admin = new Admin({ first_name, last_name, username, email, password: hashedPassword });
+
+  await admin.save();
+
+  await sendEmail(
+    email,
+    'Admin Account Created',
+    `Username: ${username}\nPassword: ${password}`
+  );
+
+  res.status(201).json({ message: 'Admin created and credentials sent via email' });
+};
+
+export const adminLogin = async (req, res) => {
+  const { username, password } = req.body;
+
+  const admin = await Admin.findOne({ username });
+  if (!admin || !(await bcrypt.compare(password, admin.password))) {
+    return res.status(400).json({ message: 'Invalid credentials' });
+  }
+
+  const token = Math.floor(100000 + Math.random() * 900000).toString();
+  const tokenDoc = new AdminToken({ adminId: admin._id, token });
+
+  try {
+    await tokenDoc.save();
+    await sendEmail(admin.email, 'Login Verification Code', `Your code: ${token}`);
+    res.json({ message: 'Token sent to email' });
+  } catch (error) {
+    console.error('Email or token error:', error);
+    res.status(500).json({ message: 'Failed to send token email' });
+  }
+};
+
+
+export const clearToken = async (req, res) => {
+  const { username, token } = req.body;
+
+  if (!username || !token) {
+    return res.status(400).json({ message: 'username  and token are required' });
+  }
+
+  // Find the lecturer using the university number
+  const admin = await Admin.findOne({ username });
+  if (!admin) {
+    return res.status(404).json({ message: 'admin not found' });
+  }
+
+  // Check if the token matches the one stored for that lecturer
+  const tokenDoc = await AdminToken.findOne({ adminId: admin._id, token });
+  if (!tokenDoc) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+
+  // Token is valid
+  res.status(200).json({ message: 'Token verified', adminId: admin._id });
 };

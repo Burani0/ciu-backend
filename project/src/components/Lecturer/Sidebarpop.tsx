@@ -4,7 +4,7 @@ import {
   FileText,
   LogOut,
   Video,
-  // HelpCircle,
+  HelpCircle,
   ChevronDown,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -18,7 +18,7 @@ const Sidebar: React.FC = () => {
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, text: 'Dashboard', path: '/lecturerdashboard' },
     { icon: <FileText size={20} />, text: 'Courses', path: '/lecturer-courses' },
-    // { icon: <HelpCircle size={20} />, text: 'Question Bank', path: '/question-bank' },
+    { icon: <HelpCircle size={20} />, text: 'Timetable', path: '/timetable' },
     { icon: <Video size={20} />, text: 'Proctoring', path: '/join-viewer' },
     {
       icon: <FileText size={20} />,
