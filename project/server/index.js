@@ -419,10 +419,11 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import axios from 'axios';
-import PDFParser from 'pdf2json';
-import cors from 'cors';
-import OpenAI from 'openai';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const filename = fileURLToPath(import.meta.url);
+const currentDirname = dirname(filename);
 
 // Initialize Express app
 const app = express();
@@ -443,6 +444,7 @@ app.use(cors({
 
 // Create HTTP server and integrate with Socket.IO
 const httpServer = createServer(app);
+
 const io = new Server(httpServer, {
   cors: {
     origin: 'http://localhost:5173',
