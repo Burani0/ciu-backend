@@ -621,7 +621,7 @@ const Dashboard: FC = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await axios.get<DashboardData>('http://localhost:3001/api/admin/dashboard');
+        const response = await axios.get<DashboardData>('https://ciu-backend.onrender.com/api/admin/dashboard');
         setDashboardData(response.data);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
