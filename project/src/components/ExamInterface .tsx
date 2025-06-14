@@ -1,4 +1,3 @@
-// ExamInterface.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -26,12 +25,12 @@ const ExamInterface: React.FC = () => {
 
   useEffect(() => {
     const regNo = localStorage.getItem("studentRegNo");
-    const year = localStorage.getItem("StudyYear"); // ✅ Now available
+    const year = localStorage.getItem("StudyYear");
     const sem = localStorage.getItem("studentSem");
 
-    console.log("RegNo:", regNo);
-    console.log("StudyYear:", year);
-    console.log("Semester:", sem);
+    console.log("Retrieved from localStorage - RegNo:", regNo);
+    console.log("Retrieved from localStorage - StudyYear:", year);
+    console.log("Retrieved from localStorage - Semester:", sem);
 
     if (!regNo || !year || !sem) {
       setError("Missing login info. Please log in again.");
@@ -60,7 +59,6 @@ const ExamInterface: React.FC = () => {
         if (!Array.isArray(data)) {
           setExams([]);
         } else {
-          // Do not filter by course_status, show all exams returned by the API
           setExams(data);
         }
       })
@@ -78,8 +76,10 @@ const ExamInterface: React.FC = () => {
     localStorage.setItem("currentExamLink", exam.ExamLink);
     localStorage.setItem("currentExamName", exam.courseName);
     localStorage.setItem("currentExamID", exam.courseID);
+    localStorage.setItem("studentRegNo", exam.regno); // Store Registration Number
+
     // Extract examNo from ExamLink if present
-    let examNo = '';
+    let examNo = "";
     if (exam.ExamLink) {
       const match = exam.ExamLink.match(/ExamNo=([\w-]+)/);
       if (match) {
@@ -87,7 +87,15 @@ const ExamInterface: React.FC = () => {
         localStorage.setItem("currentExamNo", examNo);
       }
     }
-    // Add more fields if needed
+
+    // Log stored values to confirm
+    console.log("Stored in localStorage:");
+    console.log("currentExamLink:", localStorage.getItem("currentExamLink"));
+    console.log("currentExamName:", localStorage.getItem("currentExamName"));
+    console.log("currentExamID:", localStorage.getItem("currentExamID"));
+    console.log("studentRegNo:", localStorage.getItem("studentRegNo"));
+    console.log("currentExamNo:", localStorage.getItem("currentExamNo"));
+
     navigate("/proctoring");
   };
 

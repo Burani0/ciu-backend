@@ -174,17 +174,38 @@ const ProctoringPage: React.FC = () => {
   const handleBeginExam = () => {
     if (beginExamEnabled) {
       const examLink = localStorage.getItem("currentExamLink");
+      const examName = localStorage.getItem("currentExamName");
+      const examID = localStorage.getItem("currentExamID");
+      const studentRegNo = localStorage.getItem("studentRegNo");
+
+      // Store values in local storage
+      localStorage.setItem("currentExamName", examName || "");
+      localStorage.setItem("currentExamID", examID || "");
+      localStorage.setItem("studentRegNo", studentRegNo || "");
+      localStorage.setItem("currentExamFullLink", examLink || "");
+
+      //izlik
+
+ // Extract examNo from the link
+      let examNo = "";
       if (examLink) {
-        // Extract ExamNo from the link
-        const match = examLink.match(/ExamNo=(\d+)/);
-        if (match && match[1]) {
-          const examNo = match[1];
+        const match = examLink.match(/ExamNo=([\w-]+)/);
+        if (match) {
+          examNo = match[1];
           localStorage.setItem("currentExamNo", examNo);
-          localStorage.setItem("currentExamFullLink", examLink);
-          navigate("/home"); // Go to Home
-        } else {
-          alert("Invalid exam link format. Cannot extract ExamNo.");
         }
+      }
+
+      // Log stored values to confirm
+      console.log("Stored in localStorage:");
+      console.log("currentExamName:", examName);
+      console.log("currentExamID:", examID);
+      console.log("studentRegNo:", studentRegNo);
+      console.log("currentExamNo:", examNo);
+      console.log("currentExamFullLink:", examLink);
+
+      if (examLink) {
+        navigate("/home"); // Go to Home
       } else {
         alert("No exam link found. Please start from the exam list.");
       }
@@ -194,7 +215,7 @@ const ProctoringPage: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center  items-center h-screen bg-gray-100 px-4">
+    <div className="flex justify-center items-center h-screen bg-gray-100 px-4">
       <div className="w-full max-w-xl bg-white shadow-xl rounded-lg p-6">
         <h1 className="text-center text-2xl font-bold mb-4">PROCTORING WINDOW</h1>
 
