@@ -151,7 +151,7 @@ const fetchLoggedInUserData = async (
       return;
     }
 
-    const response = await axios.get(`http://localhost:3001/api/admin/lecturers/${id}`);
+    const response = await axios.get(`https://ciu-backend.onrender.com/api/admin/lecturers/${id}`);
     const { firstName, lastName, email, universityNumber } = response.data;
 
     setUserData({

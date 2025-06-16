@@ -272,7 +272,7 @@ const TokenVerificationPage = () => {
     const storedLecturerId = localStorage.getItem('lecturerId');
     console.log('Stored lecturerId on page load:', storedLecturerId);
     if (!storedLecturerId) {
-      navigate('/login');
+      navigate('/verify-token');
     }
   }, [navigate]);
 
