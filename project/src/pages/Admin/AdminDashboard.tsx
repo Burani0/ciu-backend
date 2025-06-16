@@ -639,9 +639,7 @@ const Dashboard: FC = () => {
     setLoading(true);
     setError('');
     try {
-      const url = `https://eadmin.ciu.ac.ug/API/ExamTimeTableAPI.aspx?acadyr=${encodeURIComponent(
-        academicYear
-      )}&sem=${encodeURIComponent(semester)}&StartDate=${encodeURIComponent(startDate)}`;
+      const url = `https://ciu-backend.onrender.com/api/exam-timetable?acadyr=${academicYear}&sem=${semester}&StartDate=${startDate}`;
       const response = await axios.get(url);
       setTimetable(response.data);
     } catch (err: any) {

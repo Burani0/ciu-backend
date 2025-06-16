@@ -14,7 +14,7 @@ import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import lecturerRoutes from './routes/lecturerRoutes.js';
-
+import proxyRoutes from './routes/proxy.js';
 
 
 // const examRoutes = require('./routes/exams');
@@ -44,6 +44,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/lecturer', lecturerRoutes);
+app.use('/api', proxyRoutes);
 // app.use('/api/exams', examRoutes);
 
 const io = new Server(httpServer, {
