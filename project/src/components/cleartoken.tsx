@@ -68,7 +68,7 @@ const Cleartoken = () => {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://ciu-backend.onrender.com/api/admin/cleartoken', {
+      await axios.post('https://ciu-backend.onrender.com/api/admin/cleartoken', {
         username,
         token,
       });

@@ -281,7 +281,7 @@ const TokenVerificationPage = () => {
     console.log('Attempting verification with:', { universityNumber, token });
 
     try {
-      const response = await axios.post('http://ciu-backend.onrender.com/api/auth/verify', {
+      const response = await axios.post('https://ciu-backend.onrender.com/api/auth/verify', {
         universityNumber,
         token,
       });
