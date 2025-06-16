@@ -9,7 +9,7 @@ import cors from 'cors';
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import examRoutes from './routes/examRoutes.js'; // Explicitly include .js extension
+import examRoutes from './routes/examRoutes.js'; 
 
 
 dotenv.config();

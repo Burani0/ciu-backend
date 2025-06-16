@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye } from 'lucide-react';
 
 function JoinViewer() {
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState('');
+
+  useEffect(() => {
+    const courseId = localStorage.getItem('courseId');
+    if (courseId) {
+      setRoomId(courseId);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

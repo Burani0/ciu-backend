@@ -418,13 +418,6 @@ function Home() {
               Join as Streamer
             </button>
 
-            <button
-              onClick={handleJoinAsViewer}
-              className="flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white bg-[#48bb78] hover:bg-[#38a169]"
-            >
-              <Eye className="h-5 w-5 mr-2" />
-              Join as Viewer
-            </button>
           </div>
         </form>
       </div>

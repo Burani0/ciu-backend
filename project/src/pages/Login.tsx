@@ -8,9 +8,8 @@ import { FaLock, FaUser } from "react-icons/fa";
 const StudentLogin = () => {
   const navigate = useNavigate();
 
-  const [regNo, setRegNo] = useState("");
-  const [academicYear, setAcademicYear] = useState("");
-  const [semester, setSemester] = useState("");
+  const [selectedUser, setSelectedUser] = useState("Student");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -96,3 +95,5 @@ const StudentLogin = () => {
 };
 
 export default StudentLogin;
+
+
