@@ -7,9 +7,13 @@ import cors from 'cors';
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+ 
 import examRoutes from './routes/examRoutes.js'; 
 
-
+ 
+import lecturerRoutes from './routes/lecturerRoutes.js';
+import proxyRoutes from './routes/proxy.js';
+ 
 
 import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
@@ -49,6 +53,11 @@ mongoose.connect(process.env.MONGO_URI, {
 // const httpServer = createServer(app);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
+ 
+app.use('/api/lecturer', lecturerRoutes);
+app.use('/api', proxyRoutes);
+// app.use('/api/exams', examRoutes);
+ 
 
 const io = new Server(httpServer, {
   cors: {
@@ -138,9 +147,10 @@ io.on('connection', (socket) => {
   });
 });
 
-
-// Start the server
+ 
 const PORT = process.env.PORT || 3001;
+
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+ 

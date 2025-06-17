@@ -153,7 +153,7 @@ const fetchAdminData = async (
       return;
     }
 
-    const response = await axios.get(`http://localhost:3001/api/admins/${id}`, {
+    const response = await axios.get(`https://ciu-backend.onrender.com/api/admins/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

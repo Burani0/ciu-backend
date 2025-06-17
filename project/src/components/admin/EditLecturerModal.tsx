@@ -36,8 +36,8 @@ const EditLecturerModal: React.FC<EditLecturerModalProps> = ({
     const fetchLecturerAndCourses = async () => {
       try {
         const [lecturerRes, coursesRes] = await Promise.all([
-          axios.get(`http://localhost:3001/api/admin/lecturers/${lecturerId}`),
-          axios.get('http://localhost:3001/api/admin/courses'),
+          axios.get(`https://ciu-backend.onrender.com/api/admin/lecturers/${lecturerId}`),
+          axios.get('https://ciu-backend.onrender.com/api/admin/courses'),
         ]);
 
         const lecturer = lecturerRes.data;
