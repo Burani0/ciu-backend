@@ -1,5 +1,3 @@
-
-
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -12,11 +10,24 @@ import dotenv from 'dotenv';
 import examRoutes from './routes/examRoutes.js'; 
 
 
+
+import { connectDB } from './config/db.js';
+import adminRoutes from './routes/adminRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+
+
 dotenv.config();
+const filename = fileURLToPath(import.meta.url);
+const currentDirname = dirname(filename);
 
 // Initialize Express app
 const app = express();
 app.use(express.json());
+const httpServer = createServer(app);
+app.use(cors());
+app.use(express.json());
+connectDB();
+
 
 // Enable CORS for the frontend origin
 app.use(cors({
@@ -35,7 +46,10 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch((err) => console.error('MongoDB connection error:', err));
 
 // Create HTTP server and integrate with Socket.IO
-const httpServer = createServer(app);
+// const httpServer = createServer(app);
+app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+
 const io = new Server(httpServer, {
   cors: {
     origin: 'http://localhost:5173',
@@ -137,4 +151,3 @@ const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-

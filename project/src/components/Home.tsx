@@ -364,14 +364,14 @@ function Home() {
     }
   };
 
-  const handleJoinAsViewer = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (roomId.trim()) {
-      navigate(`/view/${roomId.trim()}`);
-    } else {
-      setError('Please enter a valid Room ID.');
-    }
-  };
+  // const handleJoinAsViewer = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (roomId.trim()) {
+  //     navigate(`/view/${roomId.trim()}`);
+  //   } else {
+  //     setError('Please enter a valid Room ID.');
+  //   }
+  // };
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6">
