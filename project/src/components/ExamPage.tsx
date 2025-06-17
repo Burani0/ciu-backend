@@ -1,17 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
 import styles from './Exam.module.css';
 import * as faceapi from 'face-api.js';
 import { emitStream, joinRoom, leaveRoom } from '../config/socket';
 
-// Type definitions
-type Timer = {
-  hours: number;
-  minutes: number;
-  seconds: number;
-};
-
-type SecurityChecks = {
+export type Timer = { hours: number; minutes: number; seconds: number };
+export type SecurityChecks = {
   fullscreen: boolean;
   safeBrowser: boolean;
   noScreenCapture: boolean;
@@ -20,49 +15,13 @@ type SecurityChecks = {
   noPrintScreen: boolean;
   noMultipleWindows: boolean;
 };
-
-type Violation = {
-  type: string;
-  timestamp: string;
-};
-
-type Question = {
-  id: string;
-  text: string;
-  type: 'multiple-choice' | 'short-answer' | 'essay';
-  options?: string[];
-};
-
-type Section = {
-  title: string;
-  description: string;
-  questions: Question[];
-};
-
-type ExamData = {
-  instructions: {
-    title: string;
-    content: string[];
-  };
-  sections: {
-    [key: string]: Section;
-  };
-};
+export type Violation = { type: string; timestamp: string };
+export type Answer = { section: string; content: string };
 
 const ExamPage: React.FC = () => {
-  const [showInstructions, setShowInstructions] = useState<boolean>(true);
-  const [currentSection, setCurrentSection] = useState<string>('instructions');
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [timer, setTimer] = useState<Timer>({
-    hours: 3,
-    minutes: 0,
-    seconds: 0
-  });
+  const [timer, setTimer] = useState<Timer>({ hours: 3, minutes: 0, seconds: 0 });
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const [cameraActive, setCameraActive] = useState<boolean>(false);
-  // const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  // const [fullscreenAttempts, setFullscreenAttempts] = useState<number>(0);
   const [screenCaptureAttempts, setScreenCaptureAttempts] = useState<number>(0);
   const [securityChecks, setSecurityChecks] = useState<SecurityChecks>({
     fullscreen: false,
@@ -71,13 +30,30 @@ const ExamPage: React.FC = () => {
     noCopyPaste: true,
     noDevTools: false,
     noPrintScreen: false,
-    noMultipleWindows: false
+    noMultipleWindows: false,
   });
-  const [isReady, setIsReady] = useState<boolean>(false);
   const [violations, setViolations] = useState<Violation[]>([]);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [faceDetectionError, setFaceDetectionError] = useState<string | null>(null);
   const [isModelLoaded, setIsModelLoaded] = useState<boolean>(false);
+  const [smoothedDetection, setSmoothedDetection] = useState<0 | 1 | 2>(1);
+  const [noFaceTimer, setNoFaceTimer] = useState(0);
+  const [multiFaceTimer, setMultiFaceTimer] = useState(0);
+  const [examData, setExamData] = useState({
+    examLink: '',
+    examNo: '',
+    examName: '',
+    courseId: '',
+    studentRegNo: '',
+  });
+  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [currentSection, setCurrentSection] = useState<string>('A');
+  const [sections, setSections] = useState<string[]>(['A', 'B', 'C']); // Default, updated by API
+  const [isSectioned, setIsSectioned] = useState<boolean>(true); // Determines if exam has sections
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [submissionStatus, setSubmissionStatus] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // New loading state
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const faceDetectionInterval = useRef<NodeJS.Timeout | null>(null);
@@ -86,230 +62,174 @@ const ExamPage: React.FC = () => {
   const securityCheckInterval = useRef<NodeJS.Timeout | null>(null);
   const devToolsCheckInterval = useRef<NodeJS.Timeout | null>(null);
   const frameInterval = useRef<NodeJS.Timeout | null>(null);
-  const detectionBufferRef = useRef<number[]>([]); // 0 = no face, 1 = one face, 2 = multiple faces
+  const detectionBufferRef = useRef<number[]>([]);
   const navigate = useNavigate();
-  const { roomId } = useParams();
+  const { roomId } = useParams<{ roomId: string }>();
 
-  const [smoothedDetection, setSmoothedDetection] = useState<0 | 1 | 2>(1); // default to 1 (one face)
-  const [noFaceTimer, setNoFaceTimer] = useState(0);
-  const [multiFaceTimer, setMultiFaceTimer] = useState(0);
-
-  const [examData, setExamData] = useState<ExamData | null>(null);
-  const [loadingExam, setLoadingExam] = useState<boolean>(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
-  // Utility to check if browser is supported (Chrome, Edge, Safari)
   const isSupportedBrowser = () => {
     const ua = window.navigator.userAgent;
-    return (
-      /Chrome\//.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua) // Chrome (not Edge or Opera)
-      || /Edg\//.test(ua) // Edge
-      || /Safari\//.test(ua) && !/Chrome\//.test(ua) // Safari (not Chrome)
-    );
+    return /Chrome\/|Edg\/|Safari\//.test(ua) && !/OPR\//.test(ua);
   };
 
-  // Fetch exam data from API (simulate with a timeout or replace with real fetch)
+  // Fetch exam data and PDF before rendering
   useEffect(() => {
-    const fetchExam = async () => {
-      setLoadingExam(true);
-      setFetchError(null);
+    const fetchExamData = async () => {
+      const examNo = localStorage.getItem('currentExamNo') || roomId || '';
+      if (!examNo) {
+        setPdfError('No exam number provided.');
+        setIsLoading(false);
+        console.error('Error: No exam number available');
+        return;
+      }
+
+      const examLink = `https://eadmin.ciu.ac.ug/API/doc_verification.aspx?doc=Exam&ExamNo=${examNo}`;
+      console.log('Fetching exam data from:', examLink);
+
       try {
-        // Replace this with your real API call
-        // const response = await fetch('/api/exam');
-        // const data = await response.json();
-        // setExamData(data);
-        // Simulate API: supports both essay-only and mixed papers
-        const simulatedExam: ExamData = {
-          instructions: {
-            title: "INSTITUTE OF ALLIED HEALTH SCIENCES (IAHS)",
-            content: [
-              "BML 2102-D: Medical Microbiology I",
-              "Academic Year: 2023/2024",
-              "Exam Date: Wednesday 13th December, 2023",
-              "Time Allowed: 03:00 hours [12:00 AM - 12:00 AM]",
-              "Student Registration Number: ________________________________",
-              "",
-              "INSTRUCTIONS TO CANDIDATES",
-              "1. This exam may contain multiple choice, short answer, or essay questions.",
-              "2. Answer all questions as instructed in each section.",
-              "3. EXAM MALPRACTICE will lead to TOTAL DISQUALIFICATION."
-            ]
-          },
-          sections: {
-            A: {
-              title: "Section A",
-              description: "Multiple Choice Questions",
-              questions: [
-                { id: "A1", text: "What is the capital city of Uganda?", options: ["Kampala", "Nairobi", "Kigali", "Dodoma"], type: "multiple-choice" },
-                { id: "A2", text: "Which of the following is NOT a programming language?", options: ["Python", "JavaScript", "HTML", "Java"], type: "multiple-choice" }
-              ]
-            },
-            B: {
-              title: "Section B",
-              description: "Essay Questions",
-              questions: [
-                { id: "B1", text: "Discuss the impact of AI on healthcare.", type: "essay" },
-                { id: "B2", text: "Explain the importance of data security.", type: "essay" }
-              ]
-            },
-            C: {
-              title: "Section C",
-              description: "Short Answer Questions",
-              questions: [
-                { id: "C1", text: "Define qualitative research.", type: "short-answer" },
-                { id: "C2", text: "List two ethical principles in research.", type: "short-answer" }
-              ]
-            }
-          }
-        };
-        setTimeout(() => {
-          setExamData(simulatedExam);
-          setLoadingExam(false);
-        }, 500); // Simulate network delay
+        // Fetch PDF
+        const pdfResponse = await axios.get(examLink, {
+          responseType: 'blob',
+          withCredentials: true,
+        });
+        const url = window.URL.createObjectURL(new Blob([pdfResponse.data], { type: 'application/pdf' }));
+        setPdfUrl(url);
+        setPdfError(null);
+
+        // Fetch section configuration (mocked for now, replace with actual API)
+        const sectionResponse = { hasSections: true, sections: ['A', 'B', 'C'] }; // Mock
+        setIsSectioned(sectionResponse.hasSections);
+        setSections(sectionResponse.hasSections ? sectionResponse.sections : []);
+        if (!sectionResponse.hasSections) {
+          setCurrentSection('nonSectioned');
+        }
+
+        // Set exam data from localStorage
+        const examLinkData = localStorage.getItem('currentExamFullLink') || '';
+        const examName = localStorage.getItem('currentExamName') || '';
+        const courseId = localStorage.getItem('currentExamID') || '';
+        const studentRegNo = localStorage.getItem('studentRegNo') || '';
+        setExamData({ examLink: examLinkData, examNo, examName, courseId, studentRegNo });
+
+        const savedAnswers = Object.keys(localStorage)
+          .filter((key) => key.startsWith('answer_'))
+          .map((key) => ({
+            section: key.replace('answer_', ''),
+            content: localStorage.getItem(key) || '',
+          }))
+          .filter((ans) => ans.section && ans.content.trim());
+        setAnswers(savedAnswers);
+
+        setIsTimerRunning(true);
+        initializeCamera();
       } catch (err) {
-        setFetchError('Failed to load exam.');
-        setLoadingExam(false);
+        console.error('Error fetching exam data:', err);
+        setPdfError('Failed to load exam data. Check console for details.');
+      } finally {
+        setIsLoading(false); // Set loading to false once data is fetched or an error occurs
       }
     };
-    fetchExam();
-  }, []);
+
+    fetchExamData();
+  }, [roomId]);
 
   useEffect(() => {
-    if (examData && Object.keys(examData.sections).length > 0) {
-      const firstSectionKey = Object.keys(examData.sections)[0];
-      setCurrentSection(firstSectionKey);
-      const firstQuestion = examData.sections[firstSectionKey]?.questions?.[0] || null;
-      setCurrentQuestion(firstQuestion);
-    }
-  }, [examData]);
+    if (!isTimerRunning) return;
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        let { hours, minutes, seconds } = prev;
+        seconds--;
+        if (seconds < 0) {
+          seconds = 59;
+          minutes--;
+          if (minutes < 0) {
+            minutes = 59;
+            hours--;
+            if (hours < 0) {
+              submitExam();
+              return prev;
+            }
+          }
+        }
+        return { hours, minutes, seconds };
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isTimerRunning]);
 
-  // Record violations for audit trail
   const recordViolation = (type: string): void => {
-    const violation: Violation = {
-      type,
-      timestamp: new Date().toISOString(),
-    };
-    console.log("Violation recorded:", violation);
-    setViolations(prev => [...prev, violation]);
+    const violation: Violation = { type, timestamp: new Date().toISOString() };
+    setViolations((prev) => [...prev, violation]);
+    console.log('Violation recorded:', violation);
   };
 
-  // Load face detection model
   useEffect(() => {
     const loadModels = async (): Promise<void> => {
       try {
-        await faceapi.nets.tinyFaceDetector.load('/models/tiny_face_detector_model-weights_manifest.json');
-        console.log("Face detection model loaded successfully");
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
         setIsModelLoaded(true);
-        setFaceDetectionError(null);
+        console.log('Face detection models loaded successfully');
       } catch (error) {
-        console.error("Error loading face detection model:", error);
-        setFaceDetectionError("Face detection model failed to load. Please refresh the page.");
+        setFaceDetectionError('Face detection model failed to load.');
+        console.log('Face detection model load error:', error);
       }
     };
     loadModels();
   }, []);
 
-  // Detection constants
-  const DETECTION_BUFFER_SIZE = 6; // ~3 seconds if interval is 500ms
-  const NO_FACE_WARNING_SECONDS = 3; // How long before warning for no face
+  const DETECTION_BUFFER_SIZE = 6;
+  const NO_FACE_WARNING_SECONDS = 3;
   const MULTIPLE_FACE_WARNING_SECONDS = 2;
 
-  // Remove buffer for 'no face' warning, use only latest detection for instant feedback
   const detectFaces = async (video: HTMLVideoElement): Promise<void> => {
+    if (!video || !isModelLoaded) return;
     try {
-      if (!video || !isModelLoaded) return;
-      const detections = await faceapi.detectAllFaces(
-        video,
-        new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 })
-      );
-      let detectionType: 0 | 1 | 2 = 0;
-      if (detections.length === 1) detectionType = 1;
-      else if (detections.length > 1) detectionType = 2;
-
-      // Only use buffer for multi-face warning
-      if (detectionType === 2) {
-        detectionBufferRef.current.push(2);
-        if (detectionBufferRef.current.length > DETECTION_BUFFER_SIZE) {
-          detectionBufferRef.current.shift();
-        }
-      } else {
-        detectionBufferRef.current = [];
-      }
-
-      // For instant no-face/one-face feedback, update smoothedDetection immediately
-      setSmoothedDetection(detectionType);
+      const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }));
+      let detectionType: 0 | 1 | 2 = detections.length === 1 ? 1 : detections.length > 1 ? 2 : 0;
+      detectionBufferRef.current.push(detectionType);
+      if (detectionBufferRef.current.length > DETECTION_BUFFER_SIZE) detectionBufferRef.current.shift();
+      const smoothedType = detectionBufferRef.current.reduce((acc, val) => acc + val, 0) >= DETECTION_BUFFER_SIZE ? 2 : detectionType;
+      setSmoothedDetection(smoothedType);
+      console.log('Face detection:', { detections: detections.length, smoothedType });
     } catch (error) {
-      console.error('Face detection error:', error);
       setFaceDetectionError('Face detection failed. Please check your camera.');
+      console.log('Face detection error:', error);
     }
   };
 
-  // Timers for warnings (instant for no face, buffered for multi-face)
   useEffect(() => {
+    if (!detectionBufferRef.current) detectionBufferRef.current = [];
     let noFaceInt: NodeJS.Timeout | undefined;
     let multiFaceInt: NodeJS.Timeout | undefined;
-
-    // No face warning: instant reset
-    if (smoothedDetection === 0) {
-      noFaceInt = setInterval(() => setNoFaceTimer(t => t + 1), 1000);
-    } else {
-      setNoFaceTimer(0);
-    }
-
-    // Multi-face warning: only show if buffer is stable
-    const multiFaceBufferStable = detectionBufferRef.current.length === DETECTION_BUFFER_SIZE && detectionBufferRef.current.every(v => v === 2);
-    if (multiFaceBufferStable) {
-      multiFaceInt = setInterval(() => setMultiFaceTimer(t => t + 1), 1000);
-    } else {
-      setMultiFaceTimer(0);
-    }
-
-    return () => {
-      if (noFaceInt) clearInterval(noFaceInt);
-      if (multiFaceInt) clearInterval(multiFaceInt);
-    };
+    if (smoothedDetection === 0) noFaceInt = setInterval(() => setNoFaceTimer((t) => t + 1), 1000);
+    else setNoFaceTimer(0);
+    const multiFaceBufferStable = detectionBufferRef.current.length === DETECTION_BUFFER_SIZE && detectionBufferRef.current.every((v) => v === 2);
+    if (multiFaceBufferStable) multiFaceInt = setInterval(() => setMultiFaceTimer((t) => t + 1), 1000);
+    else setMultiFaceTimer(0);
+    return () => { if (noFaceInt) clearInterval(noFaceInt); if (multiFaceInt) clearInterval(multiFaceInt); };
   }, [smoothedDetection]);
 
   const showNoFaceWarning = smoothedDetection === 0 && noFaceTimer >= NO_FACE_WARNING_SECONDS;
-  const showMultiFaceWarning = detectionBufferRef.current.length === DETECTION_BUFFER_SIZE && detectionBufferRef.current.every(v => v === 2) && multiFaceTimer >= MULTIPLE_FACE_WARNING_SECONDS;
-  // Only show 'Face Detected' if exactly one face is detected and NOT when multiple faces are present
-  const showFaceDetected = smoothedDetection === 1 && detectionBufferRef.current.length === 0;
+  const showMultiFaceWarning = detectionBufferRef.current.length === DETECTION_BUFFER_SIZE && detectionBufferRef.current.every((v) => v === 2) && multiFaceTimer >= MULTIPLE_FACE_WARNING_SECONDS;
+  const showFaceDetected = smoothedDetection === 1;
 
-  // Enhanced camera initialization
   const initializeCamera = async (): Promise<void> => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { min: 640, ideal: 1280 },
-          height: { min: 480, ideal: 720 },
-          facingMode: 'user',
-          frameRate: { ideal: 30 }
-        }
-      });
-
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { min: 640, ideal: 1280 }, height: { min: 480, ideal: 720 }, facingMode: 'user', frameRate: { ideal: 30 } } });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await new Promise((resolve) => {
-          if (videoRef.current) {
-            videoRef.current.onloadedmetadata = () => {
-              videoRef.current?.play().then(resolve);
-            };
-          }
-        });
+        await new Promise((resolve) => { if (videoRef.current) videoRef.current.onloadedmetadata = () => videoRef.current?.play().then(resolve); });
         setCameraActive(true);
         setCameraError(null);
-        // Join the room for live streaming
         if (roomId) joinRoom(roomId);
-        // Start face detection and frame streaming
         startFrameStreaming();
+        console.log('Camera initialized successfully');
       }
     } catch (err) {
-      console.error("Camera initialization error:", err);
-      setCameraError("Camera access denied or not available");
+      setCameraError('Camera access denied or not available');
+      console.log('Camera initialization error:', err);
     }
   };
 
-  // Frame streaming for live proctoring
   const startFrameStreaming = () => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -322,628 +242,291 @@ const ExamPage: React.FC = () => {
         emitStream(frame);
       }
     }, 100);
+    console.log('Started frame streaming');
   };
 
-  // Stop camera and face detection
   const stopCamera = (): void => {
     if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
+      (videoRef.current.srcObject as MediaStream).getTracks().forEach((track) => track.stop());
       setCameraActive(false);
     }
-    if (faceDetectionInterval.current) {
-      clearInterval(faceDetectionInterval.current);
-    }
-    if (frameInterval.current) {
-      clearInterval(frameInterval.current);
-    }
-    // Leave the room when done
+    if (faceDetectionInterval.current) clearInterval(faceDetectionInterval.current);
+    if (frameInterval.current) clearInterval(frameInterval.current);
     leaveRoom();
+    console.log('Camera stopped');
   };
 
-  // Prevent screen capture
   const preventScreenCapture = async (): Promise<void> => {
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          displaySurface: 'monitor'
-        }
-      });
-     
-      stream.getTracks().forEach(track => {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'monitor' } });
+      stream.getTracks().forEach((track) => {
         track.stop();
-        setScreenCaptureAttempts(prev => prev + 1);
-        recordViolation("Screen capture attempt detected");
-       
+        setScreenCaptureAttempts((prev) => prev + 1);
+        recordViolation('Screen capture attempt detected');
         if (screenCaptureAttempts >= 1) {
-          alert("Screen capture detected. Your exam will be submitted automatically.");
+          alert('Screen capture detected. Your exam will be submitted automatically.');
           submitExam();
         }
       });
     } catch (err) {
-      console.log("Screen capture prevention active");
+      console.log('Screen capture prevention active');
     }
   };
 
-  // Check for developer tools
   const isDevToolsOpen = (): boolean => {
-    if (process.env.NODE_ENV === 'development') {
-      return false;
-    }
-   
+    if (process.env.NODE_ENV === 'development') return false;
     const threshold = 160;
-    return (
-      window.outerHeight - window.innerHeight > threshold ||
-      window.outerWidth - window.innerWidth > threshold
-    );
+    return window.outerHeight - window.innerHeight > threshold || window.outerWidth - window.innerWidth > threshold;
   };
 
-  // Enhanced security check
   const performSecurityCheck = (): void => {
     if (!isTimerRunning) return;
-
     const checks: SecurityChecks = {
       fullscreen: Boolean(document.fullscreenElement),
-      safeBrowser: false,
+      safeBrowser: isSupportedBrowser(),
       noScreenCapture: screenCaptureAttempts === 0,
       noCopyPaste: true,
       noDevTools: !isDevToolsOpen(),
       noPrintScreen: !window.matchMedia('print').matches,
-      noMultipleWindows: window.outerHeight === window.innerHeight &&
-                        window.outerWidth === window.innerWidth
+      noMultipleWindows: window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth,
     };
-
     setSecurityChecks(checks);
-
-    if (!checks.fullscreen || !checks.safeBrowser ||
-        !checks.noScreenCapture || !checks.noDevTools || !checks.noMultipleWindows) {
-      recordViolation("Security check failed");
+    console.log('Security checks:', checks);
+    if (!checks.noScreenCapture || !checks.noDevTools || !checks.noMultipleWindows) {
+      recordViolation('Security check failed');
       submitExam();
     }
   };
 
-  // Enhanced security monitoring
   const startSecurityMonitoring = (): void => {
-    if (securityCheckInterval.current) {
-      clearInterval(securityCheckInterval.current);
-    }
-
-    if (!isTimerRunning) {
-      return;
-    }
-
+    if (securityCheckInterval.current) clearInterval(securityCheckInterval.current);
+    if (!isTimerRunning) return;
     securityCheckInterval.current = setInterval(() => {
       performSecurityCheck();
       preventScreenCapture();
-
       if (isDevToolsOpen()) {
-        recordViolation("Developer tools detected");
-        alert("Developer tools detected. Your exam will be submitted automatically.");
+        recordViolation('Developer tools detected');
+        alert('Developer tools detected. Your exam will be submitted automatically.');
         submitExam();
       }
-
       if (window.matchMedia('print').matches) {
-        recordViolation("Print screen attempt detected");
-        alert("Print screen detected. Your exam will be submitted automatically.");
+        recordViolation('Print screen attempt detected');
+        alert('Print screen detected. Your exam will be submitted automatically.');
         submitExam();
       }
-
-      if (window.outerHeight !== window.innerHeight ||
-          window.outerWidth !== window.innerWidth) {
-        recordViolation("Multiple windows detected");
-        alert("Multiple windows detected. Your exam will be submitted automatically.");
+      if (window.outerHeight !== window.innerHeight || window.outerWidth !== window.innerWidth) {
+        recordViolation('Multiple windows detected');
+        alert('Multiple windows detected. Your exam will be submitted automatically.');
         submitExam();
       }
     }, 500);
+    console.log('Started security monitoring');
   };
 
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (faceDetectionInterval.current) clearInterval(faceDetectionInterval.current);
-      //commenting out fullscreen checks for now
-      // if (fullscreenCheckInterval.current) clearInterval(fullscreenCheckInterval.current);
-      // if (fullscreenLockInterval.current) clearInterval(fullscreenLockInterval.current);
-      if (securityCheckInterval.current) clearInterval(securityCheckInterval.current);
-      if (devToolsCheckInterval.current) clearInterval(devToolsCheckInterval.current);
-      if (frameInterval.current) clearInterval(frameInterval.current);
-      stopCamera();
-    };
-  }, []);
-
-  const handleSectionChange = (section: string): void => {
-    setCurrentSection(section);
-    const sectionQuestions = examData?.sections[section]?.questions || [];
-    setCurrentQuestion(sectionQuestions.length > 0 ? sectionQuestions[0] : null);
-  };
-
-  const handleQuestionChange = (question: Question | null | undefined): void => {
-    if (question) setCurrentQuestion(question);
-  };
-
-  const handleAnswerChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
-    const value = e.target.value;
-    if ((e.nativeEvent as any).inputType === 'insertFromPaste') {
-      e.preventDefault();
-      recordViolation("Attempted to paste in answer field");
-      return;
-    }
-    if (currentQuestion) {
-      setAnswers(prev => ({
-        ...prev,
-        [currentQuestion.id]: value
-      }));
-    }
-  };
-
-  const handleMultipleChoiceAnswer = (option: string): void => {
-    if (currentQuestion) {
-      setAnswers(prev => ({
-        ...prev,
-        [currentQuestion.id]: option
-      }));
-    }
-  };
-
-  const handleSaveAnswer = (): void => {
-    localStorage.setItem('examAnswers', JSON.stringify(answers));
-    console.log(`Answer saved for question ${currentQuestion?.id}`);
-   
-    const isFullscreenActive = document.fullscreenElement;
-   
-    if (!isFullscreenActive) {
-      const docElement = document.documentElement;
-      if (docElement.requestFullscreen) {
-        docElement.requestFullscreen();
-      }
-    }
-  };
-
-  const submitExam = (): void => {
-    localStorage.setItem('examAnswers', JSON.stringify(answers));
-    console.log("Submitting exam answers:", answers);
-   
+  const submitExam = async (): Promise<void> => {
     setIsTimerRunning(false);
     stopCamera();
-   
-    if (faceDetectionInterval.current) clearInterval(faceDetectionInterval.current);
-    // comment out fullscreen checks for now
-    // if (fullscreenCheckInterval.current) clearInterval(fullscreenCheckInterval.current);
-    // if (fullscreenLockInterval.current) clearInterval(fullscreenLockInterval.current);
-    if (securityCheckInterval.current) clearInterval(securityCheckInterval.current);
-    if (devToolsCheckInterval.current) clearInterval(devToolsCheckInterval.current);
-   
-    navigate('/exam-complete');
-  };
+    setSubmissionStatus('Submitting...');
 
-  // Enhanced camera container with improved status display
-  const renderCameraContainer = (): JSX.Element => (
-    // <div className={styles.cameraContainer}>
-    //   <h4>Proctoring Camera</h4>
-    //   <div className={styles.videoWrapper}>
-    //     <video
-    //       ref={videoRef}
-    //       autoPlay
-    //       playsInline
-    //       muted
-    //       className={styles.cameraVideo}
-    //     />
-    //     <div className={`${styles.detectionOverlay} ${
-    //       !isModelLoaded ? styles.loading :
-    //       showMultiFaceWarning ? styles.warning :
-    //       showFaceDetected ? styles.detected :
-    //       showNoFaceWarning ? styles.warning :
-    //       styles.noFace
-    //     }`}>
-    //       <div className={styles.detectionStatus}>
-    //         {!isModelLoaded ? (
-    //           <div className={styles.loadingMessage}>
-    //             <span className={styles.loadingIcon}>⌛</span> Loading face detection...
-    //           </div>
-    //         ) : faceDetectionError ? (
-    //           <div className={styles.errorMessage}>
-    //             <span className={styles.errorIcon}>⚠️</span>
-    //             {faceDetectionError}
-    //           </div>
-    //         ) : showNoFaceWarning ? (
-    //           <div className={styles.warningMessage}>
-    //             <span className={styles.warningIcon}>⚠️ No Face Detected for {noFaceTimer}s</span>
-    //           </div>
-    //         ) : showMultiFaceWarning ? (
-    //           <div className={styles.warningMessage}>
-    //             <span className={styles.warningIcon}>⚠️ Multiple Faces Detected for {multiFaceTimer}s</span>
-    //           </div>
-    //         ) : showFaceDetected ? (
-    //           <div className={styles.successMessage}>
-    //             <span className={styles.successIcon}>✓ Face Detected</span>
-    //           </div>
-    //         ) : (
-    //           <div className={styles.statusMessage}>
-    //             <span className={styles.warningIcon}>⚠️ Detecting...</span>
-    //           </div>
-    //         )}
-    //       </div>
-    //     </div>
-    //   </div>
-    // </div>
-    <div className="fixed top-5 right-5 w-[250px] bg-[#f5f5f5] border border-[#ddd] rounded-lg p-2.5 shadow-[0_2px_10px_rgba(0,0,0,0.1)] z-[1000] mt-10">
-  <h4 className="mb-2.5 text-[16px] text-[#333]">Proctoring Camera</h4>
+    // Filter out invalid answers (empty section or content)
+    const validAnswers = answers.filter((ans) => ans.section && ans.content.trim());
+    if (validAnswers.length === 0) {
+      setSubmissionStatus('No valid answers to submit. Please enter your answers.');
+      return;
+    }
 
-  <div className="relative">
-    <video
-      ref={videoRef}
-      autoPlay
-      playsInline
-      muted
-      className="w-full rounded bg-black"
-    />
+    const submissionData = {
+      studentRegNo: examData.studentRegNo,
+      examNo: examData.examNo,
+      examName: examData.examName,
+      courseId: examData.courseId,
+      answers: validAnswers.map(({ section, content }) => ({ section, answer: content.trim() })),
+      violations,
+      submissionTime: new Date().toISOString(),
+      proctoringStatus: {
+        securityChecks,
+        cameraActive,
+        screenCaptureAttempts,
+      },
+    };
 
-    {/* Detection Message - bottom-left */}
-    <div className="absolute left-2 bottom-2 text-[14px]">
-      {!isModelLoaded ? (
-        <div className="text-[#004d47] italic">
-          <span className="mr-1">⌛</span> Loading face detection...
-        </div>
-      ) : faceDetectionError ? (
-        <div className="text-[#f44336] font-medium">
-          <span className="mr-1">⚠️</span> {faceDetectionError}
-        </div>
-      ) : showNoFaceWarning ? (
-        <div className="text-[#f44336] font-medium">
-          <span className="mr-1">⚠️</span> No Face Detected for {noFaceTimer}s
-        </div>
-      ) : showMultiFaceWarning ? (
-        <div className="text-[#f44336] font-medium">
-          <span className="mr-1">⚠️</span> Multiple Faces Detected for {multiFaceTimer}s
-        </div>
-      ) : showFaceDetected ? (
-        <div className="text-[#4CAF50] font-medium">
-          <span className="mr-1">✓</span> Face Detected
-        </div>
-      ) : (
-        <div className="text-[#f44336] font-medium">
-          <span className="mr-1">⚠️</span> Detecting...
-        </div>
-      )}
-    </div>
-  </div>
-</div>
-
-  );
-
-  const handleReady = async (): Promise<void> => {
     try {
-      const docElement = document.documentElement;
-      if (docElement.requestFullscreen) {
-        await docElement.requestFullscreen();
-      }
+      const response = await axios.post('http://localhost:3001/API/submit_exam', submissionData, {
+        withCredentials: true,
+      });
 
-      setIsReady(true);
-      setShowInstructions(false);
-      setCurrentSection('A');
-      setCurrentQuestion(examData?.sections['A'].questions?.[0] || null);
-      setIsTimerRunning(true);
-      initializeCamera();
-      startSecurityMonitoring();
-    } catch (error) {
-      console.error("Error starting exam:", error);
-      alert("There was an error starting the exam. Please try again.");
+      if (response.status === 200) {
+        setSubmissionStatus('Exam submitted successfully!');
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith('answer_'))
+          .forEach((key) => localStorage.removeItem(key));
+        setTimeout(() => navigate('/exam-complete'), 2000);
+      } else {
+        throw new Error(`Unexpected response status: ${response.status}`);
+      }
+    } catch (err) {
+      console.error('Error submitting exam:', err);
+      setSubmissionStatus(`Failed to submit exam: ${err.response?.data?.error || 'Please try again.'}`);
     }
   };
 
-  // Fullscreen check
-  // const handleFullscreenChange = (): void => {
-  //   const isFullscreenActive = document.fullscreenElement;
-   
-  //   if (!isFullscreenActive && isTimerRunning) {
-  //     localStorage.setItem('examAnswers', JSON.stringify(answers));
-  //     submitExam();
-  //   }
-  // };
-
-  useEffect(() => {
-    // comment out fullscreen checks for now
-    // document.addEventListener('fullscreenchange', handleFullscreenChange);
-    // document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    // document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    // document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-    const handleEscKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape' || e.keyCode === 27) {
-        if (isTimerRunning) {
-          localStorage.setItem('examAnswers', JSON.stringify(answers));
-          submitExam();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleEscKey);
-
-    return () => {
-      // coomment out fullscreen checks for now
-      // document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      // document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      // document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      // document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-      // window.removeEventListener('keydown', handleEscKey);
-    };
-  }, [isTimerRunning, answers]);
+  const renderCameraContainer = (): JSX.Element => (
+    <div className="fixed top-5 right-5 w-[250px] bg-white border border-gray-200 rounded-lg p-4 shadow-lg z-[1000]">
+      <h4 className="mb-2 text-sm font-semibold text-gray-800">Proctoring Camera</h4>
+      <div className="relative">
+        <video ref={videoRef} autoPlay playsInline muted className="w-full rounded bg-black" />
+        <div className="absolute left-2 bottom-2 text-sm">
+          {!isModelLoaded ? (
+            <div className="text-teal-600 italic">⌛ Loading face detection...</div>
+          ) : faceDetectionError ? (
+            <div className="text-red-500 font-medium">⚠️ {faceDetectionError}</div>
+          ) : showNoFaceWarning ? (
+            <div className="text-red-500 font-medium">⚠️ No Face Detected for {noFaceTimer}s</div>
+          ) : showMultiFaceWarning ? (
+            <div className="text-red-500 font-medium">⚠️ Multiple Faces Detected for {multiFaceTimer}s</div>
+          ) : showFaceDetected ? (
+            <div className="text-green-600 font-medium">✓ Face Detected</div>
+          ) : (
+            <div className="text-red-500 font-medium">⚠️ Detecting...</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   useEffect(() => {
     if (cameraActive && videoRef.current) {
       faceDetectionInterval.current = setInterval(() => {
-        if (videoRef.current) {
-          detectFaces(videoRef.current);
-        }
+        if (videoRef.current) detectFaces(videoRef.current);
       }, 500);
     }
-
-    return () => {
-      if (faceDetectionInterval.current) {
-        clearInterval(faceDetectionInterval.current);
-      }
-    };
+    return () => { if (faceDetectionInterval.current) clearInterval(faceDetectionInterval.current); };
   }, [cameraActive, isModelLoaded]);
 
-  // Render instructions page
-  if (loadingExam) {
-    return <div className={styles.examContainer}><div>Loading exam...</div></div>;
-  }
-  if (fetchError) {
-    return <div className={styles.examContainer}><div>{fetchError}</div></div>;
-  }
-  if (showInstructions && examData) {
-    return (
-    <div className="flex flex-col h-screen w-screen bg-[#f5f5f5] font-[Segoe_UI] fixed top-0 left-0 overflow-hidden">
-   <div className="max-w-[800px] mx-auto mt-20 p-8 bg-white rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.1)] max-h-[80vh] overflow-y-auto">
-    <div className="text-center mb-4 text-[#106053] border-b-2 border-[#106053] pb-2">
-      <h2>{examData.instructions.title}</h2>
-    </div>
-    <h1 className="text-2xl font-semibold my-6 leading-relaxed">{examData.instructions.content[0]}</h1>
-    <div className="space-y-2">
-      {examData.instructions.content.slice(1, 5).map((line, i) => (
-        <div key={i}>{line}</div>
-      ))}
-    </div>
-    <div className="mt-6">
-      <h3 className="font-bold text-lg mb-2">INSTRUCTIONS TO CANDIDATES</h3>
-      <ol className="list-decimal pl-5 space-y-1">
-        {examData.instructions.content.slice(6).map((line, i) => (
-          <li key={i}>{line}</li>
-        ))}
-      </ol>
-    </div>
-    <div className="text-center mt-8">
-      <button
-        onClick={handleReady}
-        className="bg-[#106053] text-white px-8 py-3 rounded font-bold text-base hover:bg-[#004d47] transition-colors duration-300"
-      >
-        Start Exam
-      </button>
-    </div>
-  </div>
-</div>
+  const handleAnswerChange = (e: React.ChangeEvent<HTMLTextAreaElement>, section: string) => {
+    const newAnswer = e.target.value;
+    setAnswers((prev) => {
+      const updatedAnswers = prev.filter((ans) => ans.section !== section);
+      if (newAnswer.trim()) {
+        updatedAnswers.push({ section, content: newAnswer });
+      }
+      localStorage.setItem(`answer_${section}`, newAnswer);
+      return updatedAnswers;
+    });
+  };
 
-      );
-}
-  const currentSectionQuestions = examData?.sections[currentSection]?.questions || [];
-  const currentQuestionIndex = currentQuestion ? 
-    currentSectionQuestions.findIndex(q => q.id === currentQuestion.id) : -1;
-  const hasPrevQuestion = currentQuestionIndex > 0;
-  const hasNextQuestion = currentQuestionIndex < currentSectionQuestions.length - 1;
+  const switchSection = (section: string) => {
+    setCurrentSection(section);
+  };
+
+  // Render loading state until data is ready
+  if (isLoading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-gray-100">
+        <div className="text-xl font-semibold text-teal-800">Loading Exam... Please wait.</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#f5f5f5] font-[Segoe_UI] fixed top-0 left-0 overflow-hidden">
-  {!isReady ? (
-    <div className="max-w-[800px] mx-auto mt-8 p-8 bg-white rounded-lg shadow-[0_2px_10px_rgba(0,0,0,0.1)] max-h-[80vh] overflow-y-auto">
-      <h2 className="text-2xl font-bold mb-4 text-center">Exam Instructions</h2>
-      <div className="my-6 leading-relaxed">
-        <h3 className="text-lg font-semibold mb-2">{examData?.instructions.title}</h3>
-        <ul className="list-disc pl-5 space-y-1 mb-4">
-          {examData?.instructions.content.map((line, idx) => (
-            <li key={idx}>{line}</li>
-          ))}
-        </ul>
-        <p className="mb-2 font-medium">Before starting the exam, please ensure:</p>
-        <ul className="list-disc pl-5 space-y-1 mb-4">
-          <li>You are in a quiet, well-lit environment</li>
-          <li>Your camera is working properly</li>
-          <li>You have a stable internet connection</li>
-          <li>You have read and understood the exam rules</li>
-        </ul>
-        <p className="mb-6">Click the "I'm Ready" button to start the exam in full-screen mode.</p>
-        <div className="text-center mt-8">
-          <button
-            onClick={handleReady}
-            className="bg-[#106053] text-white px-8 py-3 rounded font-bold text-base hover:bg-[#004d47] transition-colors duration-300"
-          >
-            I'm Ready
-          </button>
+    <div className="h-screen w-screen flex flex-col bg-gray-100 font-sans">
+      <div className="flex justify-between items-center px-6 py-3 bg-teal-800 text-white shadow">
+        <div className="text-lg font-semibold">
+          Clarke International University
+        </div>
+        <div className="text-sm font-bold bg-white/20 px-4 py-1 rounded">
+          Time Remaining: {String(timer.hours).padStart(2, '0')}:{String(timer.minutes).padStart(2, '0')}:{String(timer.seconds).padStart(2, '0')}
+        </div>
+      </div>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Proctoring Status Sidebar */}
+        <div className="w-48 bg-white border-r border-gray-200 shadow-lg overflow-y-auto">
+          <div className="p-4">
+            <h4 className="font-semibold text-gray-800 mb-2">Proctoring Status</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span>Security:</span><span className={Object.values(securityChecks).every((check) => check) ? 'text-green-600' : 'text-red-500'}>{Object.values(securityChecks).every((check) => check) ? 'Secure' : 'Compromised'}</span></div>
+              <div className="flex justify-between"><span>Browser:</span><span className={isSupportedBrowser() ? 'text-green-600' : 'text-red-500'}>{isSupportedBrowser() ? 'Supported' : 'Unsupported'}</span></div>
+              <div className="flex justify-between"><span>Camera:</span><span className={cameraActive ? 'text-green-600' : 'text-red-500'}>{cameraActive ? 'Active' : 'Inactive'}</span></div>
+              <div className="flex justify-between"><span>Screen Capture:</span><span className={screenCaptureAttempts === 0 ? 'text-green-600' : 'text-red-500'}>{screenCaptureAttempts === 0 ? 'Blocked' : 'Attempted'}</span></div>
+              <div className="flex justify-between"><span>Dev Tools:</span><span className={!isDevToolsOpen() ? 'text-green-600' : 'text-red-500'}>{!isDevToolsOpen() ? 'Blocked' : 'Detected'}</span></div>
+              <div className="flex justify-between"><span>Windows:</span><span className={window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth ? 'text-green-600' : 'text-red-500'}>{window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth ? 'Single' : 'Multiple'}</span></div>
+              <div className="flex justify-between"><span>Violations:</span><span className={violations.length > 0 ? 'text-red-500' : 'text-green-600'}>{violations.length}</span></div>
+            </div>
+            <h4 className="font-semibold text-gray-800 mt-4 mb-2">Sections</h4>
+            <div className="space-y-2">
+              {isSectioned && sections.map((section) => (
+                <button
+                  key={section}
+                  className={`w-full py-1 text-sm rounded ${currentSection === section ? 'bg-teal-600 text-white' : 'bg-gray-200'}`}
+                  onClick={() => switchSection(section)}
+                  disabled={!isSectioned}
+                >
+                  Section {section} {answers.find((ans) => ans.section === section)?.content ? '✓' : ''}
+                </button>
+              ))}
+              <button
+                className={`w-full py-1 text-sm rounded ${currentSection === 'nonSectioned' ? 'bg-teal-600 text-white' : 'bg-gray-200'}`}
+                onClick={() => switchSection('nonSectioned')}
+              >
+                Exam Answers {answers.find((ans) => ans.section === 'nonSectioned')?.content ? '✓' : ''}
+              </button>
+            </div>
+            <button className="mt-4 w-full bg-teal-600 text-white py-2 rounded-lg font-semibold hover:bg-teal-700" onClick={submitExam}>Submit Exam</button>
+            {submissionStatus && (
+              <div className={`mt-2 text-sm ${submissionStatus.includes('successfully') ? 'text-green-600' : 'text-red-500'}`}>
+                {submissionStatus}
+              </div>
+            )}
+          </div>
+        </div>
+        {/* Main Content */}
+        <div className="flex-1 p-6 overflow-y-auto">
+          {renderCameraContainer()}
+          <div className="grid grid-cols-2 gap-4 h-full">
+            {/* Exam PDF (Left) */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-gray-800 mb-2">Exam PDF</h4>
+              <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+                {pdfError ? (
+                  <div className="text-red-500">{pdfError}</div>
+                ) : pdfUrl ? (
+                  <object data={pdfUrl} type="application/pdf" width="100%" height="600px" style={{ border: 'none' }}>
+                    <p>PDF not supported. <a href={pdfUrl}>Download instead</a>.</p>
+                  </object>
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </div>
+            </div>
+            {/* Your Answer (Right) */}
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h4 className="font-semibold text-gray-800 mb-2">Your Answer</h4>
+              <div className="text-sm text-gray-700 mb-4">
+                <div>Reg No: {examData.studentRegNo}</div>
+                <div>Exam: {examData.examName}</div>
+                <div>Course ID: {examData.courseId}</div>
+                <div>Exam No: {examData.examNo}</div>
+              </div>
+              <div className="mb-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {currentSection === 'nonSectioned' ? 'Exam Answers' : `Answers for Section ${currentSection}`}
+                </label>
+                <p className="text-xs text-gray-500 mt-1">
+                  Type your answers in the format: 1) [answer] for descriptive questions, or 1) a: [answer], 2) b: [answer], 10) c: [answer], etc., for objective questions, matching the exam PDF.
+                </p>
+              </div>
+              <textarea
+                value={answers.find((ans) => ans.section === currentSection)?.content || ''}
+                onChange={(e) => handleAnswerChange(e, currentSection)}
+                className="w-full h-[calc(100vh-300px)] p-2 border rounded resize-none"
+                placeholder={`Example:\n1) [Your descriptive answer here]\n1) a: [Your objective answer here]\n2) b: [Your objective answer here]`}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
-      ) : (
-        examData && (
-          <>
-            <div className="flex justify-between items-center px-4 py-2 bg-teal-800 text-white">
-              <div className="text-lg font-semibold">Clarke International University</div>
-              <div className="text-sm font-bold bg-white/20 px-4 py-1 rounded">
-                Time Remaining: {String(timer.hours).padStart(2, '0')}:
-                {String(timer.minutes).padStart(2, '0')}:
-                {String(timer.seconds).padStart(2, '0')}
-              </div>
-            </div>
-            <div className="flex flex-1 overflow-hidden h-[calc(100vh-60px)] mt-8">
-              {/* Sidebar */}
-              <div className="w-64 bg-gray-100 border-r border-gray-300 flex flex-col overflow-y-auto">
-                {Object.keys(examData.sections).map((sectionKey) => (
-                  <div key={sectionKey} className="mb-2">
-                    <div
-                      className={`px-4 py-3 font-bold cursor-pointer border-l-4 ${
-                        currentSection === sectionKey ? 'bg-gray-300 border-teal-800' : 'bg-gray-200 border-transparent'
-                      }`}
-                      onClick={() => handleSectionChange(sectionKey)}
-                    >
-                      {examData.sections[sectionKey].title}
-                    </div>
-                    {currentSection === sectionKey && (
-                      <div className="py-2">
-                        {examData.sections[sectionKey].questions.length === 0 ? (
-                          <div className="text-center text-sm text-gray-500">No questions in this section.</div>
-                        ) : (
-                          examData.sections[sectionKey].questions.map((question) => (
-                            <div
-                              key={question.id}
-                              className={`pl-8 pr-4 py-2 cursor-pointer border-l-4 ${
-                                currentQuestion?.id === question.id ? 'bg-blue-100 border-teal-400' : 'border-transparent'
-                              }`}
-                              onClick={() => handleQuestionChange(question)}
-                            >
-                              {question.id}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {/* Proctoring Status */}
-                <div className="p-4 text-sm">
-                  <h4 className="font-semibold mb-2">Proctoring Status</h4>
-                  <div className="flex justify-between mb-1">
-                    <span>Security Status:</span>
-                    <span className={`${Object.values(securityChecks).every(check => check) ? 'text-green-600' : 'text-red-500'}`}>
-                      {Object.values(securityChecks).every(check => check) ? 'All Secure' : 'Security Compromised'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span>Browser:</span>
-                    <span className={`${isSupportedBrowser() ? 'text-green-600' : 'text-red-500'}`}>
-                      {isSupportedBrowser() ? 'Supported' : 'Unsupported'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span>Camera:</span>
-                    <span className={`${cameraActive ? 'text-green-600' : 'text-red-500'}`}>
-                      {cameraActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span>Screen Capture:</span>
-                    <span className={`${screenCaptureAttempts === 0 ? 'text-green-600' : 'text-red-500'}`}>
-                      {screenCaptureAttempts === 0 ? 'Blocked' : 'Attempted'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span>Dev Tools:</span>
-                    <span className={`${!isDevToolsOpen() ? 'text-green-600' : 'text-red-500'}`}>
-                      {!isDevToolsOpen() ? 'Blocked' : 'Detected'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span>Multiple Windows:</span>
-                    <span className={`${window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth ? 'text-green-600' : 'text-red-500'}`}>
-                      {window.outerHeight === window.innerHeight && window.outerWidth === window.innerWidth ? 'Blocked' : 'Detected'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span>Violations:</span>
-                    <span className={`${violations.length > 0 ? 'text-red-500' : 'text-green-600'}`}>{violations.length}</span>
-                  </div>
-                </div>
-
-                <button
-                  className="mt-auto mx-4 mb-4 bg-teal-800 text-white py-2 px-4 font-bold hover:bg-[#004d47]"
-                  onClick={submitExam}
-                >
-                  Submit Exam
-                </button>
-              </div>
-
-              {/* Question Container */}
-              <div className="flex-1 p-6 overflow-y-auto">
-                {currentQuestion ? (
-                  <>
-                    <div className="mb-6">
-                      <h3 className="text-xl font-semibold">
-                        {examData.sections[currentSection].title}: Question {currentQuestion.id}
-                      </h3>
-                      <p className="text-sm italic text-gray-600">
-                        {examData.sections[currentSection].description}
-                      </p>
-                    </div>
-                    <div className="bg-white p-6 rounded-lg shadow">
-                      <p className="text-lg mb-4 leading-relaxed">{currentQuestion.text}</p>
-                      {currentQuestion.type === 'multiple-choice' && currentQuestion.options && (
-                        <div className="flex flex-col gap-3">
-                          {currentQuestion.options.map((option, index) => (
-                            <div
-                              key={index}
-                              className={`flex items-center p-3 border rounded cursor-pointer transition-colors ${
-                                answers[currentQuestion.id] === option ? 'bg-blue-100 border-teal-400' : 'hover:bg-gray-100'
-                              }`}
-                              onClick={() => handleMultipleChoiceAnswer(option)}
-                            >
-                              <span className={`w-8 h-8 flex items-center justify-center rounded-full mr-3 font-bold ${
-                                answers[currentQuestion.id] === option ? 'bg-teal-400 text-white' : 'bg-gray-200'
-                              }`}>
-                                {String.fromCharCode(65 + index)}
-                              </span>
-                              <span>{option}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {(currentQuestion.type === 'short-answer' || currentQuestion.type === 'essay') && (
-                        <textarea
-                          className={`w-full mt-4 p-3 border rounded resize-y font-sans ${
-                            currentQuestion.type === 'essay' ? 'min-h-[200px]' : 'min-h-[150px]'
-                          }`}
-                          value={answers[currentQuestion.id] || ''}
-                          onChange={handleAnswerChange}
-                          placeholder={`Type your ${currentQuestion.type === 'essay' ? 'essay' : 'answer'} here...`}
-                        />
-                      )}
-                    </div>
-                    <div className="mt-4 flex justify-between">
-                      {hasPrevQuestion && (
-                        <button
-                          className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
-                          onClick={() => handleQuestionChange(currentSectionQuestions[currentQuestionIndex - 1])}
-                        >
-                          Previous Question
-                        </button>
-                      )}
-                      <button
-                        className="bg-[#106053] text-white px-4 py-2 rounded hover:bg-[#004d47]"
-                        onClick={handleSaveAnswer}
-                      >
-                        Save Answer
-                      </button>
-                      {hasNextQuestion && (
-                        <button
-                          className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300"
-                          onClick={() => handleQuestionChange(currentSectionQuestions[currentQuestionIndex + 1])}
-                        >
-                          Next Question
-                        </button>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center text-gray-500">No question selected or available in this section.</div>
-                )}
-              </div>
-              {renderCameraContainer()}
-            </div>
-          </>
-        )
-      )}
-    </div>
-    
   );
-}
-
+};
 
 export default ExamPage;
