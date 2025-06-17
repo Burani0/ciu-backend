@@ -210,7 +210,6 @@ import EditLecturerModal from './components/admin/EditLecturerModal.tsx';
 import AdminCourses from './components/admin/AdminCourses.tsx';
 import LectCourses from './components/Lecturer/LecturerCourses.tsx';
 import LecturerTimetable from './components/Lecturer/LecturerTimetable.tsx';
-import Login from './pages/StudentLogin.tsx';
 
 
 
@@ -345,7 +344,6 @@ function AppWrapper() {
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
                 <Route path="/home" element={<Home />} />
-                <Route path="/student-login" element={<Login />} />
                 <Route path="/exam/:roomId" element={<ExamPage />} />
                 <Route path="/view/:roomId" element={<Viewer />} />
                 <Route path="/proctoring" element={<ProctoringPage />} />
@@ -397,8 +395,6 @@ function AppWrapper() {
                 <Route path="/loggs" element={<Logs />} />
                 <Route path="/cleartoken" element={<Cleartoken/>}     />
                 <Route path="/verify-token" element={<TokenVerificationPage />} />
-                <Route path="/student-login" element={<Login />} />
-
             </Routes>
           </Suspense>
         )}

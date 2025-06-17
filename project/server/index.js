@@ -52,14 +52,13 @@ app.use('/api/auth', authRoutes);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST'],
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
     credentials: true,
-    transports: ['websocket', 'polling'],
+    transports: ['websocket', 'polling']
   },
 });
 
-// Socket.IO room management
 const rooms = new Map();
 
 io.on('connection', (socket) => {
@@ -82,7 +81,7 @@ io.on('connection', (socket) => {
 
       io.to(roomId).emit('room-update', {
         viewerCount: room.viewers.size,
-        hasStreamer: !!room.streamer,
+        hasStreamer: !!room.streamer
       });
     } catch (error) {
       console.error('Error in join-room:', error);
@@ -114,7 +113,7 @@ io.on('connection', (socket) => {
           }
           io.to(roomId).emit('room-update', {
             viewerCount: room.viewers.size,
-            hasStreamer: !!room.streamer,
+            hasStreamer: !!room.streamer
           });
         }
       }
@@ -124,27 +123,21 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    try {
-      rooms.forEach((room, roomId) => {
-        if (room.streamer === socket.id) {
-          room.streamer = null;
-        } else {
-          room.viewers.delete(socket.id);
-        }
-        io.to(roomId).emit('room-update', {
-          viewerCount: room.viewers.size,
-          hasStreamer: !!room.streamer,
-        });
+    rooms.forEach((room, roomId) => {
+      if (room.streamer === socket.id) {
+        room.streamer = null;
+      } else {
+        room.viewers.delete(socket.id);
+      }
+      io.to(roomId).emit('room-update', {
+        viewerCount: room.viewers.size,
+        hasStreamer: !!room.streamer
       });
-      console.log('User disconnected:', socket.id);
-    } catch (error) {
-      console.error('Error in disconnect:', error);
-    }
+    });
+    console.log('User disconnected:', socket.id);
   });
 });
 
-// Mount exam routes
-app.use('/API', examRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3001;

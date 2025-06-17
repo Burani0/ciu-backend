@@ -64,7 +64,7 @@ const ExamPage: React.FC = () => {
   const frameInterval = useRef<NodeJS.Timeout | null>(null);
   const detectionBufferRef = useRef<number[]>([]);
   const navigate = useNavigate();
-  const { roomId } = useParams();
+  const { roomId } = useParams<{ roomId: string }>();
 
   const isSupportedBrowser = () => {
     const ua = window.navigator.userAgent;
@@ -217,11 +217,10 @@ const ExamPage: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { min: 640, ideal: 1280 }, height: { min: 480, ideal: 720 }, facingMode: 'user', frameRate: { ideal: 30 } } });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        await new Promise((resolve) => { if (videoRef.current) videoRef.current.onloadedmetadata = () => videoRef.current?.play().then(resolve); });
         setCameraActive(true);
-        joinRoom(roomId);
-        // setCameraError(null);
-        // if (roomId) joinRoom(roomId);
+        setCameraError(null);
+        if (roomId) joinRoom(roomId);
         startFrameStreaming();
         console.log('Camera initialized successfully');
       }
@@ -247,8 +246,8 @@ const ExamPage: React.FC = () => {
   };
 
   const stopCamera = (): void => {
-    if (videoRef.current?.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+    if (videoRef.current && videoRef.current.srcObject) {
+      (videoRef.current.srcObject as MediaStream).getTracks().forEach((track) => track.stop());
       setCameraActive(false);
     }
     if (faceDetectionInterval.current) clearInterval(faceDetectionInterval.current);
