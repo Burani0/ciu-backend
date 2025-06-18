@@ -106,7 +106,7 @@ const AdminCourses: React.FC = () => {
               <div className="flex justify-between items-center py-5">
                 <button
                   className="bg-[#0F533D] text-white py-3 px-6 min-w-[200px] text-base"
-                  onClick={() => (window.location.href = "/regCourse")}
+                  onClick={() => (window.location.href = "/create-course")}
                 >
                   Add New Course
                 </button>

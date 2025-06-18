@@ -16,7 +16,7 @@ const Sidebar: React.FC = () => {
   const [isExamsDropdownOpen, setExamsDropdownOpen] = useState(false);
 
   const menuItems = [
-    { icon: <LayoutDashboard size={20} />, text: 'Dashboard', path: '/lecturerdashboard' },
+    { icon: <LayoutDashboard size={20} />, text: 'Dashboard', path: '/lecturer' },
     { icon: <FileText size={20} />, text: 'Courses', path: '/lecturer-courses' },
     { icon: <HelpCircle size={20} />, text: 'Timetable', path: '/timetable' },
     { icon: <Video size={20} />, text: 'Proctoring', path: '/join-viewer' },
