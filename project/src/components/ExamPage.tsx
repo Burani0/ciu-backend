@@ -90,7 +90,7 @@ const ExamPage: React.FC = () => {
         // Fetch PDF
         const pdfResponse = await axios.get(examLink, {
           responseType: 'blob',
-          withCredentials: true,
+          // withCredentials: true,
         });
         const url = window.URL.createObjectURL(new Blob([pdfResponse.data], { type: 'application/pdf' }));
         setPdfUrl(url);
