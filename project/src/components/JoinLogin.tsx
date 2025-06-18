@@ -20,29 +20,29 @@ export default function Login(): JSX.Element {
   const [academicYear, setAcademicYear] = useState("");
   const [semester, setSemester] = useState("");
 
-  const handleAdminLogin = async () => {
-    setErrorMessage("");
-    setIsSubmitting(true);
+ const handleAdminLogin = async () => {
+    setErrorMessage('');
     try {
-      const adminResponse = await axios.post("https://ciu-backend.onrender.com/api/admin/admin-login", {
+      const adminResponse = await axios.post('https://ciu-backend.onrender.com/api/admin/admin-login', {
         username: identifier,
         password,
       });
       alert(adminResponse.data.message);
-      navigate("/cleartoken");
+      return navigate('/cleartoken');
     } catch {
       try {
-        const lecturerResponse = await axios.post("ttps://ciu-backend.onrender.com/api/auth/login", {
+        const lecturerResponse = await axios.post('https://ciu-backend.onrender.com/api/auth/login', {
           universityNumber: identifier,
           password,
         });
         alert(lecturerResponse.data.message);
-        navigate("/verify-token");
+        return navigate('/verify-token');
       } catch {
-        setErrorMessage("Invalid credentials for both admin and lecturer.");
+        setErrorMessage('Invalid credentials for both admin and lecturer.');
       }
     }
   };
+
 
   const handleStudentLogin = async (e: React.FormEvent) => {
     e.preventDefault();
