@@ -56,8 +56,7 @@ export default function Login(): JSX.Element {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const apiUrl = `https://eadmin.ciu.ac.ug/API/ClearedStudentsAPI.aspx?acad=${academicYear}&sem=${semester}`;
-
+    const apiUrl = `https://ciu-backend.onrender.com/api/cleared-students?acad=${academicYear}&sem=${semester}`;
     try {
       const response = await axios.get(apiUrl);
       let clearedStudents = typeof response.data === "string" ? JSON.parse(response.data) : response.data;

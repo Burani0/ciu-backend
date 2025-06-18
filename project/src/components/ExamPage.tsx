@@ -82,7 +82,7 @@ const ExamPage: React.FC = () => {
         return;
       }
 
-      const examLink = `https://eadmin.ciu.ac.ug/API/doc_verification.aspx?doc=Exam&ExamNo=${examNo}`;
+      const examLink = `https://ciu-backend.onrender.com/api/exam-pdf?ExamNo=${ExamNo}`;
       console.log('Fetching exam data from:', examLink);
 
       try {
@@ -351,7 +351,7 @@ const ExamPage: React.FC = () => {
     };
 
     try {
-      const response = await axios.post('http://localhost:3001/API/submit_exam', submissionData, {
+      const response = await axios.post('https://ciu-backend.onrender.com/API/submit_exam', submissionData, {
         withCredentials: true,
       });
 
