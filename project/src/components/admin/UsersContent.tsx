@@ -380,14 +380,14 @@ export default function UsersContent() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/admin/lecturers")
+    fetch("https://ciu-backend.onrender.com/api/admin/lecturers")
       .then((response) => response.json())
       .then((data) => setUsers(data))
       .catch((error) => console.error("Error fetching users:", error));
   }, []);
   
   const deleteUser = (id) => {
-    fetch(`http://localhost:3001/api/admin/lecturers/${id}`, {
+    fetch(`https://ciu-backend.onrender.com/api/admin/lecturers/${id}`, {
       method: "DELETE",
     })
       .then((response) => {

@@ -108,7 +108,7 @@ const CreateCourseModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     }
 
     try {
-      await axios.post('http://localhost:3001/api/admin/create-course', formData);
+      await axios.post('https://ciu-backend.onrender.com/api/admin/create-course', formData);
       alert('Course created');
       setFormData({ faculty: '', program: '', courseTitle: '', courseCode: '' });
       if (onSuccess) onSuccess();

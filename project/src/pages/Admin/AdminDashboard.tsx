@@ -621,7 +621,7 @@ const Dashboard: FC = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await axios.get<DashboardData>('http://localhost:3001/api/admin/dashboard');
+        const response = await axios.get<DashboardData>('https://ciu-backend.onrender.com/api/admin/dashboard');
         setDashboardData(response.data);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -639,9 +639,7 @@ const Dashboard: FC = () => {
     setLoading(true);
     setError('');
     try {
-      const url = `https://eadmin.ciu.ac.ug/API/ExamTimeTableAPI.aspx?acadyr=${encodeURIComponent(
-        academicYear
-      )}&sem=${encodeURIComponent(semester)}&StartDate=${encodeURIComponent(startDate)}`;
+      const url = `https://ciu-backend.onrender.com/api/exam-timetable?acadyr=${academicYear}&sem=${semester}&StartDate=${startDate}`;
       const response = await axios.get(url);
       setTimetable(response.data);
     } catch (err: any) {

@@ -13,7 +13,7 @@ import MobileMenu from "../../components/admin/MobileMenu";
 import { SidebarProvider1 } from "../../components/admin/SidebarContext";
 import EditCourseModal from "./EditCourseModal";
 
-const BASE_URL = "http://localhost:3001/api/admin";
+const BASE_URL = "https://ciu-backend.onrender.com/api/admin";
 
 interface Course {
   _id: string;

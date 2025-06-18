@@ -264,7 +264,7 @@ const RegCourseModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         courseUnitCode: formData.courseUnitsCode.split(',').map((c) => c.trim()),
       };
 
-      const response = await fetch('http://localhost:3000/coursesAdd', {
+      const response = await fetch('https://ciu-backend.onrender.com/coursesAdd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

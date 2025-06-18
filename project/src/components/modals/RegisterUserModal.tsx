@@ -784,7 +784,7 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     // Fetch courses dynamically from backend
     const fetchCourses = async () => {
       try {
-        const res = await fetch("http://localhost:3000/courses");
+        const res = await fetch("https://ciu-backend.onrender.com/courses");
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
         const formattedCourses = data.map((course: any) => ({
@@ -844,7 +844,7 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     setSuccessMessage("");
 
     try {
-      const endpoint = "http://localhost:3000/lecturerReg";
+      const endpoint = "https://ciu-backend.onrender.com/lecturerReg";
 
       const payload = {
         first_name: formData.firstName,
