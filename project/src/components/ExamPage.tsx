@@ -82,7 +82,8 @@ const ExamPage: React.FC = () => {
         return;
       }
 
-      const examLink = `https://ciu-backend.onrender.com/api/exam-pdf?ExamNo=${ExamNo}`;
+     const examLink = `https://ciu-backend.onrender.com/api/exam-pdf?ExamNo=${examNo}`;
+
       console.log('Fetching exam data from:', examLink);
 
       try {
