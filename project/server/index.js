@@ -56,7 +56,7 @@ app.use('/api/auth', authRoutes);
  
 app.use('/api/lecturer', lecturerRoutes);
 app.use('/api', proxyRoutes);
-// app.use('/api/exams', examRoutes);
+app.use('/api/exams', examRoutes);
  
 
 const io = new Server(httpServer, {

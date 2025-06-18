@@ -197,7 +197,7 @@ import ProctoringPage from './components/ProctoringPage';
 // import ExamInterface from './components/ExamInterface';
 import ExamInterface from './components/ExamInterface '
 import ExamPage from './components/ExamPage';
-import StudentLogin from './pages/Login';
+// import StudentLogin from './pages/Login';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import RegForm from './pages/Admin/RegForm';
 import RegCourse from './pages/Admin/RegCourse.tsx';
@@ -220,7 +220,7 @@ const Viewer = React.lazy(() => import('./components/Viewer'));
 const CreateAdminPage = React.lazy(() => import('./components/CreateAdminPage'));
 const AdminLoginPage = React.lazy(() => import('./components/AdminLoginPage'));
 const TokenVerificationPage = React.lazy(() => import('./components/TokenVerificationPage'));
-const LoginPage = React.lazy(() => import('./components/LoginPage'));
+const Login = React.lazy(() => import('./components/JoinLogin'));
 const CreateCoursePage = React.lazy(() => import('./components/CreateCourseModal.tsx'));
 const CreateLecturerPage = React.lazy(() => import('./components/CreateLecturerModal.tsx'));
 const Logs = React.lazy(() => import('./components/Logs.tsx'));
@@ -347,7 +347,8 @@ function AppWrapper() {
                 <Route path="/exam/:roomId" element={<ExamPage />} />
                 <Route path="/view/:roomId" element={<Viewer />} />
                 <Route path="/proctoring" element={<ProctoringPage />} />
-                <Route path="/" element={<StudentLogin />} />
+                <Route path="/" element={<Login/>}     />
+                {/* <Route path="/" element={<StudentLogin />} /> */}
                 <Route path="/admin" element={<AdminDashboard />} /> {/* ❌ No layout */}
                 <Route path="/lecturer" element={<LecturerDashboard />} />
                 <Route path="/register" element={<RegForm />} />
@@ -358,7 +359,7 @@ function AppWrapper() {
                 <Route path="/join-viewer" element={<JoinViewer />} />
                 <Route path="/edit-lecturer" element={<EditLecturerModal />} />
                 <Route path="/ExamInterface" element={<ExamInterface />} />
-                <Route path="/login2" element={<LoginPage />} />
+                {/* <Route path="/login2" element={<LoginPage />} /> */}
         <Route path="/create-course" element={<CreateCoursePage />} />
         <Route path="/register-lecturer" element={<CreateLecturerPage />} />
         <Route path="/timetable" element={<LecturerTimetable />} />
@@ -379,7 +380,8 @@ function AppWrapper() {
               <Route path="/exam/:roomId" element={<ExamPage />} />
               <Route path="/view/:roomId" element={<Viewer />} />
               <Route path="/proctoring" element={<ProctoringPage />} />
-              <Route path="/" element={<StudentLogin />} /> {/* ❌ No layout */}
+              <Route path="/" element={<Login/>}     />
+              {/* <Route path="/" element={<StudentLogin />} /> ❌ No layout */}
               <Route path="/admin" element={<AdminDashboard />} /> {/* ❌ No layout */}
               <Route path="/lecturer" element={<LecturerDashboard />} />
               <Route path="/register" element={<RegForm />} />
@@ -395,6 +397,7 @@ function AppWrapper() {
                 <Route path="/loggs" element={<Logs />} />
                 <Route path="/cleartoken" element={<Cleartoken/>}     />
                 <Route path="/verify-token" element={<TokenVerificationPage />} />
+                
             </Routes>
           </Suspense>
         )}
