@@ -25,7 +25,7 @@ const ExamInterface: React.FC = () => {
 
   useEffect(() => {
     const regNo = localStorage.getItem("studentRegNo");
-    const year = localStorage.getItem("StudyYear");
+    const year = localStorage.getItem("studentYear");
     const sem = localStorage.getItem("studentSem");
 
     console.log("Retrieved from localStorage - RegNo:", regNo);
