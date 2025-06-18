@@ -24,9 +24,9 @@ router.get('/exam-timetable', async (req, res) => {
 
 // 🆕 Student Exams Proxy
 router.get('/student-exams', async (req, res) => {
-  const { reg, yr, sem } = req.query;
+  const { reg, yearr, sem } = req.query;
 
-  if (!reg || !yr || !sem) {
+  if (!reg || !yearr || !sem) {
     return res.status(400).json({ message: 'Missing required query parameters' });
   }
 
