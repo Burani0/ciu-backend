@@ -76,7 +76,7 @@ const ExamInterface: React.FC = () => {
     localStorage.setItem("currentExamLink", exam.ExamLink);
     localStorage.setItem("currentExamName", exam.courseName);
     localStorage.setItem("currentExamID", exam.courseID);
-    localStorage.setItem("studentRegNo", exam.regno); // Store Registration Number
+    localStorage.setItem("studentRegNo", exam.regno); 
 
     // Extract examNo from ExamLink if present
     let examNo = "";

@@ -190,6 +190,8 @@ const ExamPage: React.FC = () => {
       const smoothedType = detectionBufferRef.current.reduce((acc, val) => acc + val, 0) >= DETECTION_BUFFER_SIZE ? 2 : detectionType;
       setSmoothedDetection(smoothedType);
       console.log('Face detection:', { detections: detections.length, smoothedType });
+      // Join the room for live streaming
+      if (roomId) joinRoom(roomId);
     } catch (error) {
       setFaceDetectionError('Face detection failed. Please check your camera.');
       console.log('Face detection error:', error);
@@ -241,6 +243,9 @@ const ExamPage: React.FC = () => {
         const frame = canvas.toDataURL('image/jpeg');
         emitStream(frame);
       }
+
+      // / Join the room for live streaming
+      if (roomId) joinRoom(roomId);
     }, 100);
     console.log('Started frame streaming');
   };

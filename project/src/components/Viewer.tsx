@@ -13,7 +13,7 @@ function Viewer() {
   const { roomId } = useParams();
   const [streams, setStreams] = useState<StreamData[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [fitAll, setFitAll] = useState(true); // Toggle mode
+  const [fitAll, setFitAll] = useState(true); 
 
   useEffect(() => {
     if (!roomId) {
