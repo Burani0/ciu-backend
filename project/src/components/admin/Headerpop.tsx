@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({ toggleMobileMenu, isMobile }) => {
           </button>
         )}
         <img
-          src=".\public\public\CIU-exam-system-logo.png"
+          src=".\public\CIU-exam-system-logo.png"
           alt="System Logo"
           className="h-12 mr-2"
         />
