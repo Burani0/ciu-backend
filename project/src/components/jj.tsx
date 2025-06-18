@@ -114,12 +114,7 @@ const ExamPage: React.FC = () => {
     const fetchExam = async () => {
       setLoadingExam(true);
       setFetchError(null);
-      try {
-        // Replace this with your real API call
-        // const response = await fetch('/api/exam');
-        // const data = await response.json();
-        // setExamData(data);
-        // Simulate API: supports both essay-only and mixed papers
+      t
         const simulatedExam: ExamData = {
           instructions: {
             title: "INSTITUTE OF ALLIED HEALTH SCIENCES (IAHS)",

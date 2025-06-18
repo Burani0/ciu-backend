@@ -7,14 +7,14 @@ const examSubmissionSchema = new mongoose.Schema({
   courseId: { type: String, required: true },
   answers: [
     {
-      section: { type: String, required: true },
+      section: { type: String, required: false }, // Optional for non-sectioned exams
       answer: { type: String, required: true },
     },
   ],
   submissionTime: { type: Date, default: Date.now },
-  proctoringStatus: { type: Object, required: true },
-  violations: { type: Array, default: [] },
-  __v: { type: Number, select: false },
 });
+
+// Prevent duplicate submissions
+// examSubmissionSchema.index({ examNo: 1, studentRegNo: 1 }, { unique: true });
 
 export default mongoose.model('ExamSubmission', examSubmissionSchema);
