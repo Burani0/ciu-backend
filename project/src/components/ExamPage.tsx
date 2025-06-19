@@ -239,17 +239,34 @@
 //     setSubmissionStatus('Submitting...');
 //     setDebugInfo('');
 
-//     const validAnswers = answers.filter((ans) => ans.section && ans.content.trim());
+//     // Get current answers from state AND localStorage to ensure we capture any unsaved changes
+//     const currentAnswers = [...answers];
+    
+//     // Also check localStorage for any additional answers that might not be in state
+//     const localStorageAnswers = Object.keys(localStorage)
+//       .filter((key) => key.startsWith('answer_'))
+//       .map((key) => ({
+//         section: key.replace('answer_', ''),
+//         content: localStorage.getItem(key) || '',
+//       }))
+//       .filter((ans) => ans.section && ans.content.trim());
+
+//     // Merge state answers with localStorage answers (localStorage takes precedence)
+//     const mergedAnswers = [...currentAnswers];
+//     localStorageAnswers.forEach(localAnswer => {
+//       const existingIndex = mergedAnswers.findIndex(ans => ans.section === localAnswer.section);
+//       if (existingIndex >= 0) {
+//         mergedAnswers[existingIndex] = localAnswer; // Update with localStorage version
+//       } else {
+//         mergedAnswers.push(localAnswer); // Add new answer from localStorage
+//       }
+//     });
+
+//     const validAnswers = mergedAnswers.filter((ans) => ans.section && ans.content.trim());
 //     console.log('Valid answers found:', validAnswers.length);
 //     console.log('Valid answers:', validAnswers);
 
-//     if (validAnswers.length === 0) {
-//       console.log('No valid answers found');
-//       setSubmissionStatus('No valid answers to submit. Please enter your answers.');
-//       setIsSubmitting(false);
-//       return;
-//     }
-
+//     // Modified: Allow submission even if no answers (auto-submit scenario)
 //     const submissionData = {
 //       studentRegNo: examData.studentRegNo,
 //       examNo: examData.examNo,
@@ -257,6 +274,7 @@
 //       courseId: examData.courseId,
 //       answers: validAnswers.map(({ section, content }) => ({ section, answer: content.trim() })),
 //       submissionTime: new Date().toISOString(),
+//       submissionType: validAnswers.length === 0 ? 'auto-submit' : 'manual', // Track submission type
 //     };
 
 //     console.log('Submission data prepared:', JSON.stringify(submissionData, null, 2));
@@ -293,12 +311,15 @@
 //           setSubmissionStatus(response.data.message || 'Exam submitted successfully!');
 //           setIsSubmitting(false);
 //           setDebugInfo('');
+          
+//           // Clean up localStorage
 //           Object.keys(localStorage)
 //             .filter((key) => key.startsWith('answer_'))
 //             .forEach((key) => {
 //               console.log('Removing from localStorage:', key);
 //               localStorage.removeItem(key);
 //             });
+            
 //           setTimeout(() => {
 //             console.log('Navigating to exam-complete page...');
 //             navigate('/exam-complete');
@@ -326,7 +347,7 @@
 //           console.error('Request setup error:', err.message);
 //           setSubmissionStatus(`Configuration error: ${err.message}`);
 //         }
-//         setIsSubmitting(false);
+        
 //         if (attempt === maxAttempts) {
 //           console.error('=== ALL ATTEMPTS FAILED ===');
 //           setSubmissionStatus(`Failed after ${maxAttempts} attempts. Please contact support.`);
@@ -339,6 +360,51 @@
 //       }
 //     }
 //   };
+
+//   // Handle Escape key press to auto-submit exam
+//   useEffect(() => {
+//     const handleKeyDown = (e: KeyboardEvent) => {
+//       console.log('Key pressed:', e.key); // Debug log
+//       if (e.key === 'Escape' && !isSubmitting) {
+//         console.log('Escape key detected, initiating auto-submit');
+//         e.preventDefault(); // Prevent default browser behavior (e.g., exiting fullscreen)
+//         submitExam();
+//       }
+//     };
+//     window.addEventListener('keydown', handleKeyDown, { capture: true }); // Use capture phase
+//     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
+//   }, [isSubmitting, examData, answers]); // Include necessary dependencies
+
+//   // Handle fullscreen exit attempt
+//   useEffect(() => {
+//     const handleFullscreenChange = () => {
+//       console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement); // Debug log
+//       if (!document.fullscreenElement && !isSubmitting) {
+//         console.log('Fullscreen exited, initiating auto-submit');
+//         submitExam();
+//       }
+//     };
+//     document.addEventListener('fullscreenchange', handleFullscreenChange);
+//     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+//   }, [isSubmitting, examData, answers]); // Include necessary dependencies
+
+//   // Handle tab/window close attempt
+//   useEffect(() => {
+//     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+//       console.log('Window/tab about to close, initiating auto-submit');
+//       // Note: submitExam is async but beforeunload handlers should be synchronous
+//       // We'll attempt to submit but can't guarantee completion
+//       submitExam();
+      
+//       // Standard way to show confirmation dialog
+//       e.preventDefault();
+//       e.returnValue = '';
+//       return '';
+//     };
+    
+//     window.addEventListener('beforeunload', handleBeforeUnload);
+//     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+//   }, [examData, answers]); // Include necessary dependencies
 
 //   const renderCameraContainer = (): JSX.Element => (
 //     <div className="fixed top-5 right-5 w-[250px] bg-white border border-gray-200 rounded-lg p-4 shadow-lg z-[1000]">
@@ -411,7 +477,7 @@
 //   }
 
 //   return (
-//     <div className="h-screen w-screen flex flex-col bg-gray-100 font-sans">
+//     <div className="h-screen w-screen flex flex-col bg-gray-100 font-sans" tabIndex={0}>
 //       <div className="flex justify-between items-center px-6 py-3 bg-teal-800 text-white shadow">
 //         <div className="text-lg font-semibold">
 //           Clarke International University
@@ -516,28 +582,7 @@
 //   );
 // };
 
-// // export default ExamPage;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// export default ExamPage;
 
 
 
@@ -561,7 +606,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import styles from './Exam.module.css';
 import * as faceapi from 'face-api.js';
 import { emitStream, joinRoom, leaveRoom } from '../config/socket';
 
@@ -579,7 +623,7 @@ export type Violation = { type: string; timestamp: string };
 export type Answer = { section: string; content: string };
 
 const ExamPage: React.FC = () => {
-  const [timer, setTimer] = useState<Timer>({ hours: 3, minutes: 0, seconds: 0 });
+  const [timer, setTimer] = useState<Timer>({ hours: 0, minutes: 0, seconds: 0 });
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const [cameraActive, setCameraActive] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -613,6 +657,7 @@ const ExamPage: React.FC = () => {
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
 
+  // Initialize timer from localStorage's currentExamDuration
   useEffect(() => {
     const fetchExamData = async () => {
       const examNo = localStorage.getItem('currentExamNo') || roomId || '';
@@ -657,6 +702,19 @@ const ExamPage: React.FC = () => {
           .filter((ans) => ans.section && ans.content.trim());
         setAnswers(savedAnswers);
 
+        // Initialize timer from currentExamDuration
+        const duration = localStorage.getItem('currentExamDuration') || '0h 5m';
+        console.log('Retrieved currentExamDuration:', duration);
+        const match = duration.match(/(\d+)h\s*(\d+)m/);
+        let hours = 0;
+        let minutes = 0;
+        if (match) {
+          hours = parseInt(match[1], 10);
+          minutes = parseInt(match[2], 10);
+        } else {
+          console.error('Invalid duration format:', duration);
+        }
+        setTimer({ hours, minutes, seconds: 0 });
         setIsTimerRunning(true);
         initializeCamera();
       } catch (err) {
@@ -670,6 +728,7 @@ const ExamPage: React.FC = () => {
     fetchExamData();
   }, [roomId]);
 
+  // Timer countdown logic
   useEffect(() => {
     if (!isTimerRunning) return;
     const interval = setInterval(() => {
@@ -683,8 +742,9 @@ const ExamPage: React.FC = () => {
             minutes = 59;
             hours--;
             if (hours < 0) {
-              submitExam();
-              return prev;
+              // Auto-submit when timer reaches 00:00:00
+              submitExam('auto-submit');
+              return { hours: 0, minutes: 0, seconds: 0 };
             }
           }
         }
@@ -786,7 +846,7 @@ const ExamPage: React.FC = () => {
     leaveRoom();
   };
 
-  const submitExam = async (): Promise<void> => {
+  const submitExam = async (submissionType: string = 'manual'): Promise<void> => {
     if (isSubmitting) {
       console.log('Submission already in progress, ignoring duplicate submission attempt');
       return;
@@ -799,24 +859,43 @@ const ExamPage: React.FC = () => {
     setSubmissionStatus('Submitting...');
     setDebugInfo('');
 
-    const validAnswers = answers.filter((ans) => ans.section && ans.content.trim());
+    // Get current answers from state AND localStorage
+    const currentAnswers = [...answers];
+    const localStorageAnswers = Object.keys(localStorage)
+      .filter((key) => key.startsWith('answer_'))
+      .map((key) => ({
+        section: key.replace('answer_', ''),
+        content: localStorage.getItem(key) || '',
+      }))
+      .filter((ans) => ans.section && ans.content.trim());
+
+    const mergedAnswers = [...currentAnswers];
+    localStorageAnswers.forEach(localAnswer => {
+      const existingIndex = mergedAnswers.findIndex(ans => ans.section === localAnswer.section);
+      if (existingIndex >= 0) {
+        mergedAnswers[existingIndex] = localAnswer;
+      } else {
+        mergedAnswers.push(localAnswer);
+      }
+    });
+
+    const validAnswers = mergedAnswers.filter((ans) => ans.section && ans.content.trim());
     console.log('Valid answers found:', validAnswers.length);
     console.log('Valid answers:', validAnswers);
 
-    if (validAnswers.length === 0) {
-      console.log('No valid answers found');
-      setSubmissionStatus('No valid answers to submit. Please enter your answers.');
-      setIsSubmitting(false);
-      return;
-    }
+    // For auto-submit with no answers, send empty array (handled by backend)
+    const finalAnswers = validAnswers.length === 0 && submissionType === 'auto-submit' 
+      ? [] // Send empty array, backend will handle it
+      : validAnswers.map(({ section, content }) => ({ section, answer: content.trim() }));
 
     const submissionData = {
       studentRegNo: examData.studentRegNo,
       examNo: examData.examNo,
       examName: examData.examName,
       courseId: examData.courseId,
-      answers: validAnswers.map(({ section, content }) => ({ section, answer: content.trim() })),
+      answers: finalAnswers,
       submissionTime: new Date().toISOString(),
+      submissionType: submissionType,
     };
 
     console.log('Submission data prepared:', JSON.stringify(submissionData, null, 2));
@@ -853,12 +932,15 @@ const ExamPage: React.FC = () => {
           setSubmissionStatus(response.data.message || 'Exam submitted successfully!');
           setIsSubmitting(false);
           setDebugInfo('');
+          
+          // Clean up localStorage
           Object.keys(localStorage)
             .filter((key) => key.startsWith('answer_'))
             .forEach((key) => {
               console.log('Removing from localStorage:', key);
               localStorage.removeItem(key);
             });
+            
           setTimeout(() => {
             console.log('Navigating to exam-complete page...');
             navigate('/exam-complete');
@@ -886,7 +968,7 @@ const ExamPage: React.FC = () => {
           console.error('Request setup error:', err.message);
           setSubmissionStatus(`Configuration error: ${err.message}`);
         }
-        setIsSubmitting(false);
+        
         if (attempt === maxAttempts) {
           console.error('=== ALL ATTEMPTS FAILED ===');
           setSubmissionStatus(`Failed after ${maxAttempts} attempts. Please contact support.`);
@@ -907,12 +989,12 @@ const ExamPage: React.FC = () => {
       if (e.key === 'Escape' && !isSubmitting) {
         console.log('Escape key detected, initiating auto-submit');
         e.preventDefault(); // Prevent default browser behavior (e.g., exiting fullscreen)
-        submitExam();
+        submitExam('auto-submit'); // Pass auto-submit type
       }
     };
     window.addEventListener('keydown', handleKeyDown, { capture: true }); // Use capture phase
     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
-  }, [isSubmitting]);
+  }, [isSubmitting, examData, answers]);
 
   // Handle fullscreen exit attempt
   useEffect(() => {
@@ -920,12 +1002,30 @@ const ExamPage: React.FC = () => {
       console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement); // Debug log
       if (!document.fullscreenElement && !isSubmitting) {
         console.log('Fullscreen exited, initiating auto-submit');
-        submitExam();
+        submitExam('auto-submit'); // Pass auto-submit type
       }
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, [isSubmitting]);
+  }, [isSubmitting, examData, answers]);
+
+  // Handle tab/window close attempt
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      console.log('Window/tab about to close, initiating auto-submit');
+      // Note: submitExam is async but beforeunload handlers should be synchronous
+      // We'll attempt to submit but can't guarantee completion
+      submitExam('auto-submit');
+      
+      // Standard way to show confirmation dialog
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [examData, answers]);
 
   const renderCameraContainer = (): JSX.Element => (
     <div className="fixed top-5 right-5 w-[250px] bg-white border border-gray-200 rounded-lg p-4 shadow-lg z-[1000]">
@@ -999,7 +1099,7 @@ const ExamPage: React.FC = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-100 font-sans" tabIndex={0}>
-      <div className="flex justify-between items-center px-6 py-3 bg-teal-800 text-white shadow">
+      <div className="flex items-center justify-center px-6 py-3 bg-teal-800 text-white shadow">
         <div className="text-lg font-semibold">
           Clarke International University
         </div>
@@ -1083,7 +1183,7 @@ const ExamPage: React.FC = () => {
                         ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
                         : 'bg-teal-600 text-white hover:bg-teal-700'
                     }`} 
-                    onClick={submitExam}
+                    onClick={() => submitExam('manual')}
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Exam'}
