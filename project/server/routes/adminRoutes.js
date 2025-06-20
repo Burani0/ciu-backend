@@ -11,6 +11,7 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   adminLogin,  
   clearToken,
   deleteAdmin, } from '../controllers/adminController.js';
+  import { getLecturerSubmissions } from '../controllers/adminController.js';
   import { getLecturerById } from '../controllers/adminController.js';
   import { getCourseById }   from '../controllers/adminController.js';
 
@@ -29,6 +30,8 @@ router.get('/lecturers/:id', getLecturerById);
 router.get('/admins/:id', getAdminById);
 router.get('/courses/:id', getCourseById);
 router.get('/admins', getAllAdmins);
+router.get('/lecturers/:id/submissions', getLecturerSubmissions);
+
 
 router.put('/courses/:id', updateCourse);
 router.put('/lecturers/:id', updateLecturer);

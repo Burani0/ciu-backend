@@ -215,6 +215,7 @@ import EditAdminModal from './components/admin/EditAdminModal.tsx';
 // import LoginWrapper from "./pages/LoginWrapper.tsx";
 import LandingPage from './pages/LandingPage.tsx';
 import JoinLogin from './pages/JoinLogin.tsx';
+import LecturerSubmissions from './components/Lecturer/LecturerSubmission.tsx';
 
 
 
@@ -321,7 +322,7 @@ function AppWrapper() {
     }
   }, []);
 
-  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/','/admin-create','/adminlist','/editadmin','/Landingpage',];
+  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/','/admin-create','/adminlist','/editadmin','/Landingpage','/Submitted-exam'];
   const isLayoutVisible = !noLayoutRoutes.includes(location.pathname);
 
   return (
@@ -378,6 +379,7 @@ function AppWrapper() {
         <Route path="/loggs" element={<Logs />} />
         <Route path="/cleartoken" element={<Cleartoken/>}     />
         <Route path="/LandingPage" element={<LandingPage/>}     />
+        <Route path="/Submitted-exam" element={<LecturerSubmissions/>}     />
         <Route path="/" element={<JoinLogin/>}     />
         {/* <Route path="/" element={<LoginWrapper />} /> */}
         
@@ -412,6 +414,7 @@ function AppWrapper() {
                 <Route path="/adminlist" element={<AdminList />} />
                 <Route path="/editadmin" element={<EditAdminModal/>} />
                 <Route path="/LandingPage" element={<LandingPage/>}     />
+                <Route path="/Submitted-exam" element={<LecturerSubmissions/>}     />
                 <Route path="/" element={<JoinLogin/>}     />
                 {/* <Route path="/" element={<LoginWrapper />} /> */}
                 
