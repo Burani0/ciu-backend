@@ -5,7 +5,7 @@ import { BiSolidUserRectangle } from "react-icons/bi";
 import { FaLock, FaUser } from "react-icons/fa";
 
 
-const StudentLogin = () => {
+const Login = () => {
   const navigate = useNavigate();
 
   const [selectedUser, setSelectedUser] = useState("Student");
@@ -94,4 +94,4 @@ const StudentLogin = () => {
   );
 };
 
-export default StudentLogin;
+export default Login;

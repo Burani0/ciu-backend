@@ -4,7 +4,7 @@ import {
   Users,
   LogOut,
   Library,
-  // ClipboardCheck,
+  ClipboardCheck,
   ChevronDown,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -31,15 +31,23 @@ export default function Sidebar() {
       subItems: [
         // { text: "Manage Students", path: "/table" },
         { text: "Manage Lecturers",path:"/users"  },
-        { text: "Lecturer Logs",path:"/loggs"  },
+        { text: "Manage Admins",path:"/adminlist"  },
         // { text: "Manage Administrators", path: "/adminuser" },
       ],
     },
-    // {
-    //   icon: <ClipboardCheck size={20} />,
-    //   text: "Exam list",
-    //   path: "/admin-exam-list",
-    // },
+    {
+      icon: <ClipboardCheck size={20} />,
+      text: "Logs",
+      path: "/logs",
+      subItems: [
+        
+        { text: "Lecturer Logs",path:"/loggs"  },
+        // { text: "Manage Admins",path:"/adminlist"  },
+        // { text: "Lecturer Logs",path:"/loggs"  },
+        
+      ],
+    },
+    
     {
       icon: <Library size={20} />,
       text: "Courses",

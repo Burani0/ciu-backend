@@ -12,6 +12,7 @@ import Sidebar from "../../components/admin/SideBarpop";
 import MobileMenu from "../../components/admin/MobileMenu";
 import { SidebarProvider1 } from "../../components/admin/SidebarContext";
 import EditCourseModal from "./EditCourseModal";
+import RegCourseModal from "../modals/RegCourseModal";
 
 const BASE_URL = "http://localhost:3001/api/admin";
 
@@ -33,6 +34,7 @@ const AdminCourses: React.FC = () => {
   const [editCourseId, setEditCourseId] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [showRegCourseModal, setShowRegCourseModal] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -88,110 +90,122 @@ const AdminCourses: React.FC = () => {
 
   return (
     <SidebarProvider1>
-      <div className="font-['Roboto'] m-0 p-0">
-        <div className={`flex flex-col h-screen ${isMobileMenuOpen ? 'pointer-events-none' : ''}`}>
+      <div className="font-['Roboto']">
+        <div className="flex flex-col h-screen">
           <Header toggleMobileMenu={toggleMobileMenu} isMobile={isMobile} />
-          <div className="flex flex-1 overflow-scroll flex-col md:flex-row">
+          <div className="flex flex-1 flex-col md:flex-row overflow-hidden">
             {!isMobile && <Sidebar />}
             {isMobile && (
               <>
                 <div
-                  className={`fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-[998] ${isMobileMenuOpen ? 'block' : 'hidden'}`}
+                  className={`fixed inset-0 bg-black bg-opacity-50 z-[998] ${isMobileMenuOpen ? 'block' : 'hidden'}`}
                   onClick={toggleMobileMenu}
                 ></div>
                 <MobileMenu isOpen={isMobileMenuOpen} />
               </>
             )}
-            <main className="flex-1 p-6 bg-gray-100">
-              <div className="flex justify-between items-center py-5">
-                <button
-                  className="bg-[#0F533D] text-white py-3 px-6 min-w-[200px] text-base"
-                  onClick={() => (window.location.href = "/regCourse")}
-                >
-                  Add New Course
-                </button>
-                <input
-                  type="text"
-                  placeholder="Search by course..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="py-3 px-4 border border-gray-300 rounded text-base text-gray-600 w-[300px]"
-                />
-              </div>
+            <main className="flex-1 p-5 bg-gray-50 overflow-y-auto">
+              <div className="max-w-[1200px] mx-auto pt-20">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-5">
+                  <button
+                    className="bg-[#0F533D] hover:bg-[#0B3F37] text-white font-medium py-2 px-4 rounded-md shadow min-w-[180px]"
+                    onClick={() => setShowRegCourseModal(true)}
+                  >
+                    Add New Course
+                  </button>
+                  <input
+                    type="text"
+                    placeholder="Search by course title..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="border border-gray-300 rounded-md px-3 py-2 w-full sm:w-[300px] text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0F533D]"
+                  />
+                </div>
 
-              <h2 className="text-2xl font-semibold mb-4">Courses</h2>
-
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse bg-white shadow-lg">
-                  <thead>
-                    <tr className="bg-gray-100 text-[#106053] text-center font-bold uppercase">
-                      <th className="py-3 px-4">#</th>
-                      <th className="py-3 px-4">Faculty</th>
-                      <th className="py-3 px-4">Program</th>
-                      <th className="py-3 px-4">Course Title</th>
-                      <th className="py-3 px-4">Course Code</th>
-                      <th className="py-3 px-4">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCourses.map((course, index) => (
-                      <tr key={course._id} className="text-center hover:bg-gray-100">
-                        <td className="py-2 px-4">{index + 1}</td>
-                        <td className="py-2 px-4">{course.faculty}</td>
-                        <td className="py-2 px-4">
-                          <ul>
-                            {[course.program].flat().map((prog, i) => (
-                              <li key={i}>• {prog}</li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td className="py-2 px-4">
-                          <ul>
-                            {[course.courseTitle].flat().map((title, i) => (
-                              <li key={i}>• {title}</li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td className="py-2 px-4">
-                          <ul>
-                            {[course.courseCode].flat().map((code, i) => (
-                              <li key={i}>• {code}</li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td className="py-2 px-4 flex justify-center gap-2">
-                          <button onClick={() => handleEditClick(course._id)}>
-                            <FaEdit className="text-[#106053] hover:text-[#0B3F37] text-lg" />
-                          </button>
-                          <button onClick={() => handleDeleteClick(course)}>
-                            <FaTrash className="text-red-600 hover:text-[#990808] text-lg" />
-                          </button>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse bg-white rounded-md shadow-lg overflow-hidden">
+                    <thead>
+                      <tr className="bg-[#E6F1EB] text-[#0F533D] text-sm font-semibold uppercase tracking-wide">
+                        <th className="px-2 py-3 border-b border-gray-200">#</th>
+                        <th className="px-2 py-3 border-b border-gray-200">Faculty</th>
+                        <th className="px-2 py-3 border-b border-gray-200">Program</th>
+                        <th className="px-2 py-3 border-b border-gray-200">Course Title</th>
+                        <th className="px-2 py-3 border-b border-gray-200">Course Code</th>
+                        <th className="px-2 py-3 border-b border-gray-200">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredCourses.map((course, index) => (
+                        <tr key={course._id} className="text-center hover:bg-gray-50 text-sm">
+                          <td className="px-2 py-2">{index + 1}</td>
+                          <td className="px-2 py-2">{course.faculty}</td>
+                          <td className="px-2 py-2">
+                            <ul>
+                              {[course.program].flat().map((prog, i) => (
+                                <li key={i}>• {prog}</li>
+                              ))}
+                            </ul>
+                          </td>
+                          <td className="px-2 py-2">
+                            <ul>
+                              {[course.courseTitle].flat().map((title, i) => (
+                                <li key={i}>• {title}</li>
+                              ))}
+                            </ul>
+                          </td>
+                          <td className="px-2 py-2">
+                            <ul>
+                              {[course.courseCode].flat().map((code, i) => (
+                                <li key={i}>• {code}</li>
+                              ))}
+                            </ul>
+                          </td>
+                          <td className="px-2 py-2 flex justify-center gap-2">
+                            <button onClick={() => handleEditClick(course._id)}>
+                              <FaEdit className="text-[#0F533D] hover:text-[#0B3F37]" />
+                            </button>
+                            <button onClick={() => handleDeleteClick(course)}>
+                              <FaTrash className="text-red-600 hover:text-red-800" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              {/* Delete Dialog */}
               <Dialog open={isDialogOpen} onClose={() => setDialogOpen(false)}>
-                <DialogTitle>Confirm Delete</DialogTitle>
-                <DialogContent>
-                  Are you sure you want to delete the course <strong>{selectedCourse?.courseTitle}</strong>?
+                <DialogTitle className="text-red-700 font-bold">Confirm Delete</DialogTitle>
+                <DialogContent className="text-gray-700">
+                  Are you sure you want to delete <strong>{selectedCourse?.courseTitle}</strong>? This action cannot be undone.
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={() => setDialogOpen(false)} color="inherit">
+                    Cancel
+                  </Button>
                   <Button onClick={confirmDelete} color="error" variant="contained">
                     Delete
                   </Button>
                 </DialogActions>
               </Dialog>
 
-              {/* Edit Modal */}
               {showEditModal && editCourseId && (
                 <EditCourseModal
                   courseId={editCourseId}
                   onClose={() => setShowEditModal(false)}
+                  onSuccess={() => {
+                    axios.get(`${BASE_URL}/courses`).then((res) => {
+                      setCourses(res.data);
+                      setFilteredCourses(res.data);
+                    });
+                  }}
+                />
+              )}
+
+              {showRegCourseModal && (
+                <RegCourseModal
+                  onClose={() => setShowRegCourseModal(false)}
                   onSuccess={() => {
                     axios.get(`${BASE_URL}/courses`).then((res) => {
                       setCourses(res.data);

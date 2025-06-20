@@ -33,7 +33,7 @@ router.get('/admins', getAllAdmins);
 router.put('/courses/:id', updateCourse);
 router.put('/lecturers/:id', updateLecturer);
 
-router.put('/admins/:id', updateAdmin);
+router.get('/admins/:id', getAdminById);
 
 router.delete('/courses/:id', deleteCourse);
 router.delete('/lecturers/:id', deleteLecturer);
