@@ -40,7 +40,7 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         setCourses(formattedCourses);
       } catch (error) {
         console.error("Error fetching courses:", error);
-        console.log("Payload to submit:", payload);
+       
 
       }
     };
@@ -79,6 +79,7 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    console.log("Submit triggered");
 
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -100,7 +101,16 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         email: formData.emailOrStudentNumber,
         role: "lecturer",
         courses: selectedCourses.map((course) => course.value),
+
+      } catch (error) {
+        console.error("Submission error:", error);
+        setErrorMsg("An error occurred. Please try again later.");
+      
+      
       };
+
+      console.log("Submitting payload:", payload);
+
 
       const response = await fetch(endpoint, {
         method: "POST",

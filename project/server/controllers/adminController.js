@@ -25,9 +25,12 @@ export const registerLecturer = async (req, res) => {
 
   // Validate course IDs
   const validCourses = await Course.find({ _id: { $in: courseIds } });
+
   if (validCourses.length !== courseIds.length) {
-    return res.status(400).json({ message: 'One or more course IDs are invalid' });
-  }
+
+  return res.status(400).json({ message: 'One or more course IDs are invalid' });
+}
+
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
