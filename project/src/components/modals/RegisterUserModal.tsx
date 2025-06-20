@@ -35,11 +35,13 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         const data = await res.json();
         const formattedCourses = data.map((course: any) => ({
           label: course.name,
-          value: course.id,
+          value: course._id,
         }));
         setCourses(formattedCourses);
       } catch (error) {
         console.error("Error fetching courses:", error);
+        console.log("Payload to submit:", payload);
+
       }
     };
 
