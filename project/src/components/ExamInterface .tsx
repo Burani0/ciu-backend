@@ -38,7 +38,7 @@ const ExamInterface: React.FC = () => {
       return;
     }
 
-    const apiUrl = `https://eadmin.ciu.ac.ug/API/StudentExamsAPI.aspx?reg=${regNo}&yr=${year}&sem=${sem}`;
+    const apiUrl = `https://ciu-backend.onrender.com/api/student-exams?reg=${regNo}&yr=${year}&sem=${sem}`;
 
     axios
       .get(apiUrl)

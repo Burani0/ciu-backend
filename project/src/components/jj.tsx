@@ -178,9 +178,9 @@ const ExamPage: React.FC = () => {
       try {
         setLoadingExam(true);
         setFetchError(null);
-       let pdfUrl=`https://eadmin.ciu.ac.ug/API/doc_verification.aspx?doc=Exam&ExamNo=${ExamNo}`;
+       let pdfUrl=`https://ciu-backend.onrender.com/api/exam-pdf?ExamNo=${ExamNo}`;
         const response = await axios.post(
-        'http://localhost:3001/pdf',
+        'https://ciu-backend.onrender.com/pdf',
         { pdfUrl },
        
           

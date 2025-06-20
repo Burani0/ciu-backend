@@ -61,7 +61,7 @@ connectDB();
 
 // Enable CORS for the frontend origin
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ['https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app', 'http://localhost:5173', 'https://ciu-backend-1.onrender.com'],
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,

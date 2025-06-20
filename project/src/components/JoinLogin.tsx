@@ -56,34 +56,84 @@ export default function Login(): JSX.Element {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const apiUrl = `https://eadmin.ciu.ac.ug/API/ClearedStudentsAPI.aspx?acad=${academicYear}&sem=${semester}`;
+    const apiUrl = `https://ciu-backend.onrender.com/api/cleared-students?acad=${academicYear}&sem=${semester}`;
+     try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
 
-    try {
-      const response = await axios.get(apiUrl);
-      let clearedStudents = typeof response.data === "string" ? JSON.parse(response.data) : response.data;
+      let clearedStudents;
+      if (typeof response.data === "string") {
+        try {
+          clearedStudents = JSON.parse(response.data);
+        } catch (parseError) {
+          throw new Error("Unable to parse server response.");
+        }
+      } else {
+        clearedStudents = response.data;
+      }
 
-      if (!Array.isArray(clearedStudents)) throw new Error("Invalid data format received from the server.");
+      if (!Array.isArray(clearedStudents)) {
+        throw new Error("Invalid data format received from the server.");
+      }
 
-      const studentCleared = clearedStudents.some((student: any) =>
-        student?.RegistrationNo?.trim().toLowerCase() === regNo.trim().toLowerCase()
-      );
+      const studentCleared = clearedStudents.some((student: any) => {
+        const studentRegNo = student?.RegistrationNo?.trim().toLowerCase();
+        return studentRegNo === regNo.trim().toLowerCase();
+      });
 
       if (studentCleared) {
         setSuccessMessage("Login successful!");
         localStorage.setItem("studentRegNo", regNo.trim());
         localStorage.setItem("studentYear", academicYear.trim());
         localStorage.setItem("studentSem", semester.trim());
-        navigate("/ExamInterface", {
-          state: { regNo: regNo.trim(), academicYear: academicYear.trim(), semester: semester.trim() },
-        });
+        // Fetch cleared students and store extra details for the logged-in student
+        try {
+          const clearedRes = await axios.get(
+            `https://ciu-backend.onrender.com/api/cleared-students?acad=${academicYear}&sem=${semester}`
+          );
+          let clearedStudents = clearedRes.data;
+          if (typeof clearedStudents === "string") {
+            try { clearedStudents = JSON.parse(clearedStudents); } catch { clearedStudents = []; }
+          }
+          const matchedStudent = clearedStudents.find(
+            (student: any) => student.RegistrationNo?.trim().toLowerCase() === regNo.trim().toLowerCase()
+          );
+          if (matchedStudent) {
+            localStorage.setItem("StudyYear", matchedStudent.StudyYear || "");
+            localStorage.setItem("Semester", matchedStudent.Semester || "");
+            localStorage.setItem("AcademicYear", matchedStudent.AcademicYear || "");
+            localStorage.setItem("StudentName", matchedStudent.StudentName || "");
+          }
+        } catch (error) {
+          console.error("API Error fetching cleared students:", error);
+        }
+        setTimeout(() => {
+          navigate("/ExamInterface", {
+            state: {
+              regNo: regNo.trim(),
+              academicYear: academicYear.trim(),
+              semester: semester.trim(),
+            },
+          });
+        }, 1000);
       } else {
         setErrorMessage("Registration number not found or not cleared.");
       }
     } catch (err: any) {
+      console.error("Login error:", err);
+
       if (err.response) {
-        setErrorMessage(`Server Error: ${err.response.status} - ${err.response.statusText}`);
+        setErrorMessage(
+          `Server Error: ${err.response.status} - ${err.response.statusText}`
+        );
       } else if (err.message.includes("Network Error")) {
-        setErrorMessage("Network error: Please check your internet connection.");
+        setErrorMessage(
+          "Network error: Please check your internet connection."
+        );
       } else {
         setErrorMessage(err.message || "Unexpected error occurred.");
       }

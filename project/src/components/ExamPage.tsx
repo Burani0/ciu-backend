@@ -623,13 +623,14 @@ const ExamPage: React.FC = () => {
         return;
       }
 
-      const examLink = `https://eadmin.ciu.ac.ug/API/doc_verification.aspx?doc=Exam&ExamNo=${examNo}`;
+     const examLink = `https://ciu-backend.onrender.com/api/exam-pdf?ExamNo=${examNo}`;
+
       console.log('Fetching exam data from:', examLink);
 
       try {
         const pdfResponse = await axios.get(examLink, {
           responseType: 'blob',
-          withCredentials: true,
+          // withCredentials: true,
         });
         const url = window.URL.createObjectURL(new Blob([pdfResponse.data], { type: 'application/pdf' }));
         setPdfUrl(url);
