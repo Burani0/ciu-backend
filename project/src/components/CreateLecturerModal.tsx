@@ -27,7 +27,7 @@ const CreateLecturerModal: React.FC<Props> = ({ onClose, onSuccess }) => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/admin/courses');
+        const res = await axios.get('https://ciu-backend.onrender.com/api/admin/courses');
         const formatted = res.data.map((course: any) => ({
           label: course.courseTitle,
           value: course._id,

@@ -197,7 +197,7 @@ import ProctoringPage from './components/ProctoringPage';
 // import ExamInterface from './components/ExamInterface';
 import ExamInterface from './components/ExamInterface '
 import ExamPage from './components/ExamPage';
-import Login from './pages/Login';
+// import Login from './pages/Login';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import RegForm from './pages/Admin/RegForm';
 import RegCourse from './pages/Admin/RegCourse.tsx';
@@ -226,7 +226,7 @@ const Viewer = React.lazy(() => import('./components/Viewer'));
 const CreateAdminPage = React.lazy(() => import('./components/modals/CreateAdminModal.tsx'));
 const AdminLoginPage = React.lazy(() => import('./components/AdminLoginPage'));
 const TokenVerificationPage = React.lazy(() => import('./components/TokenVerificationPage'));
-const LoginPage = React.lazy(() => import('./components/LoginPage'));
+const Login = React.lazy(() => import('./components/JoinLogin'));
 const CreateCoursePage = React.lazy(() => import('./components/CreateCourseModal.tsx'));
 const CreateLecturerPage = React.lazy(() => import('./components/CreateLecturerModal.tsx'));
 const Logs = React.lazy(() => import('./components/Logs.tsx'));
@@ -353,7 +353,8 @@ function AppWrapper() {
                 <Route path="/exam/:roomId" element={<ExamPage />} />
                 <Route path="/view/:roomId" element={<Viewer />} />
                 <Route path="/proctoring" element={<ProctoringPage />} />
-                <Route path="/LOGIN" element={<Login />} />
+                <Route path="/" element={<Login/>}     />
+                {/* <Route path="/LOGIN" element={<Login />} /> */}
                 <Route path="/admin" element={<AdminDashboard />} /> {/* ❌ No layout */}
                 <Route path="/lecturer" element={<LecturerDashboard />} />
                 <Route path="/register" element={<RegForm />} />
@@ -390,7 +391,8 @@ function AppWrapper() {
               <Route path="/exam/:roomId" element={<ExamPage />} />
               <Route path="/view/:roomId" element={<Viewer />} />
               <Route path="/proctoring" element={<ProctoringPage />} />
-              <Route path="/LOGIN" element={<Login />} /> {/* ❌ No layout */}
+              <Route path="/" element={<Login/>}     />
+              {/* <Route path="/LOGIN" element={<Login />} /> ❌ No layout */}
               <Route path="/admin" element={<AdminDashboard />} /> {/* ❌ No layout */}
               <Route path="/lecturer" element={<LecturerDashboard />} />
               <Route path="/register" element={<RegForm />} />
@@ -412,6 +414,7 @@ function AppWrapper() {
                 <Route path="/LandingPage" element={<LandingPage/>}     />
                 <Route path="/" element={<JoinLogin/>}     />
                 {/* <Route path="/" element={<LoginWrapper />} /> */}
+                
             </Routes>
           </Suspense>
         )}

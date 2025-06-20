@@ -29,7 +29,7 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
     const fetchCourse = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3001/api/admin/courses/${courseId}`
+          `https://ciu-backend.onrender.com/api/admin/courses/${courseId}`
         );
         if (!response.ok) throw new Error("Failed to fetch course");
         const data = await response.json();
@@ -56,7 +56,7 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({
     e.preventDefault();
     try {
       const response = await fetch(
-        `http://localhost:3001/api/admin/courses/${courseId}`,
+        `https://ciu-backend.onrender.com/api/admin/courses/${courseId}`,
         {
           method: "PUT",
           headers: {

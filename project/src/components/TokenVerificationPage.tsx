@@ -272,7 +272,7 @@ const TokenVerificationPage = () => {
     const storedLecturerId = localStorage.getItem('lecturerId');
     console.log('Stored lecturerId on page load:', storedLecturerId);
     if (!storedLecturerId) {
-      navigate('/login');
+      navigate('/verify-token');
     }
   }, [navigate]);
 
@@ -281,7 +281,7 @@ const TokenVerificationPage = () => {
     console.log('Attempting verification with:', { universityNumber, token });
 
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/verify', {
+      const response = await axios.post('https://ciu-backend.onrender.com/api/auth/verify', {
         universityNumber,
         token,
       });

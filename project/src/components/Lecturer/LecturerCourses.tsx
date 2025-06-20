@@ -43,7 +43,7 @@ const LectCourses = () => {
 
     const fetchCourses = async () => {
       try {
-        const res = await fetch(`http://localhost:3001/api/admin/lecturers/${lecturerId}`);
+        const res = await fetch(`https://ciu-backend.onrender.com/api/admin/lecturers/${lecturerId}`);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
