@@ -1,15 +1,101 @@
 
+
+
+// import express from 'express';
+// import { createServer } from 'http';
+// import { Server } from 'socket.io';
+// import { fileURLToPath } from 'url';
+// import { dirname } from 'path';
+// import cors from 'cors';
+
+// import mongoose from 'mongoose';
+// import dotenv from 'dotenv';
+// import examRoutes from './routes/examRoutes.js'; 
+
+
+
+
+
+
+
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import cors from 'cors';
 
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+ 
+import examRoutes from './routes/examRoutes.js'; 
+
+ 
+import lecturerRoutes from './routes/lecturerRoutes.js';
+import proxyRoutes from './routes/proxy.js';
+ 
+
+import { connectDB } from './config/db.js';
+import adminRoutes from './routes/adminRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+
+
+
+// import { connectDB } from './config/db.js';
+// import adminRoutes from './routes/adminRoutes.js';
+// import authRoutes from './routes/authRoutes.js';
+
+
+dotenv.config();
 const filename = fileURLToPath(import.meta.url);
 const currentDirname = dirname(filename);
 
+// Initialize Express app
 const app = express();
+app.use(express.json());
 const httpServer = createServer(app);
+
+app.use(express.json());
+connectDB();
+
+
+// Enable CORS for the frontend origin
+app.use(cors({
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
+      'https://ciu-backend-1.onrender.com',
+      'https://ciu-backend.onrender.com',
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch((err) => console.error('MongoDB connection error:', err));
+
+// Create HTTP server and integrate with Socket.IO
+// const httpServer = createServer(app);
+app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+ 
+app.use('/api/lecturer', lecturerRoutes);
+app.use('/api', proxyRoutes);
+app.use('/api/exams', examRoutes);
+ 
 
 const io = new Server(httpServer, {
   cors: {
@@ -99,6 +185,10 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(3001, () => {
-  console.log('Server running on port 3001');
+ 
+const PORT = process.env.PORT || 3001;
+
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
+ 

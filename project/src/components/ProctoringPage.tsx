@@ -173,7 +173,42 @@ const ProctoringPage: React.FC = () => {
 
   const handleBeginExam = () => {
     if (beginExamEnabled) {
-      navigate("/home");
+      const examLink = localStorage.getItem("currentExamLink");
+      const examName = localStorage.getItem("currentExamName");
+      const examID = localStorage.getItem("currentExamID");
+      const studentRegNo = localStorage.getItem("studentRegNo");
+
+      // Store values in local storage
+      localStorage.setItem("currentExamName", examName || "");
+      localStorage.setItem("currentExamID", examID || "");
+      localStorage.setItem("studentRegNo", studentRegNo || "");
+      localStorage.setItem("currentExamFullLink", examLink || "");
+
+      //izlik
+
+ // Extract examNo from the link
+      let examNo = "";
+      if (examLink) {
+        const match = examLink.match(/ExamNo=([\w-]+)/);
+        if (match) {
+          examNo = match[1];
+          localStorage.setItem("currentExamNo", examNo);
+        }
+      }
+
+      // Log stored values to confirm
+      console.log("Stored in localStorage:");
+      console.log("currentExamName:", examName);
+      console.log("currentExamID:", examID);
+      console.log("studentRegNo:", studentRegNo);
+      console.log("currentExamNo:", examNo);
+      console.log("currentExamFullLink:", examLink);
+
+      if (examLink) {
+        navigate("/home"); // Go to Home
+      } else {
+        alert("No exam link found. Please start from the exam list.");
+      }
     } else {
       alert("Please ensure all conditions are met before starting the exam.");
     }
