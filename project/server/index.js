@@ -1,3 +1,23 @@
+
+
+
+// import express from 'express';
+// import { createServer } from 'http';
+// import { Server } from 'socket.io';
+// import { fileURLToPath } from 'url';
+// import { dirname } from 'path';
+// import cors from 'cors';
+
+// import mongoose from 'mongoose';
+// import dotenv from 'dotenv';
+// import examRoutes from './routes/examRoutes.js'; 
+
+
+
+
+
+
+
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -20,6 +40,12 @@ import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
 
+
+// import { connectDB } from './config/db.js';
+// import adminRoutes from './routes/adminRoutes.js';
+// import authRoutes from './routes/authRoutes.js';
+
+
 dotenv.config();
 const filename = fileURLToPath(import.meta.url);
 const currentDirname = dirname(filename);
@@ -28,17 +54,29 @@ const currentDirname = dirname(filename);
 const app = express();
 app.use(express.json());
 const httpServer = createServer(app);
-app.use(cors());
+
 app.use(express.json());
 connectDB();
 
 
 // Enable CORS for the frontend origin
 app.use(cors({
-  origin: ['https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app', 'http://localhost:5173', 'https://ciu-backend-1.onrender.com'],
-  methods: ['GET', 'POST'],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
+      'https://ciu-backend-1.onrender.com',
+      'https://ciu-backend.onrender.com',
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
+  credentials: true
 }));
 
 // MongoDB Connection
@@ -61,7 +99,7 @@ app.use('/api/exams', examRoutes);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", 'https://ciu-backend-1.onrender.com'],
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
     credentials: true,
     transports: ['websocket', 'polling']
@@ -151,6 +189,6 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3001;
 
 httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
  
