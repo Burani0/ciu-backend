@@ -305,6 +305,7 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         const res = await fetch("https://ciu-backend.onrender.com/courses");
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
+        console.log(data.message);
         const formattedCourses = data.map((course: any) => ({
           label: course.name,
           value: course.id,
@@ -379,6 +380,7 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
       });
 
       const data = await response.json();
+      console.log("Server error message:", data.message);
 
       if (response.ok) {
         setSuccessMessage("Lecturer successfully registered!");

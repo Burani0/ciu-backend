@@ -364,6 +364,8 @@ import { sendEmail } from '../utils/mailer.js';
 import LecturerLoginLog from '../models/LecturerLoginLog.js';
 import PDFDocument from 'pdfkit';
 import AdminToken from '../models/AdminToken.js';
+import ExamSubmission from '../models/examSubmission.js';
+
 
 
 
@@ -677,4 +679,31 @@ export const clearToken = async (req, res) => {
 
   // Token is valid
   res.status(200).json({ message: 'Token verified', adminId: admin._id });
+}
+
+  export const getLecturerSubmissions = async (req, res) => {
+    console.log('GET /lecturer/:lecturerId/submissions called with', req.params);
+      const { lecturerId } = req.params;
+    
+      try {
+        const lecturer = await Lecturer.findById(lecturerId);
+        if (!lecturer) {
+          return res.status(404).json({ message: 'Lecturer not found' });
+        }
+    
+        // Extract courseIds from assignedCourses array
+        const assignedCourseIds = lecturer.assignedCourses.map((courseId) =>
+          courseId.toString()
+        );
+    
+        // Fetch submissions for those courses
+        const submissions = await ExamSubmission.find({
+          courseId: { $in: assignedCourseIds }
+        });
+    
+        res.status(200).json(submissions);
+      } catch (error) {
+        console.error('Error fetching submissions for lecturer:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+      }
 };
