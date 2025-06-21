@@ -1,3 +1,23 @@
+
+
+
+// import express from 'express';
+// import { createServer } from 'http';
+// import { Server } from 'socket.io';
+// import { fileURLToPath } from 'url';
+// import { dirname } from 'path';
+// import cors from 'cors';
+
+// import mongoose from 'mongoose';
+// import dotenv from 'dotenv';
+// import examRoutes from './routes/examRoutes.js'; 
+
+
+
+
+
+
+
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -9,11 +29,22 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
  
 import examRoutes from './routes/examRoutes.js'; 
+
+ 
 import lecturerRoutes from './routes/lecturerRoutes.js';
 import proxyRoutes from './routes/proxy.js';
+ 
+
 import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+
+
+
+// import { connectDB } from './config/db.js';
+// import adminRoutes from './routes/adminRoutes.js';
+// import authRoutes from './routes/authRoutes.js';
+
 
 dotenv.config();
 const filename = fileURLToPath(import.meta.url);
@@ -21,51 +52,34 @@ const currentDirname = dirname(filename);
 
 // Initialize Express app
 const app = express();
+app.use(express.json());
 const httpServer = createServer(app);
 
-// Connect to database
+app.use(express.json());
 connectDB();
 
-// Define allowed origins
-const allowedOrigins = [
-  'https://examiner.ciu.ac.ug',
-  'http://localhost:5173',
-  'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
-  'https://ciu-backend-1.onrender.com',
-  'https://ciu-backend.onrender.com',
-  // Add your actual frontend domain here
-];
 
-// CORS configuration
-const corsOptions = {
+// Enable CORS for the frontend origin
+app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, etc.)
-    if (!origin) {
-      return callback(null, true);
-    }
-    
-    if (allowedOrigins.includes(origin)) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
+      'https://ciu-backend-1.onrender.com',
+      'https://ciu-backend.onrender.com',
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
-};
+}));
 
-// Apply CORS middleware
-app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.options('*', cors(corsOptions));
-
-// Parse JSON bodies
-app.use(express.json());
-
-// MongoDB Connection (alternative to connectDB if needed)
+// MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -73,18 +87,20 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// Routes
+// Create HTTP server and integrate with Socket.IO
+// const httpServer = createServer(app);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
+ 
 app.use('/api/lecturer', lecturerRoutes);
 app.use('/api', proxyRoutes);
 app.use('/api/exams', examRoutes);
+ 
 
-// Socket.IO configuration
 const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "OPTIONS"],
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
     credentials: true,
     transports: ['websocket', 'polling']
   },
@@ -169,8 +185,10 @@ io.on('connection', (socket) => {
   });
 });
 
+ 
 const PORT = process.env.PORT || 3001;
 
 httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
+ 
