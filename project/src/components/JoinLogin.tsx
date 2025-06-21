@@ -23,7 +23,7 @@ export default function Login(): JSX.Element {
  const handleAdminLogin = async () => {
     setErrorMessage('');
     try {
-      const adminResponse = await axios.post('https://ciu-backend.vercel.app/api/admin/admin-login', {
+      const adminResponse = await axios.post('https://ciu-backend.onrender.com/api/admin/admin-login', {
         username: identifier,
         password,
       });
@@ -31,7 +31,7 @@ export default function Login(): JSX.Element {
       return navigate('/cleartoken');
     } catch {
       try {
-        const lecturerResponse = await axios.post('https://ciu-backend.vercel.app/api/auth/login', {
+        const lecturerResponse = await axios.post('https://ciu-backend.onrender.com/api/auth/login', {
           universityNumber: identifier,
           password,
         });
@@ -56,7 +56,7 @@ export default function Login(): JSX.Element {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const apiUrl = `https://ciu-backend.vercel.app/api/cleared-students?acad=${academicYear}&sem=${semester}`;
+    const apiUrl = `https://ciu-backend.onrender.com/api/cleared-students?acad=${academicYear}&sem=${semester}`;
      try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -93,7 +93,7 @@ export default function Login(): JSX.Element {
         // Fetch cleared students and store extra details for the logged-in student
         try {
           const clearedRes = await axios.get(
-            `https://ciu-backend.vercel.app/api/cleared-students?acad=${academicYear}&sem=${semester}`
+            `https://ciu-backend.onrender.com/api/cleared-students?acad=${academicYear}&sem=${semester}`
           );
           let clearedStudents = clearedRes.data;
           if (typeof clearedStudents === "string") {
