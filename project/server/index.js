@@ -63,6 +63,7 @@ connectDB();
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
+      'https://examiner.ciu.ac.ug',
       'http://localhost:5173',
       'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
       'https://ciu-backend-1.onrender.com',
