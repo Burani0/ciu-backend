@@ -78,6 +78,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+app.options('*', cors());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
