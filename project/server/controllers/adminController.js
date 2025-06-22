@@ -657,53 +657,137 @@ export const adminLogin = async (req, res) => {
   }
 };
 
-
 export const clearToken = async (req, res) => {
-  const { username, token } = req.body;
-
-  if (!username || !token) {
-    return res.status(400).json({ message: 'username  and token are required' });
+    const { username, token } = req.body;
+  
+    if (!username || !token) {
+      return res.status(400).json({ message: 'username  and token are required' });
+    }
+  
+    // Find the lecturer using the university number
+    const admin = await Admin.findOne({ username });
+    if (!admin) {
+      return res.status(404).json({ message: 'admin not found' });
+    }
+  
+    // Check if the token matches the one stored for that lecturer
+    const tokenDoc = await AdminToken.findOne({ adminId: admin._id, token });
+    if (!tokenDoc) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+  
+    // Token is valid
+    res.status(200).json({ message: 'Token verified', adminId: admin._id });
   }
 
-  // Find the lecturer using the university number
-  const admin = await Admin.findOne({ username });
-  if (!admin) {
-    return res.status(404).json({ message: 'admin not found' });
+
+// export const getLecturerSubmissions = async (req, res) => {
+//   console.log('GET /lecturer/:lecturerId/submissions called with', req.params);
+//   const { lecturerId } = req.params;
+
+//   try {
+//     const lecturer = await Lecturer.findById(lecturerId);
+//     if (!lecturer) {
+//       return res.status(404).json({ message: 'Lecturer not found' });
+//     }
+
+//     // assignedCourses might include either ObjectId strings or course codes
+//     const assignedCourses = lecturer.assignedCourses;
+
+//     const submissions = await ExamSubmission.find({
+//       $or: [
+//         { courseId: { $in: assignedCourses } },     // match if stored as string
+//         { courseId: { $in: assignedCourses.map(id => mongoose.Types.ObjectId.isValid(id) ? mongoose.Types.ObjectId(id) : null).filter(Boolean) } },
+//         { courseCode: { $in: assignedCourses } },   // match by courseCode too
+//       ],
+//     });
+
+//     res.status(200).json(submissions);
+//   } catch (error) {
+//     console.error('Error fetching submissions for lecturer:', error);
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// };
+//   // getSubmissionById
+//   export const getSubmissionById = async (req, res) => {
+//     const { id } = req.params;
+  
+//     if (!mongoose.Types.ObjectId.isValid(id)) {
+//       return res.status(400).json({ message: 'Invalid submission ID' });
+//     }
+  
+//     try {
+//       const submission = await ExamSubmission.findById(id);
+  
+//       if (!submission) {
+//         return res.status(404).json({ message: 'Submission not found' });
+//       }
+  
+//       res.status(200).json(submission);
+//     } catch (error) {
+//       console.error('Error fetching submission:', error);
+//       res.status(500).json({ message: 'Server error', error: error.message });
+//     }
+//   };
+  
+  
+// };
+
+
+export const getLecturerSubmissions = async (req, res) => {
+  console.log('GET /lecturer/:lecturerId/submissions called with', req.params);
+  const { lecturerId } = req.params;
+
+  try {
+    const lecturer = await Lecturer.findById(lecturerId);
+    if (!lecturer) {
+      return res.status(404).json({ message: 'Lecturer not found' });
+    }
+
+    const assignedCourses = lecturer.assignedCourses;
+
+    const submissions = await ExamSubmission.find({
+      $or: [
+        { courseId: { $in: assignedCourses } },
+        {
+          courseId: {
+            $in: assignedCourses
+              .map(id => mongoose.Types.ObjectId.isValid(id) ? mongoose.Types.ObjectId(id) : null)
+              .filter(Boolean)
+          }
+        },
+        { courseCode: { $in: assignedCourses } }
+      ],
+    }).populate('courseId', 'courseCode');
+
+    res.status(200).json(submissions);
+  } catch (error) {
+    console.error('Error fetching submissions for lecturer:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ✅ This MUST be outside of any other function
+export const getSubmissionById = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid submission ID' });
   }
 
-  // Check if the token matches the one stored for that lecturer
-  const tokenDoc = await AdminToken.findOne({ adminId: admin._id, token });
-  if (!tokenDoc) {
-    return res.status(401).json({ message: 'Invalid token' });
+  try {
+    const submission = await ExamSubmission.findById(id).populate('courseId', 'courseCode');
+    
+    console.log('Fetched submission:', submission);
+
+
+    if (!submission) {
+      return res.status(404).json({ message: 'Submission not found' });
+    }
+
+    res.status(200).json(submission);
+  } catch (error) {
+    console.error('Error fetching submission:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
-
-  // Token is valid
-  res.status(200).json({ message: 'Token verified', adminId: admin._id });
-}
-
-  export const getLecturerSubmissions = async (req, res) => {
-    console.log('GET /lecturer/:lecturerId/submissions called with', req.params);
-      const { lecturerId } = req.params;
-    
-      try {
-        const lecturer = await Lecturer.findById(lecturerId);
-        if (!lecturer) {
-          return res.status(404).json({ message: 'Lecturer not found' });
-        }
-    
-        // Extract courseIds from assignedCourses array
-        const assignedCourseIds = lecturer.assignedCourses.map((courseId) =>
-          courseId.toString()
-        );
-    
-        // Fetch submissions for those courses
-        const submissions = await ExamSubmission.find({
-          courseId: { $in: assignedCourseIds }
-        });
-    
-        res.status(200).json(submissions);
-      } catch (error) {
-        console.error('Error fetching submissions for lecturer:', error);
-        res.status(500).json({ message: 'Server error', error: error.message });
-      }
 };

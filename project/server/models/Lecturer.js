@@ -6,7 +6,9 @@ const lecturerSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   universityNumber: { type: String, unique: true },
   password: String,
-  assignedCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+  // assignedCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+  assignedCourses: [{ type: String }],
+
 });
 
 export default mongoose.model('Lecturer', lecturerSchema);

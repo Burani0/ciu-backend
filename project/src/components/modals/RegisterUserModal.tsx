@@ -280,8 +280,10 @@ interface Props {
 
 interface CourseOption {
   label: string;
-  value: string;
+  value: string; // this is courseId
+  code: string;  // this is courseCode (e.g. "TEST111")
 }
+
 
 const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -306,10 +308,16 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
         console.log(data.message);
+        // const formattedCourses = data.map((course: any) => ({
+        //   label: course.name,
+        //   value: course.id,
+        // }));
         const formattedCourses = data.map((course: any) => ({
-          label: course.name,
-          value: course.id,
+          label: course.name,     // or course.name depending on your backend
+          value: course._id,             // ObjectId
+          code: course.courseCode,       // Human-readable courseCode
         }));
+        
         setCourses(formattedCourses);
       } catch (error) {
         console.error("Error fetching courses:", error);
@@ -365,13 +373,25 @@ const RegisterUserModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     try {
       const endpoint = "https://ciu-backend.onrender.com/lecturerReg";
 
+      // const payload = {
+      //   first_name: formData.firstName,
+      //   last_name: formData.lastName,
+      //   email: formData.emailOrStudentNumber,
+      //   role: "lecturer",
+      //   courses: selectedCourses.map((course) => course.value),
+      // };
+
       const payload = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.emailOrStudentNumber,
         role: "lecturer",
-        courses: selectedCourses.map((course) => course.value),
+        courses: selectedCourses.map((course) => ({
+          courseId: course.value,
+          courseCode: course.code,
+        })),
       };
+      
 
       const response = await fetch(endpoint, {
         method: "POST",

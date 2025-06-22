@@ -190,6 +190,7 @@
 
 
 import React, { Suspense, useEffect, useState, useCallback, createContext } from 'react';
+import { matchPath } from 'react-router-dom';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Camera, AlertCircle } from 'lucide-react';
 import { socket } from './config/socket';
@@ -216,6 +217,7 @@ import EditAdminModal from './components/admin/EditAdminModal.tsx';
 import LandingPage from './pages/LandingPage.tsx';
 import JoinLogin from './pages/JoinLogin.tsx';
 import LecturerSubmissions from './components/Lecturer/LecturerSubmission.tsx';
+import ViewExam from './components/Lecturer/ViewExam.tsx';
 
 
 
@@ -322,8 +324,11 @@ function AppWrapper() {
     }
   }, []);
 
-  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/','/admin-create','/adminlist','/editadmin','/Landingpage','/Submitted-exam'];
-  const isLayoutVisible = !noLayoutRoutes.includes(location.pathname);
+  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/','/admin-create','/adminlist','/editadmin','/Landingpage','/Submitted-exam','/answers/:submissionId',];
+  // const isLayoutVisible = !noLayoutRoutes.includes(location.pathname);
+  const isLayoutVisible = !noLayoutRoutes.some(route =>
+    matchPath({ path: route, end: false }, location.pathname)
+  );
 
   return (
     <SocketContext.Provider value={{ isConnected, reconnect }}>
@@ -380,6 +385,7 @@ function AppWrapper() {
         <Route path="/cleartoken" element={<Cleartoken/>}     />
         <Route path="/LandingPage" element={<LandingPage/>}     />
         <Route path="/Submitted-exam" element={<LecturerSubmissions/>}     />
+        <Route path="/answers/:submissionId" element={<ViewExam />} />
         <Route path="/" element={<JoinLogin/>}     />
         {/* <Route path="/" element={<LoginWrapper />} /> */}
         
@@ -415,6 +421,7 @@ function AppWrapper() {
                 <Route path="/editadmin" element={<EditAdminModal/>} />
                 <Route path="/LandingPage" element={<LandingPage/>}     />
                 <Route path="/Submitted-exam" element={<LecturerSubmissions/>}     />
+                <Route path="/answers/:submissionId" element={<ViewExam />} />
                 <Route path="/" element={<JoinLogin/>}     />
                 {/* <Route path="/" element={<LoginWrapper />} /> */}
                 

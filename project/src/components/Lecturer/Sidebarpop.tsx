@@ -25,7 +25,7 @@ const Sidebar: React.FC = () => {
       text: 'Exam Management',
       subItems: [
 
-        { text: 'Completed Exams', path: '/completed-Assessments' },
+        { text: 'Completed Exams', path: '/Submitted-exam' },
       ],
     },
     { icon: <LogOut size={20} />, text: 'Logout', path: '/' },

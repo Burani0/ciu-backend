@@ -221,6 +221,7 @@ interface Props {
 interface CourseOption {
   value: string;
   label: string;
+  code: string;
 }
 
 const CreateLecturerModal: React.FC<Props> = ({ onClose, onSuccess }) => {
@@ -242,6 +243,7 @@ const CreateLecturerModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         const formatted = res.data.map((course: any) => ({
           label: course.courseTitle,
           value: course._id,
+          code: course.courseCode,
         }));
         setCourses(formatted);
       } catch (err) {
@@ -265,6 +267,7 @@ const CreateLecturerModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         universityNumber,
         password,
         courseIds: selectedCourses.map((course) => course.value),
+        courseCodes: selectedCourses.map((course) => course.code),
       });
       setSuccessMsg('Lecturer registered successfully!');
       setFirstName('');
