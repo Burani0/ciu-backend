@@ -8,7 +8,7 @@ const examSubmissionSchema = new mongoose.Schema({
   answers: [
     {
       section: { type: String, required: false }, // Optional for non-sectioned exams
-      answer: { type: String, required: true },
+      answer: { type: String },
     },
   ],
   submissionTime: { type: Date, default: Date.now },
