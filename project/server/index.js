@@ -60,18 +60,14 @@ connectDB();
 
 
 // Enable CORS for the frontend origin
-const allowedOrigins = [
-  "https://examiner.ciu.ac.ug", // ✅ Added frontend
-  "http://localhost:5173",      // ✅ Local dev
-  "https://ciu-backend.vercel.app",
-  "https://ciu-backend-1.onrender.com",
-  "https://ciu-backend.onrender.com",
-  "https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app"
-];
-
 app.use(cors({
   origin: function (origin, callback) {
-    console.log("Incoming origin:", origin); // 👀 Debug
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
+      'https://ciu-backend-1.onrender.com',
+      'https://ciu-backend.onrender.com',
+    ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -82,8 +78,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
-
-
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
