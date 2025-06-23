@@ -608,6 +608,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import * as faceapi from 'face-api.js';
 import { emitStream, joinRoom, leaveRoom } from '../config/socket';
+import SuccessPopup from './SuccessPopup';
 
 export type Timer = { hours: number; minutes: number; seconds: number };
 export type SecurityChecks = {
@@ -632,6 +633,7 @@ const ExamPage: React.FC = () => {
   const [smoothedDetection, setSmoothedDetection] = useState<0 | 1 | 2>(1);
   const [noFaceTimer, setNoFaceTimer] = useState(0);
   const [multiFaceTimer, setMultiFaceTimer] = useState(0);
+  const [showPopup, setShowPopup] = useState(false);
   const [examData, setExamData] = useState({
     examLink: '',
     examNo: '',
@@ -900,7 +902,7 @@ const ExamPage: React.FC = () => {
     };
 
     console.log('Submission data prepared:', JSON.stringify(submissionData, null, 2));
-
+    
     const submitURL = 'https://ciu-backend.onrender.com/api/exams/submit_exam';
     console.log('Submitting to URL:', submitURL);
 
@@ -942,14 +944,11 @@ const ExamPage: React.FC = () => {
               localStorage.removeItem(key);
             });
             
-          setTimeout(() => {
-            console.log('Navigating to exam-complete page...');
-            navigate('/exam-complete');
-          }, 2000);
-          return;
-        } else {
-          throw new Error(`Unexpected response status: ${response.status}`);
-        }
+            setShowPopup(true);
+    return;
+  } else {
+    throw new Error(`Unexpected response status: ${response.status}`);
+  }
       } catch (err: any) {
         setDebugInfo(`Error: ${err.message}\n${err.response ? JSON.stringify(err.response.data, null, 2) : ''}`);
         console.error(`=== ATTEMPT ${attempt} FAILED ===`);
@@ -1189,9 +1188,11 @@ const ExamPage: React.FC = () => {
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Exam'}
                   </button>
+                  
                   {submissionStatus && (
                     <div className={`mt-2 text-sm ${submissionStatus.includes('successfully') ? 'text-green-600' : 'text-red-500'}`}>
                       {submissionStatus}
+                      
                     </div>
                   )}
                 </div>
@@ -1199,8 +1200,12 @@ const ExamPage: React.FC = () => {
             </div>
           </div>
         </div>
+        <SuccessPopup show={showPopup} />
+
       </div>
+      
     </div>
+    
   );
 };
 

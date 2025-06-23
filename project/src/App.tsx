@@ -328,7 +328,7 @@ function AppWrapper() {
                 <div className="flex items-center justify-between h-16">
                   <Link to="/" className="flex items-center text-[#edf2f7] font-bold text-xl">
                     <Camera className="h-8 w-8 text-[#4c51bf] mr-2" />
-                    ProctorStream
+                    CIU Exam Management System
                   </Link>
                   <span
                     className={`px-4 py-2 rounded-full text-sm font-medium ${
