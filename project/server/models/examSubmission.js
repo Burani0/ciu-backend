@@ -15,6 +15,6 @@ const examSubmissionSchema = new mongoose.Schema({
 });
 
 // Prevent duplicate submissions
-// examSubmissionSchema.index({ examNo: 1, studentRegNo: 1 }, { unique: true });
+examSubmissionSchema.index({ examNo: 1, studentRegNo: 1 }, { unique: true });
 
 export default mongoose.model('ExamSubmission', examSubmissionSchema);

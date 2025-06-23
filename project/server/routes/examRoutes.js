@@ -3,51 +3,6 @@ import ExamSubmission from '../models/examSubmission.js';
 
 const router = express.Router();
 
-// Submit exam
-// router.post('/submit_exam', async (req, res) => {
-//   const { studentRegNo, examNo, examName, courseId, answers, submissionTime } = req.body;
-
-//   // Validate input
-//   if (!studentRegNo || !examNo || !examName || !courseId || !answers || !Array.isArray(answers)) {
-//     return res.status(400).json({ error: 'Missing required fields or invalid answers array' });
-//   }
-
-//   if (answers.length === 0) {
-//     return res.status(400).json({ error: 'Answers array cannot be empty' });
-//   }
-
-//   for (const answer of answers) {
-//     if (!answer.answer) {
-//       return res.status(400).json({ error: 'Each answer must have an answer field' });
-//     }
-//   }
-
-  
-
-//   try {
-//     const submission = await ExamSubmission.create({
-//       studentRegNo,
-//       examNo,
-//       examName,
-//       courseId,
-//       answers,
-//       submissionTime: submissionTime || new Date(),
-//     });
-
-//     res.status(200).json({
-//       message: 'Exam submitted successfully',
-     
-//     });
-//   } catch (error) {
-//     if (error.code === 11000) {
-//       return res.status(400).json({ error: 'Submission already exists for this exam and student' });
-//     }
-//     console.error('Error submitting exam:', error);
-//     res.status(500).json({ error: 'Failed to submit exam', details: error.message });
-//   }
-// });
-
- // Adjust path as needed
 
 router.post('/submit_exam', async (req, res) => {
   const { studentRegNo, examNo, examName, courseId, answers, submissionTime, submissionType } = req.body;
@@ -98,15 +53,76 @@ router.post('/submit_exam', async (req, res) => {
     res.status(500).json({ error: 'Failed to submit exam', details: error.message });
   }
 });
+
 // Fetch all exams (no inputs)
 router.get('/fetch_all_exams', async (req, res) => {
   try {
     const submissions = await ExamSubmission.find({});
-    res.status(200).json(submissions);
+    const transformedSubmissions = submissions.map(sub => ({
+      ...sub._doc,
+      answers: sub.answers.flatMap(answer => {
+        if (typeof answer === 'object' && answer.answer) {
+          // Split the answer by newlines and filter out empty lines
+          const splitAnswers = answer.answer.split('\n').filter(a => a.trim());
+          return splitAnswers.length > 1 ? splitAnswers : [answer.answer];
+        }
+        return [answer]; // Return as single item if not an object or no split needed
+      }),
+    }));
+    res.status(200).json(transformedSubmissions);
   } catch (error) {
     console.error('Error fetching all exams:', error);
     res.status(500).json({ error: 'Failed to fetch all exams', details: error.message });
   }
 });
-
 export default router;
+
+
+
+
+
+// Submit exam
+// router.post('/submit_exam', async (req, res) => {
+//   const { studentRegNo, examNo, examName, courseId, answers, submissionTime } = req.body;
+
+//   // Validate input
+//   if (!studentRegNo || !examNo || !examName || !courseId || !answers || !Array.isArray(answers)) {
+//     return res.status(400).json({ error: 'Missing required fields or invalid answers array' });
+//   }
+
+//   if (answers.length === 0) {
+//     return res.status(400).json({ error: 'Answers array cannot be empty' });
+//   }
+
+//   for (const answer of answers) {
+//     if (!answer.answer) {
+//       return res.status(400).json({ error: 'Each answer must have an answer field' });
+//     }
+//   }
+
+  
+
+//   try {
+//     const submission = await ExamSubmission.create({
+//       studentRegNo,
+//       examNo,
+//       examName,
+//       courseId,
+//       answers,
+//       submissionTime: submissionTime || new Date(),
+//     });
+
+//     res.status(200).json({
+//       message: 'Exam submitted successfully',
+     
+//     });
+//   } catch (error) {
+//     if (error.code === 11000) {
+//       return res.status(400).json({ error: 'Submission already exists for this exam and student' });
+//     }
+//     console.error('Error submitting exam:', error);
+//     res.status(500).json({ error: 'Failed to submit exam', details: error.message });
+//   }
+// });
+
+ // Adjust path as needed
