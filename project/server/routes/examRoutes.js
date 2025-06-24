@@ -1,5 +1,6 @@
 import express from 'express';
 import ExamSubmission from '../models/examSubmission.js';
+import ExamLog  from '../models/exam_logs.js'; 
 
 const router = express.Router();
 
@@ -75,54 +76,66 @@ router.get('/fetch_all_exams', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch all exams', details: error.message });
   }
 });
+
+
+
+router.get('/exam_logs', async (req, res) => {
+  try {
+    // Fetch all logs and sort by the latest timestamp of logEntries
+    const logs = await ExamLog.find()
+      .sort({ 'logEntries.timestamp': -1 }) // Sort by the most recent logEntry timestamp
+      .lean(); // Convert to plain JavaScript object for better performance
+
+    if (!logs || logs.length === 0) {
+      return res.status(404).json({ message: 'No logs found' });
+    }
+
+    res.status(200).json(logs);
+  } catch (error) {
+    console.error('Error fetching logs:', error);
+    res.status(500).json({ error: 'Failed to fetch logs', details: error.message });
+  }
+});
+
+
+
+router.post('/exam_logs', async (req, res) => {
+  const { studentRegNo, examNo, courseId, logEntries } = req.body;
+
+  if (!studentRegNo || !examNo || !courseId || !logEntries || !Array.isArray(logEntries)) {
+    return res.status(400).json({ error: 'Missing required fields or invalid logEntries array' });
+  }
+
+  try {
+    const processedLogEntries = logEntries.map(entry => {
+      const { eventType, details } = entry;
+      const filteredDetails = {
+        violationType: details.violationType, // Only include if it's a security violation
+        remainingTime: details.remainingTime, // Only include if it's a timer update
+        timestamp: details.timestamp || new Date().toISOString(),
+      };
+      // Remove undefined fields
+      Object.keys(filteredDetails).forEach(key => filteredDetails[key] === undefined && delete filteredDetails[key]);
+      return { eventType, details: filteredDetails };
+    });
+
+    const newLog = new ExamLog({
+      studentRegNo,
+      examNo,
+      courseId,
+      logEntries: processedLogEntries,
+    });
+    await newLog.save();
+    res.status(201).json({ message: 'Logs created successfully' });
+  } catch (error) {
+    console.error('Error creating log:', error);
+    res.status(500).json({ error: 'Failed to create log' });
+  }
+});
+
 export default router;
 
 
 
 
 
-// Submit exam
-// router.post('/submit_exam', async (req, res) => {
-//   const { studentRegNo, examNo, examName, courseId, answers, submissionTime } = req.body;
-
-//   // Validate input
-//   if (!studentRegNo || !examNo || !examName || !courseId || !answers || !Array.isArray(answers)) {
-//     return res.status(400).json({ error: 'Missing required fields or invalid answers array' });
-//   }
-
-//   if (answers.length === 0) {
-//     return res.status(400).json({ error: 'Answers array cannot be empty' });
-//   }
-
-//   for (const answer of answers) {
-//     if (!answer.answer) {
-//       return res.status(400).json({ error: 'Each answer must have an answer field' });
-//     }
-//   }
-
-  
-
-//   try {
-//     const submission = await ExamSubmission.create({
-//       studentRegNo,
-//       examNo,
-//       examName,
-//       courseId,
-//       answers,
-//       submissionTime: submissionTime || new Date(),
-//     });
-
-//     res.status(200).json({
-//       message: 'Exam submitted successfully',
-     
-//     });
-//   } catch (error) {
-//     if (error.code === 11000) {
-//       return res.status(400).json({ error: 'Submission already exists for this exam and student' });
-//     }
-//     console.error('Error submitting exam:', error);
-//     res.status(500).json({ error: 'Failed to submit exam', details: error.message });
-//   }
-// });
-
- // Adjust path as needed
