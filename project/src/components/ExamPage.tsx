@@ -958,10 +958,17 @@ const ExamPage: React.FC = () => {
         throw new Error(`Unexpected status: ${response.status}`);
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Unknown error';
+      let errorMessage = 'Unknown error';
+      if (typeof error === 'object' && error !== null) {
+        const err = error as any;
+        errorMessage = err.response?.data?.message || err.message || 'Unknown error';
+        console.error('Log submission error:', err.response || err);
+      } else {
+        errorMessage = String(error);
+        console.error('Log submission error:', error);
+      }
       setDebugInfo(`Error submitting logs: ${errorMessage}`);
       setSubmissionStatus('Failed to submit exam. Please try again or contact support.');
-      console.error('Log submission error:', error.response || error);
     } finally {
       setIsSubmitting(false);
     }
@@ -1060,7 +1067,7 @@ const ExamPage: React.FC = () => {
           await submitAllLogs(); // Submit combined logs after successful exam submission
           setTimeout(() => {
             console.log('Navigating to exam-complete page...');
-            navigate('/exam-complete');
+            navigate('/');
           }, 2000);
           return;
         } else {
