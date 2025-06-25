@@ -86,7 +86,7 @@ useEffect(() => {
 
   return (
     <>
-      <aside className="w-64 bg-[#f0f0f0] p-4 h-screen overflow-y-auto">
+      <aside className="w-64 bg-[#f0f0f0] p-4 h-screen overflow-y-auto font-['Roboto']">
         <nav>
           <ul className="list-none p-0">
             {menuItems.map((item, index) =>

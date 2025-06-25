@@ -1070,6 +1070,8 @@ const ExamPage: React.FC = () => {
           timeout: 30000,
         });
 
+        
+
         setDebugInfo(`Response: ${JSON.stringify(response.data, null, 2)}`);
 
         console.log('Response received:');
@@ -1081,6 +1083,8 @@ const ExamPage: React.FC = () => {
           setSubmissionStatus('Exam submitted successfully');
           setHasSubmitted(true);
           setIsSubmitting(false);
+
+          setAnswers([]);
 
           Object.keys(localStorage)
             .filter((key) => key.startsWith('answer_'))
@@ -1264,14 +1268,28 @@ const ExamPage: React.FC = () => {
   }
 
   return (
+    // <div className="h-screen w-screen flex flex-col bg-gray-100 font-sans" tabIndex={0}>
+    //   <div className="flex items-center justify-center px-6 py-3 bg-teal-800 text-white shadow">
+    //     <div className="text-lg font-semibold">
+    //       Clarke International University
+    //     </div>
+    //     <div className="text-sm font-bold bg-white/20 px-4 py-1 rounded">
+    //       Time Remaining: {String(timer.hours).padStart(2, '0')}:{String(timer.minutes).padStart(2, '0')}:{String(timer.seconds).padStart(2, '0')}
+    //     </div>
     <div className="h-screen w-screen flex flex-col bg-gray-100 font-sans" tabIndex={0}>
-      <div className="flex items-center justify-center px-6 py-3 bg-teal-800 text-white shadow">
-        <div className="text-lg font-semibold">
-          Clarke International University
-        </div>
-        <div className="text-sm font-bold bg-white/20 px-4 py-1 rounded">
-          Time Remaining: {String(timer.hours).padStart(2, '0')}:{String(timer.minutes).padStart(2, '0')}:{String(timer.seconds).padStart(2, '0')}
-        </div>
+  <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 shadow">
+    <div className="flex items-center gap-3">
+      <img
+        src="../public/CIU-exam-system-logo.png"
+        alt="System Logo"
+        className="h-12 w-auto"
+      />
+    </div>
+    <div className="text-sm font-bold bg-teal-800 text-white px-4 py-1 rounded">
+      Time Remaining: {String(timer.hours).padStart(2, '0')}:{String(timer.minutes).padStart(2, '0')}:{String(timer.seconds).padStart(2, '0')}
+    </div>
+  
+
       </div>
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 p-6 overflow-y-auto">

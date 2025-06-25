@@ -63,7 +63,7 @@ connectDB();
 // Enable CORS for the frontend origin
 app.use(cors({
   origin: ['https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app', 'http://localhost:5173', 'https://ciu-backend-1.onrender.com'],
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST',"PUT", "DELETE"],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
@@ -94,6 +94,9 @@ const io = new Server(httpServer, {
     transports: ['websocket', 'polling']
   },
 });
+
+
+
 
 const rooms = new Map();
 

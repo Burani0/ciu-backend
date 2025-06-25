@@ -63,7 +63,7 @@ const LectCourses = () => {
 
   return (
     <SidebarProvider2>
-      <div className="flex flex-col h-screen w-full">
+      <div className="flex flex-col h-screen w-full font-['Roboto']">
         <div className="flex-1">
           <Header toggleMobileMenu={toggleMobileMenu} isMobile={isMobile} />
           <div className="flex">

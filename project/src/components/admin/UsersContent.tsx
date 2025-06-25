@@ -254,7 +254,7 @@ function UserList({ users, deleteUser }) {
   };
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto pt-5">
+    <div className="w-full max-w-[1200px] mx-auto pt-5 font-['Roboto']">
       {/* Register User Modal */}
       {isCreateLecturerModalOpen && (
   <CreateLecturerModal

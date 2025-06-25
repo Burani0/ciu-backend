@@ -516,19 +516,34 @@ export const getCourseById = async (req, res) => {
 
 
 // UPDATE lecturer
+// export const updateLecturer = async (req, res) => {
+//   const { id } = req.params;
+//   const { firstName, lastName, email, universityNumber, courseIds } = req.body;
+
+//   const updated = await Lecturer.findByIdAndUpdate(
+//     id,
+//     { firstName, lastName, email, universityNumber, assignedCourses: courseIds },
+//     { new: true }
+//   );
+//   if (!updated) return res.status(404).json({ message: 'Lecturer not found' });
+
+//   res.status(200).json(updated);
+// };
+
 export const updateLecturer = async (req, res) => {
   const { id } = req.params;
-  const { firstName, lastName, email, universityNumber, courseIds } = req.body;
+  const { firstName, lastName, email, universityNumber, assignedCourses } = req.body;
 
   const updated = await Lecturer.findByIdAndUpdate(
-    id,
-    { firstName, lastName, email, universityNumber, assignedCourses: courseIds },
+    id.trim(), // trim the id here to fix ObjectId cast errors
+    { firstName, lastName, email, universityNumber, assignedCourses },
     { new: true }
   );
   if (!updated) return res.status(404).json({ message: 'Lecturer not found' });
 
   res.status(200).json(updated);
 };
+
 
 // UPDATE admin
 export const updateAdmin = async (req, res) => {

@@ -181,31 +181,102 @@ const ViewExam = () => {
 
   const totalScore = scores.reduce((a, b) => Number(a) + Number(b), 0);
 
+  // const downloadPDF = () => {
+  //   const doc = new jsPDF();
+  //   doc.setFontSize(16);
+  //   doc.text(`Exam: ${submission.examName}`, 10, 10);
+  //   doc.setFontSize(12);
+  //   doc.text(`Student: ${submission.studentRegNo}`, 10, 20);
+  //   doc.text(`Course: ${submission.courseCode || submission.courseId}`, 10, 30);
+  //   doc.text(`Submitted at: ${new Date(submission.submissionTime).toLocaleString()}`, 10, 40);
+  //   doc.text(`Total Score: ${totalScore}`, 10, 50);
+
+  //   let y = 60;
+  //   let flatIndex = 0;
+  //   submission.answers.forEach((section: any) => {
+  //     doc.text(`Section ${section.section}`, 10, y);
+  //     y += 10;
+  //     section.questions.forEach((q: any) => {
+  //       doc.text(`Q${q.questionNumber}: ${q.answer}`, 10, y);
+  //       doc.text(`Score: ${scores[flatIndex] || 0}`, 150, y);
+  //       y += 10;
+  //       flatIndex++;
+  //     });
+  //   });
+
+  //   doc.save(`${submission.studentRegNo}_marked_exam.pdf`);
+  // };
+
   const downloadPDF = () => {
     const doc = new jsPDF();
+    const marginLeft = 10;
+    const marginRight = 10;
+    const pageWidth = doc.internal.pageSize.width;
+    const usableWidth = pageWidth - marginLeft - marginRight;
+    const lineHeight = 7;
+    const pageHeight = doc.internal.pageSize.height;
+    let y = 10;
+  
     doc.setFontSize(16);
-    doc.text(`Exam: ${submission.examName}`, 10, 10);
+    doc.text(`Exam: ${submission.examName}`, marginLeft, y);
+    y += lineHeight;
     doc.setFontSize(12);
-    doc.text(`Student: ${submission.studentRegNo}`, 10, 20);
-    doc.text(`Course: ${submission.courseCode || submission.courseId}`, 10, 30);
-    doc.text(`Submitted at: ${new Date(submission.submissionTime).toLocaleString()}`, 10, 40);
-    doc.text(`Total Score: ${totalScore}`, 10, 50);
-
-    let y = 60;
+    doc.text(`Student: ${submission.studentRegNo}`, marginLeft, y);
+    y += lineHeight;
+    doc.text(`Course: ${submission.courseCode || submission.courseId}`, marginLeft, y);
+    y += lineHeight;
+    doc.text(`Submitted at: ${new Date(submission.submissionTime).toLocaleString()}`, marginLeft, y);
+    y += lineHeight;
+    doc.text(`Total Score: ${totalScore}`, marginLeft, y);
+    y += lineHeight + 5;
+  
     let flatIndex = 0;
+  
     submission.answers.forEach((section: any) => {
-      doc.text(`Section ${section.section}`, 10, y);
-      y += 10;
+      if (y + lineHeight > pageHeight - marginRight) {
+        doc.addPage();
+        y = marginLeft;
+      }
+  
+      doc.setFont(undefined, 'bold');
+      doc.text(`Section ${section.section}`, marginLeft, y);
+      y += lineHeight;
+      doc.setFont(undefined, 'normal');
+  
       section.questions.forEach((q: any) => {
-        doc.text(`Q${q.questionNumber}: ${q.answer}`, 10, y);
-        doc.text(`Score: ${scores[flatIndex] || 0}`, 150, y);
-        y += 10;
+        const score = scores[flatIndex] || 0;
+        const baseText = `Q${q.questionNumber}): ${q.answer}`;
+        const wrappedLines = doc.splitTextToSize(baseText, usableWidth - 35); // leave room for "Mrk: X"
+        
+        // Page break if needed
+        if (y + wrappedLines.length * lineHeight > pageHeight - marginRight) {
+          doc.addPage();
+          y = marginLeft;
+        }
+  
+        wrappedLines.forEach((line: string, i: number) => {
+          doc.text(line, marginLeft, y);
+  
+          // Only last line has the mark
+          if (i === wrappedLines.length - 1) {
+            const scoreLabel = `score: ${score}`;
+            const textWidth = doc.getTextWidth(scoreLabel);
+            doc.text(scoreLabel, pageWidth - marginRight - textWidth, y);
+          }
+  
+          y += lineHeight;
+        });
+  
+        y += 2;
         flatIndex++;
       });
+  
+      y += 4;
     });
-
+  
     doc.save(`${submission.studentRegNo}_marked_exam.pdf`);
   };
+  
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 

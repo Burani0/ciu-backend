@@ -484,11 +484,10 @@ router.post('/submit_exam', async (req, res) => {
   console.log('🔥 Incoming Submission Payload:', req.body);
 
 
-  // Validate input
-  if (!studentRegNo || !examNo || !examName || !courseId || !answers || !Array.isArray(answers)) {
-    // if (!studentRegNo || !examNo || !examName || !courseId || !sections || !Array.isArray(sections)) {
-    return res.status(400).json({ error: 'Missing required fields or invalid answers array' });
-  }
+ // Validate input
+ if (!studentRegNo || !examNo || !examName || !courseId || !answers || !Array.isArray(answers)) {
+  return res.status(400).json({ error: 'Missing required fields or invalid answers array' });
+}
 
   // ✅ NEW: Validate the sections and questions structure
   if (!Array.isArray(answers) || answers.length === 0) {
@@ -610,16 +609,33 @@ if (submissionType !== 'auto-submit') {
     //   return res.status(404).json({ error: 'Course not found' });
     // }
 
-          let course;
-      if (mongoose.Types.ObjectId.isValid(courseId)) {
-        course = await Course.findById(courseId);
-      } else {
-        course = await Course.findOne({ courseCode: courseId });
-      }
+      //     let course;
+      // if (mongoose.Types.ObjectId.isValid(courseId)) {
+      //   course = await Course.findById(courseId);
+      // } else {
+      //   course = await Course.findOne({ courseCode: courseId });
+      // }
 
-      if (!course) {
-        return res.status(404).json({ error: 'Course not found' });
-      }
+      // if (!course) {
+      //   return res.status(404).json({ error: 'Course not found' });
+      // }
+
+      // 🔍 Look up course by ID or courseCode
+        let course = null;
+
+        if (mongoose.Types.ObjectId.isValid(courseId)) {
+        
+          course = await Course.findById(courseId);
+        }
+
+        if (!course) {
+          course = await Course.findOne({ courseCode: courseId });
+        }
+
+        if (!course) {
+          return res.status(404).json({ error: `Course not found for ID or Code: ${courseId}` });
+        }
+
 
     // const submission = await ExamSubmission.create({
     //   studentRegNo,

@@ -46,66 +46,134 @@ const Sidebar: React.FC = () => {
     setExamsDropdownOpen(prev => !prev);
   };
 
-  return (
-    <aside className="w-64 bg-white h-screen shadow-md">
-      <nav className="py-4 px-2">
-        <ul className="space-y-1">
-          {menuItems.map((item, index) =>
-            item.subItems ? (
-              <li key={index} className="relative">
-                <div
-                  className="flex items-center justify-between px-4 py-2 text-[#106053] font-medium cursor-pointer hover:bg-gray-100"
-                  onClick={toggleExamsDropdown}
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{item.icon}</span>
-                    <span>{item.text}</span>
-                  </div>
-                  <ChevronDown size={16} />
-                </div>
-                {isExamsDropdownOpen && (
-                  <ul className="bg-white shadow-md border border-gray-200 mt-1 rounded">
-                    {item.subItems.map((subItem, subIndex) => (
-                      <li
-                        key={subIndex}
-                        className={`${
-                          activeItem === subItem.text ? 'bg-[#106053] text-white' : ''
-                        }`}
-                      >
-                        <Link
-                          to={subItem.path}
-                          className="block px-4 py-2 text-sm hover:bg-[#106053] hover:text-white"
-                          onClick={() => handleItemClick(subItem.text)}
-                        >
-                          {subItem.text}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ) : (
-              <li
-                key={index}
-                className={`${
-                  activeItem === item.text ? 'bg-[#E6F1EB]' : ''
-                } rounded`}
-                onClick={() => handleItemClick(item.text)}
+//   return (
+//     <aside className="w-64 bg-white h-screen shadow-md font-['Roboto']">
+//       <nav className="py-4 px-2">
+//         <ul className="space-y-1">
+//           {menuItems.map((item, index) =>
+//             item.subItems ? (
+//               <li key={index} className="relative">
+//                 <div
+//                   className="flex items-center justify-between px-4 py-2 text-[#106053] font-medium cursor-pointer hover:bg-gray-100"
+//                   onClick={toggleExamsDropdown}
+//                 >
+//                   <div className="flex items-center gap-2">
+//                     <span>{item.icon}</span>
+//                     <span>{item.text}</span>
+//                   </div>
+//                   <ChevronDown size={16} />
+//                 </div>
+//                 {isExamsDropdownOpen && (
+//                   <ul className="bg-white shadow-md border border-gray-200 mt-1 rounded">
+//                     {item.subItems.map((subItem, subIndex) => (
+//                       <li
+//                         key={subIndex}
+//                         className={`${
+//                           activeItem === subItem.text ? 'bg-[#106053] text-white' : ''
+//                         }`}
+//                       >
+//                         <Link
+//                           to={subItem.path}
+//                           className="block px-4 py-2 text-sm hover:bg-[#106053] hover:text-white"
+//                           onClick={() => handleItemClick(subItem.text)}
+//                         >
+//                           {subItem.text}
+//                         </Link>
+//                       </li>
+//                     ))}
+//                   </ul>
+//                 )}
+//               </li>
+//             ) : (
+//               <li
+//                 key={index}
+//                 className={`${
+//                   activeItem === item.text ? 'bg-[#E6F1EB]' : ''
+//                 } rounded`}
+//                 onClick={() => handleItemClick(item.text)}
+//               >
+//                 <Link
+//                   to={item.path}
+//                   className="flex items-center gap-2 px-4 py-2 font-medium "
+//                 >
+//                   <span>{item.icon}</span>
+//                   <span>{item.text}</span>
+//                 </Link>
+//               </li>
+//             )
+//           )}
+//         </ul>
+//       </nav>
+//     </aside>
+//   );
+// };
+
+return (
+  <aside className="w-64 bg-white h-screen shadow-md font-['Roboto']">
+    <nav className="py-4 px-2">
+      <ul className="space-y-1">
+        {menuItems.map((item, index) =>
+          item.subItems ? (
+            <li key={index} className="relative">
+              <div
+                className={`flex items-center justify-between px-4 py-2 font-medium cursor-pointer hover:bg-gray-100 ${
+                  item.subItems.some((s) => s.text === activeItem) ? 'text-[#106053]' : ''
+                }`}
+                onClick={toggleExamsDropdown}
               >
-                <Link
-                  to={item.path}
-                  className="flex items-center gap-2 px-4 py-2 font-medium text-[#106053]"
-                >
+                <div className="flex items-center gap-2">
                   <span>{item.icon}</span>
                   <span>{item.text}</span>
-                </Link>
-              </li>
-            )
-          )}
-        </ul>
-      </nav>
-    </aside>
-  );
+                </div>
+                <ChevronDown size={16} />
+              </div>
+              {isExamsDropdownOpen && (
+                <ul className="bg-white shadow-md border border-gray-200 mt-1 rounded">
+                  {item.subItems.map((subItem, subIndex) => (
+                    <li
+                      key={subIndex}
+                      className={`${
+                        activeItem === subItem.text ? 'bg-[#106053] text-white' : ''
+                      }`}
+                    >
+                      <Link
+                        to={subItem.path}
+                        className={`block px-4 py-2 text-sm hover:bg-[#106053] hover:text-white ${
+                          activeItem === subItem.text ? 'text-white' : 'text-[#106053]'
+                        }`}
+                        onClick={() => handleItemClick(subItem.text)}
+                      >
+                        {subItem.text}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ) : (
+            <li
+              key={index}
+              className={`rounded ${
+                activeItem === item.text ? 'bg-[#E6F1EB] text-[#106053]' : ''
+              }`}
+              onClick={() => handleItemClick(item.text)}
+            >
+              <Link
+                to={item.path}
+                className={`flex items-center gap-2 px-4 py-2 font-medium ${
+                  activeItem === item.text ? 'text-[#106053]' : 'text-gray-800'
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span>{item.text}</span>
+              </Link>
+            </li>
+          )
+        )}
+      </ul>
+    </nav>
+  </aside>
+);
 };
 
 export default Sidebar;
