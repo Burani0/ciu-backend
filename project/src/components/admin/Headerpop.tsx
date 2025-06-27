@@ -11,11 +11,11 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ toggleMobileMenu, isMobile }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
+  // ADD userData state here
+  const [userData, setUserData] = useState<UserData | null>(null);
 
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -32,31 +32,20 @@ const Header: React.FC<HeaderProps> = ({ toggleMobileMenu, isMobile }) => {
           </button>
         )}
         <img
-          src=".\public\CIU-exam-system-logo.png"
+          src="/CIU-exam-system-logo.png"
           alt="System Logo"
           className="h-12 mr-2"
         />
       </div>
 
       <div id="timedate" className="ml-auto mr-0">
-        <a id="month">
-          {currentTime.toLocaleString('default', { month: 'long' })}
-        </a>{' '}
-        <a id="day">{currentTime.getDate()}</a>,{' '}
-        <a id="year">{currentTime.getFullYear()}</a>
+        <a>{currentTime.toLocaleString('default', { month: 'long' })}</a>{' '}
+        <a>{currentTime.getDate()}</a>, <a>{currentTime.getFullYear()}</a>
         <br />
-        <a id="hour">
-          {((currentTime.getHours() % 12) || 12).toString().padStart(2, '0')}
-        </a> :
-        <a id="min">
-          {currentTime.getMinutes().toString().padStart(2, '0')}
-        </a> :
-        <a id="s">
-          {currentTime.getSeconds().toString().padStart(2, '0')}
-        </a>{' '}
-        <a id="ampm">
-          {currentTime.getHours() >= 12 ? 'PM' : 'AM'}
-        </a>
+        <a>{((currentTime.getHours() % 12) || 12).toString().padStart(2, '0')}</a> :
+        <a>{currentTime.getMinutes().toString().padStart(2, '0')}</a> :
+        <a>{currentTime.getSeconds().toString().padStart(2, '0')}</a>{' '}
+        <a>{currentTime.getHours() >= 12 ? 'PM' : 'AM'}</a>
       </div>
 
       <div className="flex items-center h-12 ml-2 gap-4">
@@ -70,18 +59,8 @@ const Header: React.FC<HeaderProps> = ({ toggleMobileMenu, isMobile }) => {
           </button>
         </Link>
 
-        <AdminDetailsPopup>
-          <button
-            className="bg-none border-none cursor-pointer p-0 w-12 h-12 overflow-hidden rounded-full"
-            aria-label="User profile"
-          >
-            <img
-              src="/IMG_9472.jpg"
-              alt="User profile"
-              className="w-full h-full object-cover"
-            />
-          </button>
-        </AdminDetailsPopup>
+        {/* UPDATED usage: pass userData and setUserData as props */}
+        <AdminDetailsPopup userData={userData} setUserData={setUserData} />
       </div>
     </header>
   );

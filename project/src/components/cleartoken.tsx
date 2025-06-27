@@ -8,23 +8,50 @@ const Cleartoken = () => {
   const [username, setUsername] = useState('');
   const [token, setToken] = useState('');
   const [error, setError] = useState('');
+  
   const navigate = useNavigate();
 
+  // const handleVerify = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   try {
+  //     await axios.post('https://ciu-backend.onrender.com/api/admin/cleartoken', {
+  //       username,
+  //       token,
+  //     });
+
+  //     localStorage.setItem('adminVerified', 'true');
+  //     localStorage.setItem('adminId', adminId);
+  //     localStorage.setItem('token', token);
+  //     navigate('/admin');
+  //   } catch (err: any) {
+  //     setError(err.response?.data?.message || 'Verification failed');
+  //     setTimeout(() => setError(''), 3000);
+  //   }
+  // };
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('https://ciu-backend.onrender.com/api/admin/cleartoken', {
+      const response = await axios.post('https://ciu-backend.onrender.com/api/admin/cleartoken', {
         username,
         token,
       });
-
+  
+      // Extract admin info from response.data
+      const { adminId, username: adminUsername, email } = response.data;
+  
       localStorage.setItem('adminVerified', 'true');
+      localStorage.setItem('adminId', adminId);
+      localStorage.setItem('adminUsername', adminUsername);
+      localStorage.setItem('adminEmail', email);
+      localStorage.setItem('token', token);
+  
       navigate('/admin');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Verification failed');
       setTimeout(() => setError(''), 3000);
     }
   };
+  
 
   return (
     <div className="font-['Roboto'] flex justify-center items-center min-h-screen bg-[#ebebeb] py-5">

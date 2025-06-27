@@ -672,28 +672,65 @@ export const adminLogin = async (req, res) => {
   }
 };
 
+// export const clearToken = async (req, res) => {
+//     const { username, token } = req.body;
+  
+//     if (!username || !token) {
+//       return res.status(400).json({ message: 'username  and token are required' });
+//     }
+  
+//     // Find the lecturer using the university number
+//     const admin = await Admin.findOne({ username });
+//     if (!admin) {
+//       return res.status(404).json({ message: 'admin not found' });
+//     }
+  
+//     // Check if the token matches the one stored for that lecturer
+//     const tokenDoc = await AdminToken.findOne({ adminId: admin._id, token });
+//     if (!tokenDoc) {
+//       return res.status(401).json({ message: 'Invalid token' });
+//     }
+  
+//     // Token is valid
+//     res.status(200).json({ message: 'Token verified', adminId: admin._id });
+//   }
+
 export const clearToken = async (req, res) => {
-    const { username, token } = req.body;
-  
-    if (!username || !token) {
-      return res.status(400).json({ message: 'username  and token are required' });
-    }
-  
-    // Find the lecturer using the university number
+  const { username, token } = req.body;
+
+  if (!username || !token) {
+    return res.status(400).json({ message: 'Username and token are required' });
+  }
+
+  try {
+    // Find the admin by username
     const admin = await Admin.findOne({ username });
     if (!admin) {
-      return res.status(404).json({ message: 'admin not found' });
+      return res.status(404).json({ message: 'Admin not found' });
     }
-  
-    // Check if the token matches the one stored for that lecturer
+
+    // Check if the token exists for this admin
     const tokenDoc = await AdminToken.findOne({ adminId: admin._id, token });
     if (!tokenDoc) {
       return res.status(401).json({ message: 'Invalid token' });
     }
-  
-    // Token is valid
-    res.status(200).json({ message: 'Token verified', adminId: admin._id });
+
+    // Token is valid, optionally you might want to delete the token after verification
+    await AdminToken.deleteOne({ _id: tokenDoc._id });
+
+    // Respond with success and admin info
+    res.status(200).json({
+      message: 'Token verified',
+      adminId: admin._id,
+      username: admin.username,
+      email: admin.email,
+    });
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    res.status(500).json({ message: 'Server error' });
   }
+};
+
 
 
 // export const getLecturerSubmissions = async (req, res) => {
