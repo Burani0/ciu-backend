@@ -1084,7 +1084,7 @@ const ExamPage: React.FC = () => {
           console.error('Response headers:', err.response.headers);
           console.error('Response data:', err.response.data);
           setSubmissionStatus(`Failed to submit exam: ${err.response.data?.error || err.response.data?.message || 'Unknown server error'}`);
-          if (err.response.status === 400 && err.response.data.error === 'Submission already exists for this exam and student') {
+          if (err.response.data?.error === 'Submission already exists for this exam and student') {
             setHasSubmitted(true);
             setIsSubmitting(false);
             await submitAllLogs(); // Submit combined logs on duplicate
