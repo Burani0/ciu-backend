@@ -21,6 +21,8 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
   const popupRef = useRef<HTMLDivElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+
 
   const fetchLoggedInUserData = async () => {
     try {
@@ -31,14 +33,16 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
       }
   
       const res = await axios.get(`https://ciu-backend.onrender.com/api/admin/lecturers/${id}`);
-      const { firstName, lastName, email, universityNumber, profileImage } = res.data;
+      const { firstName, lastName, email, universityNumber, profileImageSrc } = res.data;
   
       setUserData({
-        profileImageSrc: profileImage || '/avatar2.jpg',
+        profileImageSrc: profileImageSrc || '/avatar2.jpg',
         name: `${firstName} ${lastName}`,
         email,
         universityNumber,
       });
+
+      setHasLoadedOnce(true);
     } catch (err) {
       console.error("Failed to load user:", err);
       setError("Failed to load user data.");
@@ -72,7 +76,7 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
         aria-label="User profile"
       >
 
-          {isLoading ? (
+         {!hasLoadedOnce ? (
             <div className="w-full h-full bg-gray-200 animate-pulse rounded-full" />
           ) : (
             <img

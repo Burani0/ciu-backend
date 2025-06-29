@@ -22,6 +22,8 @@ export default function AdminDetailsPopup({ userData, setUserData }: Props) {
   const popupRef = useRef<HTMLDivElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+
 
 const fetchAdminData = async () => {
   setIsLoading(true);
@@ -50,6 +52,8 @@ const fetchAdminData = async () => {
       email,
       id: _id,
     });
+
+    setHasLoadedOnce(true);
 
     setError(null);
   } catch (err) {
@@ -87,7 +91,7 @@ const togglePopup = () => {
         className="bg-none border-none cursor-pointer w-12 h-12 p-0 overflow-hidden rounded-full"
         aria-label="User profile"
       >
-        {isLoading ? (
+        {!hasLoadedOnce ? (
           <div className="w-full h-full bg-gray-200 animate-pulse rounded-full" />
         ) : (
           <img
