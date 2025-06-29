@@ -471,6 +471,306 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
+// router.post('/submit_exam', async (req, res) => {
+//   const {
+//     studentRegNo,
+//     examNo,
+//     examName,
+//     courseId,
+//     answers,
+//     submissionTime,
+//     submissionType,
+//   } = req.body;
+//   console.log('🔥 Incoming Submission Payload:', req.body);
+
+
+//  // Validate input
+//  if (!studentRegNo || !examNo || !examName || !courseId || !answers || !Array.isArray(answers)) {
+//   return res.status(400).json({ error: 'Missing required fields or invalid answers array' });
+// }
+
+//   // ✅ NEW: Validate the sections and questions structure
+//   if (!Array.isArray(answers) || answers.length === 0) {
+//     return res.status(400).json({ error: 'Answers must be a non-empty array' });
+//   }
+  
+//   // Check if there is at least one non-empty answer anywhere
+//   const hasAtLeastOneAnswer = answers.some(section =>
+//     Array.isArray(section.questions) && section.questions.some(
+//       question => typeof question.answer === 'string' && question.answer.trim() !== ''
+//     )
+//   );
+  
+//   if (!hasAtLeastOneAnswer) {
+//     return res.status(400).json({ error: 'At least one question must have a non-empty answer to submit' });
+//   }
+  
+//   if (!Array.isArray(answers) || answers.length === 0) {
+//     return res.status(400).json({ error: 'Answers must be a non-empty array' });
+//   }
+  
+//   for (const section of answers) {
+//     // section.section is optional, so no need to require it
+//     if (!Array.isArray(section.questions)) {
+//       return res.status(400).json({ error: 'Each answer section must have a questions array' });
+//     }
+//     for (const question of section.questions) {
+//       if (!question.questionNumber || typeof question.answer !== 'string') {
+//         return res.status(400).json({ error: 'Each question must have a questionNumber and a string answer' });
+//       }
+//     }
+//   }
+//   // Preprocess answers for auto-submit
+//   let processedAnswers = [...answers];
+//   // let processedSections = [...sections];
+
+//   if (submissionType === 'auto-submit' && answers.length === 0) {
+//   // if (submissionType !== 'auto-submit' && sections.length === 0) {
+
+//     processedAnswers = [{ section: 'default', answer: 'Auto-submitted with no answers' }];
+//   } else if (submissionType !== 'auto-submit' && answers.length === 0) {
+//   // } else if (submissionType !== 'auto-submit' && sections.length === 0) {
+
+//     return res.status(400).json({ error: 'Answers array cannot be empty for manual submission' });
+//   }
+
+//   // for (const answer of processedAnswers) {
+//   //   if (answer.answer !== undefined && typeof answer.answer !== 'string') {
+//   //     return res.status(400).json({ error: 'Each answer must have a valid string answer field' });
+//   //   }
+//   //   if (submissionType !== 'auto-submit' && (!answer.answer || answer.answer.trim() === '')) {
+//   //     return res.status(400).json({ error: 'Each answer must have a non-empty answer field for manual submission' });
+//   //   }
+//   // }
+//   // Check if all answers have valid types (string or undefined)
+// // for (const answer of processedAnswers) {
+// //   if (answer.answer !== undefined && typeof answer.answer !== 'string') {
+// //     return res.status(400).json({ error: 'Each answer must have a valid string answer field' });
+// //   }
+// // }
+
+// for (const section of processedAnswers) {
+//   if (!Array.isArray(section.questions)) {
+//     return res.status(400).json({ error: 'Each section must have a questions array' });
+//   }
+//   for (const question of section.questions) {
+//     if (
+//       typeof question.questionNumber !== 'string' ||
+//       typeof question.answer !== 'string'
+//     ) {
+//       return res.status(400).json({ error: 'Each question must have a questionNumber and a string answer' });
+//     }
+//   }
+// }
+
+// // For manual submissions, check if at least one answer is non-empty
+// // if (submissionType !== 'auto-submit') {
+// //   const hasAtLeastOneNonEmptyAnswer = processedAnswers.some(
+// //     answer => answer.answer && answer.answer.trim() !== ''
+// //   );
+
+// //   if (!hasAtLeastOneNonEmptyAnswer) {
+// //     return res.status(400).json({ error: 'At least one answer must have a non-empty answer field for manual submission' });
+// //   }
+// // }
+// if (submissionType !== 'auto-submit') {
+//   const hasAtLeastOneNonEmptyAnswer = processedAnswers.some(section =>
+//     Array.isArray(section.questions) &&
+//     section.questions.some(q => typeof q.answer === 'string' && q.answer.trim() !== '')
+//   );
+
+//   if (!hasAtLeastOneNonEmptyAnswer) {
+//     return res.status(400).json({ error: 'At least one answer must have a non-empty answer field for manual submission' });
+//   }
+// }
+
+//   console.log('Processed Answers:', processedAnswers);
+
+//   // for (const section of processedSections) {
+//   //   if (!section.sectionNumber || !Array.isArray(section.questions)) {
+//   //     return res.status(400).json({ error: 'Each section must have a sectionNumber and an array of questions' });
+//   //   }
+  
+//   //   for (const question of section.questions) {
+//   //     if (typeof question.answer !== 'string') {
+//   //       return res.status(400).json({ error: 'Each question answer must be a string' });
+//   //     }
+  
+//   //     if (submissionType !== 'auto-submit' && (!question.answer || question.answer.trim() === '')) {
+//   //       return res.status(400).json({ error: 'Each question must have a non-empty answer for manual submission' });
+//   //     }
+//   //   }
+//   // }
+  
+//   try {
+//     // 🔍 Fetch course to get courseCode
+//     // const course = await Course.findById(courseId);
+//     // if (!course) {
+//     //   return res.status(404).json({ error: 'Course not found' });
+//     // }
+
+//       //     let course;
+//       // if (mongoose.Types.ObjectId.isValid(courseId)) {
+//       //   course = await Course.findById(courseId);
+//       // } else {
+//       //   course = await Course.findOne({ courseCode: courseId });
+//       // }
+
+//       // if (!course) {
+//       //   return res.status(404).json({ error: 'Course not found' });
+//       // }
+
+//       // 🔍 Look up course by ID or courseCode
+//         let course = null;
+
+//         if (mongoose.Types.ObjectId.isValid(courseId)) {
+        
+//           course = await Course.findById(courseId);
+//         }
+
+//         if (!course) {
+//           course = await Course.findOne({ courseCode: courseId });
+//         }
+
+//         if (!course) {
+//           return res.status(404).json({ error: `Course not found for ID or Code: ${courseId}` });
+//         }
+
+
+//     // const submission = await ExamSubmission.create({
+//     //   studentRegNo,
+//     //   examNo,
+//     //   examName,
+//     //   courseId,
+//     //   courseCode: course.courseCode, // Store courseCode as string
+//     //   answers: processedAnswers,
+//     //   submissionTime: submissionTime || new Date(),
+//     // });
+
+//     console.log('Saving to DB:', {
+//       studentRegNo,
+//       examNo,
+//       examName,
+//       courseId: course._id,
+//       courseCode: course.courseCode,
+//       answers: processedAnswers,
+//       submissionTime: submissionTime || new Date(),
+//     });
+    
+//     const submission = await ExamSubmission.create({
+//       studentRegNo,
+//       examNo,
+//       examName,
+//       courseId: course._id, // ✅ Use actual ObjectId from DB
+//       courseCode: course.courseCode,
+//       answers: processedAnswers,
+//       submissionTime: submissionTime || new Date(),
+//     });
+//     console.log('✅ Submission saved:', submission);
+
+    
+
+//     res.status(200).json({
+//       message: 'Exam submitted successfully',
+//     });
+//   } catch (error) {
+//     if (error.code === 11000) {
+//       return res.status(400).json({ error: 'Submission already exists for this exam and student' });
+//     }
+//     console.error('Error submitting exam:', error);
+//     res.status(500).json({ error: 'Failed to submit exam', details: error.message });
+//   }
+// });
+
+
+// // Fetch all exams
+// // router.get('/fetch_all_exams', async (req, res) => {
+// //   try {
+// //     const submissions = await ExamSubmission.find({});
+// //     const transformedSubmissions = submissions.map(sub => ({
+// //       ...sub._doc,
+// //       answers: sub.answers.flatMap(answer => {
+// //         if (typeof answer === 'object' && answer.answer) {
+// //           // Split the answer by newlines and filter out empty lines
+// //           const splitAnswers = answer.answer.split('\n').filter(a => a.trim());
+// //           return splitAnswers.length > 1 ? splitAnswers : [answer.answer];
+// //         }
+// //         return [answer]; // Return as single item if not an object or no split needed
+// //       }),
+// //     }));
+// //     res.status(200).json(transformedSubmissions);
+// //   } catch (error) {
+// //     console.error('Error fetching all exams:', error);
+// //     res.status(500).json({ error: 'Failed to fetch all exams', details: error.message });
+// //   }
+// // });
+
+// router.get('/fetch_all_exams', async (req, res) => {
+//   try {
+//     const submissions = await ExamSubmission.find({});
+
+//     const transformedSubmissions = submissions.map(sub => ({
+//       ...sub._doc,
+//       answers: sub.answers.flatMap(section =>
+//         section.questions.map(q => ({
+//           section: section.section,
+//           questionNumber: q.questionNumber,
+//           answer: q.answer
+//         }))
+//       ),
+      
+//     }));
+
+//     res.status(200).json(transformedSubmissions);
+//   } catch (error) {
+//     console.error('Error fetching all exams:', error);
+//     res.status(500).json({ error: 'Failed to fetch all exams', details: error.message });
+//   }
+// });
+
+
+  
+
+// // Fetch submissions for lecturer's assigned courses
+// router.get('/lecturer/:lecturerId/submissions', async (req, res) => {
+//   const { lecturerId } = req.params;
+
+//   console.log(`Fetching submissions for lecturerId: ${lecturerId}`);
+
+//   try {
+//     const lecturer = await Lecturer.findById(lecturerId);
+//     if (!lecturer) {
+//       return res.status(404).json({ error: 'Lecturer not found' });
+//     }
+
+//     console.log(`Lecturer found: ${lecturer._id}, assignedCourses:`, lecturer.assignedCourses);
+
+//     const assignedCourseIds = lecturer.assignedCourses.map(course =>
+//       typeof course === 'string' ? course : course._id.toString()
+//     );
+
+//     console.log('Assigned course IDs:', assignedCourseIds);
+
+//     const submissions = await ExamSubmission.find({
+//       $or: [
+//         { courseCode: { $in: assignedCourseIds } },
+//         { courseId: { $in: assignedCourseIds } }
+//       ]
+//     });
+
+//     console.log(`Found ${submissions.length} submissions for lecturer.`);
+
+//     res.status(200).json(submissions);
+//   } catch (error) {
+//     console.error('Error fetching submissions for lecturer:', error);
+//     res.status(500).json({ error: 'Failed to fetch submissions', details: error.message });
+//   }
+// });
+
+
+
+
+
 router.post('/submit_exam', async (req, res) => {
   const {
     studentRegNo,
@@ -483,192 +783,71 @@ router.post('/submit_exam', async (req, res) => {
   } = req.body;
   console.log('🔥 Incoming Submission Payload:', req.body);
 
+  // Validate required fields
+  if (!studentRegNo || !examNo || !examName || !courseId || !submissionTime) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
 
- // Validate input
- if (!studentRegNo || !examNo || !examName || !courseId || !answers || !Array.isArray(answers)) {
-  return res.status(400).json({ error: 'Missing required fields or invalid answers array' });
-}
+  // Validate answers array
+  if (!Array.isArray(answers)) {
+    return res.status(400).json({ error: 'Answers must be an array' });
+  }
 
-  // ✅ NEW: Validate the sections and questions structure
-  if (!Array.isArray(answers) || answers.length === 0) {
-    return res.status(400).json({ error: 'Answers must be a non-empty array' });
-  }
-  
-  // Check if there is at least one non-empty answer anywhere
-  const hasAtLeastOneAnswer = answers.some(section =>
-    Array.isArray(section.questions) && section.questions.some(
-      question => typeof question.answer === 'string' && question.answer.trim() !== ''
-    )
-  );
-  
-  if (!hasAtLeastOneAnswer) {
-    return res.status(400).json({ error: 'At least one question must have a non-empty answer to submit' });
-  }
-  
-  if (!Array.isArray(answers) || answers.length === 0) {
-    return res.status(400).json({ error: 'Answers must be a non-empty array' });
-  }
-  
-  for (const section of answers) {
-    // section.section is optional, so no need to require it
-    if (!Array.isArray(section.questions)) {
-      return res.status(400).json({ error: 'Each answer section must have a questions array' });
+  // For auto-submit, allow empty answers array
+  if (submissionType === 'auto-submit' && answers.length === 0) {
+    console.log('Auto-submit with no answers detected, proceeding with empty answers');
+  } else {
+    // Validate section and question structure for non-empty answers
+    for (const section of answers) {
+      if (!section.section || !Array.isArray(section.questions)) {
+        return res.status(400).json({ error: 'Each answer section must have a section string and a questions array' });
+      }
+      for (const question of section.questions) {
+        if (!question.questionNumber || typeof question.answer !== 'string') {
+          return res.status(400).json({ error: 'Each question must have a questionNumber and a string answer' });
+        }
+      }
     }
-    for (const question of section.questions) {
-      if (!question.questionNumber || typeof question.answer !== 'string') {
-        return res.status(400).json({ error: 'Each question must have a questionNumber and a string answer' });
+
+    // For manual submission, ensure at least one non-empty answer
+    if (submissionType !== 'auto-submit') {
+      const hasAtLeastOneNonEmptyAnswer = answers.some(section =>
+        Array.isArray(section.questions) &&
+        section.questions.some(q => typeof q.answer === 'string' && q.answer.trim() !== '')
+      );
+      if (!hasAtLeastOneNonEmptyAnswer) {
+        return res.status(400).json({ error: 'At least one answer must have a non-empty answer field for manual submission' });
       }
     }
   }
-  // Preprocess answers for auto-submit
-  let processedAnswers = [...answers];
-  // let processedSections = [...sections];
 
-  if (submissionType === 'auto-submit' && answers.length === 0) {
-  // if (submissionType !== 'auto-submit' && sections.length === 0) {
+  console.log('Processed Answers:', answers);
 
-    processedAnswers = [{ section: 'default', answer: 'Auto-submitted with no answers' }];
-  } else if (submissionType !== 'auto-submit' && answers.length === 0) {
-  // } else if (submissionType !== 'auto-submit' && sections.length === 0) {
-
-    return res.status(400).json({ error: 'Answers array cannot be empty for manual submission' });
-  }
-
-  // for (const answer of processedAnswers) {
-  //   if (answer.answer !== undefined && typeof answer.answer !== 'string') {
-  //     return res.status(400).json({ error: 'Each answer must have a valid string answer field' });
-  //   }
-  //   if (submissionType !== 'auto-submit' && (!answer.answer || answer.answer.trim() === '')) {
-  //     return res.status(400).json({ error: 'Each answer must have a non-empty answer field for manual submission' });
-  //   }
-  // }
-  // Check if all answers have valid types (string or undefined)
-// for (const answer of processedAnswers) {
-//   if (answer.answer !== undefined && typeof answer.answer !== 'string') {
-//     return res.status(400).json({ error: 'Each answer must have a valid string answer field' });
-//   }
-// }
-
-for (const section of processedAnswers) {
-  if (!Array.isArray(section.questions)) {
-    return res.status(400).json({ error: 'Each section must have a questions array' });
-  }
-  for (const question of section.questions) {
-    if (
-      typeof question.questionNumber !== 'string' ||
-      typeof question.answer !== 'string'
-    ) {
-      return res.status(400).json({ error: 'Each question must have a questionNumber and a string answer' });
-    }
-  }
-}
-
-// For manual submissions, check if at least one answer is non-empty
-// if (submissionType !== 'auto-submit') {
-//   const hasAtLeastOneNonEmptyAnswer = processedAnswers.some(
-//     answer => answer.answer && answer.answer.trim() !== ''
-//   );
-
-//   if (!hasAtLeastOneNonEmptyAnswer) {
-//     return res.status(400).json({ error: 'At least one answer must have a non-empty answer field for manual submission' });
-//   }
-// }
-if (submissionType !== 'auto-submit') {
-  const hasAtLeastOneNonEmptyAnswer = processedAnswers.some(section =>
-    Array.isArray(section.questions) &&
-    section.questions.some(q => typeof q.answer === 'string' && q.answer.trim() !== '')
-  );
-
-  if (!hasAtLeastOneNonEmptyAnswer) {
-    return res.status(400).json({ error: 'At least one answer must have a non-empty answer field for manual submission' });
-  }
-}
-
-  console.log('Processed Answers:', processedAnswers);
-
-  // for (const section of processedSections) {
-  //   if (!section.sectionNumber || !Array.isArray(section.questions)) {
-  //     return res.status(400).json({ error: 'Each section must have a sectionNumber and an array of questions' });
-  //   }
-  
-  //   for (const question of section.questions) {
-  //     if (typeof question.answer !== 'string') {
-  //       return res.status(400).json({ error: 'Each question answer must be a string' });
-  //     }
-  
-  //     if (submissionType !== 'auto-submit' && (!question.answer || question.answer.trim() === '')) {
-  //       return res.status(400).json({ error: 'Each question must have a non-empty answer for manual submission' });
-  //     }
-  //   }
-  // }
-  
   try {
-    // 🔍 Fetch course to get courseCode
-    // const course = await Course.findById(courseId);
-    // if (!course) {
-    //   return res.status(404).json({ error: 'Course not found' });
-    // }
+    // Look up course by ID or courseCode
+    let course = null;
+    if (mongoose.Types.ObjectId.isValid(courseId)) {
+      course = await Course.findById(courseId);
+    }
+    if (!course) {
+      course = await Course.findOne({ courseCode: courseId });
+    }
+    if (!course) {
+      return res.status(404).json({ error: `Course not found for ID or Code: ${courseId}` });
+    }
 
-      //     let course;
-      // if (mongoose.Types.ObjectId.isValid(courseId)) {
-      //   course = await Course.findById(courseId);
-      // } else {
-      //   course = await Course.findOne({ courseCode: courseId });
-      // }
-
-      // if (!course) {
-      //   return res.status(404).json({ error: 'Course not found' });
-      // }
-
-      // 🔍 Look up course by ID or courseCode
-        let course = null;
-
-        if (mongoose.Types.ObjectId.isValid(courseId)) {
-        
-          course = await Course.findById(courseId);
-        }
-
-        if (!course) {
-          course = await Course.findOne({ courseCode: courseId });
-        }
-
-        if (!course) {
-          return res.status(404).json({ error: `Course not found for ID or Code: ${courseId}` });
-        }
-
-
-    // const submission = await ExamSubmission.create({
-    //   studentRegNo,
-    //   examNo,
-    //   examName,
-    //   courseId,
-    //   courseCode: course.courseCode, // Store courseCode as string
-    //   answers: processedAnswers,
-    //   submissionTime: submissionTime || new Date(),
-    // });
-
-    console.log('Saving to DB:', {
+    // Save submission to database
+    const submission = await ExamSubmission.create({
       studentRegNo,
       examNo,
       examName,
       courseId: course._id,
       courseCode: course.courseCode,
-      answers: processedAnswers,
-      submissionTime: submissionTime || new Date(),
-    });
-    
-    const submission = await ExamSubmission.create({
-      studentRegNo,
-      examNo,
-      examName,
-      courseId: course._id, // ✅ Use actual ObjectId from DB
-      courseCode: course.courseCode,
-      answers: processedAnswers,
-      submissionTime: submissionTime || new Date(),
+      answers,
+      submissionTime: new Date(submissionTime),
+      submissionType,
     });
     console.log('✅ Submission saved:', submission);
-
-    
 
     res.status(200).json({
       message: 'Exam submitted successfully',
@@ -683,89 +862,6 @@ if (submissionType !== 'auto-submit') {
 });
 
 
-// Fetch all exams
-// router.get('/fetch_all_exams', async (req, res) => {
-//   try {
-//     const submissions = await ExamSubmission.find({});
-//     const transformedSubmissions = submissions.map(sub => ({
-//       ...sub._doc,
-//       answers: sub.answers.flatMap(answer => {
-//         if (typeof answer === 'object' && answer.answer) {
-//           // Split the answer by newlines and filter out empty lines
-//           const splitAnswers = answer.answer.split('\n').filter(a => a.trim());
-//           return splitAnswers.length > 1 ? splitAnswers : [answer.answer];
-//         }
-//         return [answer]; // Return as single item if not an object or no split needed
-//       }),
-//     }));
-//     res.status(200).json(transformedSubmissions);
-//   } catch (error) {
-//     console.error('Error fetching all exams:', error);
-//     res.status(500).json({ error: 'Failed to fetch all exams', details: error.message });
-//   }
-// });
-
-router.get('/fetch_all_exams', async (req, res) => {
-  try {
-    const submissions = await ExamSubmission.find({});
-
-    const transformedSubmissions = submissions.map(sub => ({
-      ...sub._doc,
-      answers: sub.answers.flatMap(section =>
-        section.questions.map(q => ({
-          section: section.section,
-          questionNumber: q.questionNumber,
-          answer: q.answer
-        }))
-      ),
-      
-    }));
-
-    res.status(200).json(transformedSubmissions);
-  } catch (error) {
-    console.error('Error fetching all exams:', error);
-    res.status(500).json({ error: 'Failed to fetch all exams', details: error.message });
-  }
-});
-
-
-  
-
-// Fetch submissions for lecturer's assigned courses
-router.get('/lecturer/:lecturerId/submissions', async (req, res) => {
-  const { lecturerId } = req.params;
-
-  console.log(`Fetching submissions for lecturerId: ${lecturerId}`);
-
-  try {
-    const lecturer = await Lecturer.findById(lecturerId);
-    if (!lecturer) {
-      return res.status(404).json({ error: 'Lecturer not found' });
-    }
-
-    console.log(`Lecturer found: ${lecturer._id}, assignedCourses:`, lecturer.assignedCourses);
-
-    const assignedCourseIds = lecturer.assignedCourses.map(course =>
-      typeof course === 'string' ? course : course._id.toString()
-    );
-
-    console.log('Assigned course IDs:', assignedCourseIds);
-
-    const submissions = await ExamSubmission.find({
-      $or: [
-        { courseCode: { $in: assignedCourseIds } },
-        { courseId: { $in: assignedCourseIds } }
-      ]
-    });
-
-    console.log(`Found ${submissions.length} submissions for lecturer.`);
-
-    res.status(200).json(submissions);
-  } catch (error) {
-    console.error('Error fetching submissions for lecturer:', error);
-    res.status(500).json({ error: 'Failed to fetch submissions', details: error.message });
-  }
-});
 
 // ✅ Fetch single submission by ID
 router.get('/fetch_exam_by_id/:id', async (req, res) => {

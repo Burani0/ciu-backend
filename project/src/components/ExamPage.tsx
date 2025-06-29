@@ -673,7 +673,6 @@ const ExamPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
-  const [debugInfo, setDebugInfo] = useState<string>('');
   const [logBuffer, setLogBuffer] = useState<LogEntry[]>([]);
   const [logSummary, setLogSummary] = useState<{ [key: string]: { start: string; end: string; count: number } }>({});
 
@@ -775,7 +774,7 @@ const ExamPage: React.FC = () => {
         initializeCamera();
       } catch (err) {
         console.error('Error fetching exam data:', err);
-        setPdfError('Failed to load exam data. Check console for details.');
+        setPdfError('Failed to load exam data. Please try again or contact support.');
       } finally {
         setIsLoading(false);
       }
@@ -863,7 +862,18 @@ const ExamPage: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { min: 640, ideal: 1280 }, height: { min: 480, ideal: 720 }, facingMode: 'user', frameRate: { ideal: 30 } } });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await new Promise((resolve) => { if (videoRef.current) videoRef.current.onloadedmetadata = () => videoRef.current?.play().then(resolve); });
+        await new Promise<void>((resolve) => {
+          if (videoRef.current) {
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current?.play().then(resolve).catch((err) => {
+                console.error('Video play error:', err);
+                resolve();
+              });
+            };
+          } else {
+            resolve();
+          }
+        });
         setCameraActive(true);
         setCameraError(null);
         if (roomId) joinRoom(roomId);
@@ -902,8 +912,8 @@ const ExamPage: React.FC = () => {
 
   const logEvent = (eventType: string, details: any) => {
     const filteredDetails = { ...details };
-    delete filteredDetails.section; // Exclude section
-    delete filteredDetails.answers; // Exclude answers
+    delete filteredDetails.section;
+    delete filteredDetails.answers;
     const logEntry = {
       eventType,
       details: filteredDetails,
@@ -915,16 +925,6 @@ const ExamPage: React.FC = () => {
   const submitAllLogs = async () => {
     if (isSubmitting || hasSubmitted) return;
 
-    setIsSubmitting(true);
-    setSubmissionStatus('Submitting...');
-
-    if (logBuffer.length === 0) {
-      setSubmissionStatus('Exam submitted successfully');
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Aggregate logs for console output
     const summary = aggregateLogs(logBuffer);
     console.log('Submitting summarized logs:', JSON.stringify(summary, null, 2));
 
@@ -948,22 +948,13 @@ const ExamPage: React.FC = () => {
 
       if (response.status === 201) {
         setSubmissionStatus('Exam submitted successfully');
-        setLogBuffer([]); // Clear buffer on success
+        setLogBuffer([]);
       } else {
         throw new Error(`Unexpected status: ${response.status}`);
       }
     } catch (error) {
-      let errorMessage = 'Unknown error';
-      if (typeof error === 'object' && error !== null) {
-        const err = error as any;
-        errorMessage = err.response?.data?.message || err.message || 'Unknown error';
-        console.error('Log submission error:', err.response || err);
-      } else {
-        errorMessage = String(error);
-        console.error('Log submission error:', error);
-      }
-      setDebugInfo(`Error submitting logs: ${errorMessage}`);
-      setSubmissionStatus('Failed to submit exam. Please try again or contact support.');
+      console.error('Log submission error:', error);
+      setSubmissionStatus('Failed to submit logs. Please contact support.');
     } finally {
       setIsSubmitting(false);
     }
@@ -982,7 +973,6 @@ const ExamPage: React.FC = () => {
         }
       });
   }
-  
 
   const submitExam = async (submissionType: string = 'manual'): Promise<void> => {
     if (isSubmitting || hasSubmitted) {
@@ -994,8 +984,7 @@ const ExamPage: React.FC = () => {
     setIsSubmitting(true);
     setIsTimerRunning(false);
     stopCamera();
-    setSubmissionStatus('Submitting...');
-    setDebugInfo('');
+    setSubmissionStatus('Submitting your exam...');
 
     const currentAnswers = [...answers];
     const localStorageAnswers = Object.keys(localStorage)
@@ -1020,31 +1009,19 @@ const ExamPage: React.FC = () => {
     console.log('Valid answers found:', validAnswers.length);
     console.log('Valid answers:', validAnswers);
 
-    const finalAnswers = validAnswers.length === 0 && submissionType === 'auto-submit' 
-      ? [] 
-      : validAnswers.map(({ section, content }) => ({ section, answer: content.trim() }));
+    const finalAnswers = validAnswers.length === 0 && submissionType === 'auto-submit'
+      ? []
+      : validAnswers.map(({ section, content }) => ({
+          section,
+          questions: parseQuestionsFromContent(content),
+        }));
 
     const submissionData = {
       studentRegNo: examData.studentRegNo,
       examNo: examData.examNo,
       examName: examData.examName,
       courseId: examData.courseId,
-      // answers: finalAnswers,
-      // answers: validAnswers.map(({ section, content }) => ({
-      //   section,
-      //   questions: content
-      //     .split('\n')
-      //     .filter(line => line.trim() !== '')
-      //     .map((line, idx) => ({
-      //       questionNumber: `1.${idx + 1}`,
-      //       answer: line.trim(),
-      //     })),
-      // })),
-      answers: validAnswers.map(({ section, content }) => ({
-        section,
-        questions: parseQuestionsFromContent(content),
-      })),
-      
+      answers: finalAnswers,
       submissionTime: new Date().toISOString(),
       submissionType: submissionType,
     };
@@ -1060,7 +1037,7 @@ const ExamPage: React.FC = () => {
     while (attempt < maxAttempts) {
       attempt++;
       console.log(`=== SUBMISSION ATTEMPT ${attempt} of ${maxAttempts} ===`);
-      
+
       try {
         const response = await axios.post(submitURL, submissionData, {
           withCredentials: true,
@@ -1070,20 +1047,12 @@ const ExamPage: React.FC = () => {
           timeout: 30000,
         });
 
-        
-
-        setDebugInfo(`Response: ${JSON.stringify(response.data, null, 2)}`);
-
-        console.log('Response received:');
-        console.log('Status:', response.status);
-        console.log('Headers:', response.headers);
-        console.log('Data:', response.data);
+        console.log('Response received:', response.status, response.data);
 
         if (response.status === 200) {
           setSubmissionStatus('Exam submitted successfully');
           setHasSubmitted(true);
           setIsSubmitting(false);
-
           setAnswers([]);
 
           Object.keys(localStorage)
@@ -1092,8 +1061,8 @@ const ExamPage: React.FC = () => {
               console.log('Removing from localStorage:', key);
               localStorage.removeItem(key);
             });
-            
-          await submitAllLogs(); // Submit combined logs after successful exam submission
+
+          await submitAllLogs();
           setTimeout(() => {
             console.log('Navigating to exam-complete page...');
             navigate('/');
@@ -1103,34 +1072,30 @@ const ExamPage: React.FC = () => {
           throw new Error(`Unexpected response status: ${response.status}`);
         }
       } catch (err: any) {
-        setDebugInfo(`Error: ${err.message}\n${err.response ? JSON.stringify(err.response.data, null, 2) : ''}`);
-        console.error(`=== ATTEMPT ${attempt} FAILED ===`);
-        console.error('Error type:', err.constructor.name);
-        console.error('Error message:', err.message);
-        
+        console.error(`=== ATTEMPT ${attempt} FAILED ===`, err);
         if (err.response) {
-          console.error('Response status:', err.response.status);
-          console.error('Response headers:', err.response.headers);
-          console.error('Response data:', err.response.data);
-          setSubmissionStatus(`Failed to submit exam: ${err.response.data?.error || err.response.data?.message || 'Unknown server error'}`);
+          console.error('Response status:', err.response.status, err.response.data);
           if (err.response.status === 400 && err.response.data.error === 'Submission already exists for this exam and student') {
+            setSubmissionStatus('Exam already submitted');
             setHasSubmitted(true);
             setIsSubmitting(false);
-            await submitAllLogs(); // Submit combined logs on duplicate
+            await submitAllLogs();
+            setTimeout(() => navigate('/'), 2000);
             return;
+          } else {
+            setSubmissionStatus(`Failed to submit exam. ${attempt < maxAttempts ? 'Retrying...' : 'Please try again or contact support.'}`);
           }
         } else if (err.request) {
           console.error('No response received');
-          console.error('Request details:', err.request);
-          setSubmissionStatus(`Network error: No response from server. Attempt ${attempt} of ${maxAttempts}`);
+          setSubmissionStatus(`Network error. ${attempt < maxAttempts ? 'Retrying...' : 'Please check your connection and try again.'}`);
         } else {
           console.error('Request setup error:', err.message);
-          setSubmissionStatus(`Configuration error: ${err.message}`);
+          setSubmissionStatus(`Submission error. ${attempt < maxAttempts ? 'Retrying...' : 'Please contact support.'}`);
         }
-        
+
         if (attempt === maxAttempts) {
           console.error('=== ALL ATTEMPTS FAILED ===');
-          setSubmissionStatus('Failed to submit exam after multiple attempts. Please contact support.');
+          setSubmissionStatus('Failed to submit exam. Please contact support.');
           setIsSubmitting(false);
           return;
         }
@@ -1242,6 +1207,7 @@ const ExamPage: React.FC = () => {
       logEvent('answer_update', {});
       return updatedAnswers;
     });
+    if (submissionStatus) setSubmissionStatus(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -1257,6 +1223,7 @@ const ExamPage: React.FC = () => {
 
   const switchSection = (section: string) => {
     setCurrentSection(section);
+    if (submissionStatus) setSubmissionStatus(null);
   };
 
   if (isLoading) {
@@ -1268,28 +1235,18 @@ const ExamPage: React.FC = () => {
   }
 
   return (
-    // <div className="h-screen w-screen flex flex-col bg-gray-100 font-sans" tabIndex={0}>
-    //   <div className="flex items-center justify-center px-6 py-3 bg-teal-800 text-white shadow">
-    //     <div className="text-lg font-semibold">
-    //       Clarke International University
-    //     </div>
-    //     <div className="text-sm font-bold bg-white/20 px-4 py-1 rounded">
-    //       Time Remaining: {String(timer.hours).padStart(2, '0')}:{String(timer.minutes).padStart(2, '0')}:{String(timer.seconds).padStart(2, '0')}
-    //     </div>
     <div className="h-screen w-screen flex flex-col bg-gray-100 font-sans" tabIndex={0}>
-  <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 shadow">
-    <div className="flex items-center gap-3">
-      <img
-        src="../public/CIU-exam-system-logo.png"
-        alt="System Logo"
-        className="h-12 w-auto"
-      />
-    </div>
-    <div className="text-sm font-bold bg-teal-800 text-white px-4 py-1 rounded">
-      Time Remaining: {String(timer.hours).padStart(2, '0')}:{String(timer.minutes).padStart(2, '0')}:{String(timer.seconds).padStart(2, '0')}
-    </div>
-  
-
+      <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 shadow">
+        <div className="flex items-center gap-3">
+          <img
+            src="../public/CIU-exam-system-logo.png"
+            alt="System Logo"
+            className="h-12 w-auto"
+          />
+        </div>
+        <div className="text-sm font-bold bg-teal-800 text-white px-4 py-1 rounded">
+          Time Remaining: {String(timer.hours).padStart(2, '0')}:{String(timer.minutes).padStart(2, '0')}:{String(timer.seconds).padStart(2, '0')}
+        </div>
       </div>
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 p-6 overflow-y-auto">
@@ -1328,15 +1285,12 @@ const ExamPage: React.FC = () => {
                 </div>
                 <textarea
                   value={answers.find((ans) => ans.section === currentSection)?.content || ''}
-                  onChange={(e) => {
-                    handleAnswerChange(e, currentSection);
-                    if (submissionStatus) setSubmissionStatus(null);
-                  }}
+                  onChange={(e) => handleAnswerChange(e, currentSection)}
                   onKeyDown={handleKeyDown}
                   onContextMenu={handleContextMenu}
                   className="w-full h-[calc(100vh-300px)] p-2 border rounded resize-none"
                   placeholder={`Example:\n1) [Your descriptive answer here]\n1) a: [Your objective answer here]\n2) b: [Your objective answer here]`}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || hasSubmitted}
                 />
               </div>
               <div className="w-48 bg-white border-l border-gray-200 shadow-lg overflow-y-auto ml-4">
@@ -1348,7 +1302,7 @@ const ExamPage: React.FC = () => {
                         key={section}
                         className={`w-full py-1 text-sm rounded ${currentSection === section ? 'bg-teal-600 text-white' : 'bg-gray-200'}`}
                         onClick={() => switchSection(section)}
-                        disabled={!isSectioned || isSubmitting}
+                        disabled={!isSectioned || isSubmitting || hasSubmitted}
                       >
                         Click here to answer Section {section} {answers.find((ans) => ans.section === section)?.content ? '✓' : ''}
                       </button>
@@ -1356,28 +1310,27 @@ const ExamPage: React.FC = () => {
                     <button
                       className={`w-full py-1 text-sm rounded ${currentSection === 'nonSectioned' ? 'bg-teal-600 text-white' : 'bg-gray-200'}`}
                       onClick={() => switchSection('nonSectioned')}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || hasSubmitted}
                     >
                       Click here to answer exams without sections {answers.find((ans) => ans.section === 'nonSectioned')?.content ? '✓' : ''}
                     </button>
                   </div>
-                  <button 
+                  <button
                     className={`mt-4 w-full py-2 rounded-lg font-semibold ${
-                      isSubmitting || hasSubmitted 
-                        ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
+                      isSubmitting || hasSubmitted
+                        ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
                         : 'bg-teal-600 text-white hover:bg-teal-700'
-                    }`} 
+                    }`}
                     onClick={() => submitExam('manual')}
                     disabled={isSubmitting || hasSubmitted}
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Exam'}
                   </button>
                   {submissionStatus && (
-                    <div className={`mt-2 text-sm ${submissionStatus.includes('successfully') ? 'text-green-600' : 'text-red-500'}`}>
+                    <div className={`mt-2 text-sm ${submissionStatus.includes('successfully') || submissionStatus.includes('already submitted') ? 'text-green-600' : 'text-red-500'}`}>
                       {submissionStatus}
                     </div>
                   )}
-                  {debugInfo && <div className="mt-2 text-sm text-red-500">{debugInfo}</div>}
                 </div>
               </div>
             </div>
