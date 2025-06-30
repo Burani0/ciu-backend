@@ -14,7 +14,10 @@ const examLogSchema = new mongoose.Schema({
   studentRegNo: { type: String, required: true },
   examNo: { type: String, required: true },
   courseId: { type: String, required: true },
+  submissionTime: { type: Date, required: true, default: Date.now },
   logEntries: [logEntrySchema], // Array of log entries
 });
 
 export default mongoose.model('ExamLog', examLogSchema);
+
+
