@@ -937,7 +937,7 @@ const ExamPage: React.FC = () => {
     console.log('Submitting summarized logs:', JSON.stringify(summary, null, 2));
 
     try {
-      const response = await axios.post('http://localhost:3001/api/exams/exam_logs', {
+      const response = await axios.post('https://ciu-backend.onrender.com/api/exams/exam_logs', {
         studentRegNo: examData.studentRegNo,
         examNo: examData.examNo,
         courseId: examData.courseId,

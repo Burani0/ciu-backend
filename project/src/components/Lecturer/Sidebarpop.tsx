@@ -54,13 +54,14 @@ const Sidebar: React.FC = () => {
     if (!lecturerId) return;
 
     try {
-      await axios.post('http://localhost:3001/api/auth/lecturerlogout', { lecturerId });
+      await axios.post('https://ciu-backend.onrender.com/api/auth/lecturerlogout', { lecturerId });
       localStorage.removeItem('lecturerId');
       window.location.href = '/'; // Redirect to login/home
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
+  
 
   return (
     <aside className="w-64 bg-white h-screen shadow-md">
