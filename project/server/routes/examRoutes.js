@@ -1,3 +1,5 @@
+// import express from 'express';
+// import ExamSubmission from '../models/examSubmission.js';
 import ExamLog  from '../models/exam_logs.js'; 
 
 import express from 'express';
@@ -100,67 +102,7 @@ router.post('/submit_exam', async (req, res) => {
   }
 });
 
-router.get('/fetch_all_exams', async (req, res) => {
-  try {
-    const submissions = await ExamSubmission.find({});
 
-    const transformedSubmissions = submissions.map(sub => ({
-      ...sub._doc,
-      answers: sub.answers.flatMap(section =>
-        section.questions.map(q => ({
-          section: section.section,
-          questionNumber: q.questionNumber,
-          answer: q.answer
-        }))
-      ),
-      
-    }));
-
-    res.status(200).json(transformedSubmissions);
-  } catch (error) {
-    console.error('Error fetching all exams:', error);
-    res.status(500).json({ error: 'Failed to fetch all exams', details: error.message });
-  }
-});
-
-
-  
-
-// Fetch submissions for lecturer's assigned courses
-router.get('/lecturer/:lecturerId/submissions', async (req, res) => {
-  const { lecturerId } = req.params;
-
-  console.log(`Fetching submissions for lecturerId: ${lecturerId}`);
-
-  try {
-    const lecturer = await Lecturer.findById(lecturerId);
-    if (!lecturer) {
-      return res.status(404).json({ error: 'Lecturer not found' });
-    }
-
-    console.log(`Lecturer found: ${lecturer._id}, assignedCourses:, lecturer.assignedCourses`);
-
-    const assignedCourseIds = lecturer.assignedCourses.map(course =>
-      typeof course === 'string' ? course : course._id.toString()
-    );
-
-    console.log('Assigned course IDs:', assignedCourseIds);
-
-    const submissions = await ExamSubmission.find({
-      $or: [
-        { courseCode: { $in: assignedCourseIds } },
-        { courseId: { $in: assignedCourseIds } }
-      ]
-    });
-
-    console.log(`Found ${submissions.length} submissions for lecturer.`);
-
-    res.status(200).json(submissions);
-  } catch (error) {
-    console.error('Error fetching submissions for lecturer:', error);
-    res.status(500).json({ error: 'Failed to fetch submissions', details: error.message });
-  }
-});
 
 // ✅ Fetch single submission by ID
 router.get('/fetch_exam_by_id/:id', async (req, res) => {
