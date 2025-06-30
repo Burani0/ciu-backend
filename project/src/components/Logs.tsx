@@ -150,6 +150,7 @@ const Logs = () => {
                         <tr className="bg-gray-100 text-gray-700 text-left">
                           <th className="border px-4 py-3">University Number</th>
                           <th className="border px-4 py-3">Login Time</th>
+                          <th className="border px-4 py-3">LogOut Time</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -157,6 +158,9 @@ const Logs = () => {
                           <tr key={log._id || index} className="hover:bg-gray-50 text-gray-800">
                             <td className="border px-4 py-2">{log.universityNumber}</td>
                             <td className="border px-4 py-2">{new Date(log.loginTime).toLocaleString()}</td>
+                            <td className="border px-4 py-2">
+            {log.logoutTime ? new Date(log.logoutTime).toLocaleString() : 'N/A'}
+          </td>
                           </tr>
                         ))}
                         {logs.length === 0 && !loading && (

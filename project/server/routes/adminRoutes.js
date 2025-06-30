@@ -10,7 +10,8 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   createAdmin,
   adminLogin,  
   clearToken,
-  deleteAdmin, } from '../controllers/adminController.js';
+  deleteAdmin,
+  adminLogout, } from '../controllers/adminController.js';
   import { getLecturerById } from '../controllers/adminController.js';
   import { getCourseById }   from '../controllers/adminController.js';
 
@@ -43,5 +44,6 @@ router.post('/create-admin', createAdmin);
 router.post('/admin-login', adminLogin);
 router.post('/cleartoken', clearToken );
 router.delete('/admins/:id', deleteAdmin);
+router.post('/adminlogout', adminLogout);
 
 export default router;

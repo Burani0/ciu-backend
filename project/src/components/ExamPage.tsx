@@ -1,7 +1,26 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // import React, { useState, useEffect, useRef } from 'react';
 // import { useNavigate, useParams } from 'react-router-dom';
 // import axios from 'axios';
-// import styles from './Exam.module.css';
 // import * as faceapi from 'face-api.js';
 // import { emitStream, joinRoom, leaveRoom } from '../config/socket';
 
@@ -19,7 +38,7 @@
 // export type Answer = { section: string; content: string };
 
 // const ExamPage: React.FC = () => {
-//   const [timer, setTimer] = useState<Timer>({ hours: 3, minutes: 0, seconds: 0 });
+//   const [timer, setTimer] = useState<Timer>({ hours: 0, minutes: 0, seconds: 0 });
 //   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 //   const [cameraActive, setCameraActive] = useState<boolean>(false);
 //   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -53,6 +72,7 @@
 //   const navigate = useNavigate();
 //   const { roomId } = useParams<{ roomId: string }>();
 
+//   // Initialize timer from localStorage's currentExamDuration
 //   useEffect(() => {
 //     const fetchExamData = async () => {
 //       const examNo = localStorage.getItem('currentExamNo') || roomId || '';
@@ -97,6 +117,19 @@
 //           .filter((ans) => ans.section && ans.content.trim());
 //         setAnswers(savedAnswers);
 
+//         // Initialize timer from currentExamDuration
+//         const duration = localStorage.getItem('currentExamDuration') || '0h 5m';
+//         console.log('Retrieved currentExamDuration:', duration);
+//         const match = duration.match(/(\d+)h\s*(\d+)m/);
+//         let hours = 0;
+//         let minutes = 0;
+//         if (match) {
+//           hours = parseInt(match[1], 10);
+//           minutes = parseInt(match[2], 10);
+//         } else {
+//           console.error('Invalid duration format:', duration);
+//         }
+//         setTimer({ hours, minutes, seconds: 0 });
 //         setIsTimerRunning(true);
 //         initializeCamera();
 //       } catch (err) {
@@ -110,6 +143,7 @@
 //     fetchExamData();
 //   }, [roomId]);
 
+//   // Timer countdown logic
 //   useEffect(() => {
 //     if (!isTimerRunning) return;
 //     const interval = setInterval(() => {
@@ -123,8 +157,9 @@
 //             minutes = 59;
 //             hours--;
 //             if (hours < 0) {
-//               submitExam();
-//               return prev;
+//               // Auto-submit when timer reaches 00:00:00
+//               submitExam('auto-submit');
+//               return { hours: 0, minutes: 0, seconds: 0 };
 //             }
 //           }
 //         }
@@ -226,7 +261,7 @@
 //     leaveRoom();
 //   };
 
-//   const submitExam = async (): Promise<void> => {
+//   const submitExam = async (submissionType: string = 'manual'): Promise<void> => {
 //     if (isSubmitting) {
 //       console.log('Submission already in progress, ignoring duplicate submission attempt');
 //       return;
@@ -239,10 +274,8 @@
 //     setSubmissionStatus('Submitting...');
 //     setDebugInfo('');
 
-//     // Get current answers from state AND localStorage to ensure we capture any unsaved changes
+//     // Get current answers from state AND localStorage
 //     const currentAnswers = [...answers];
-    
-//     // Also check localStorage for any additional answers that might not be in state
 //     const localStorageAnswers = Object.keys(localStorage)
 //       .filter((key) => key.startsWith('answer_'))
 //       .map((key) => ({
@@ -251,14 +284,13 @@
 //       }))
 //       .filter((ans) => ans.section && ans.content.trim());
 
-//     // Merge state answers with localStorage answers (localStorage takes precedence)
 //     const mergedAnswers = [...currentAnswers];
 //     localStorageAnswers.forEach(localAnswer => {
 //       const existingIndex = mergedAnswers.findIndex(ans => ans.section === localAnswer.section);
 //       if (existingIndex >= 0) {
-//         mergedAnswers[existingIndex] = localAnswer; // Update with localStorage version
+//         mergedAnswers[existingIndex] = localAnswer;
 //       } else {
-//         mergedAnswers.push(localAnswer); // Add new answer from localStorage
+//         mergedAnswers.push(localAnswer);
 //       }
 //     });
 
@@ -266,15 +298,19 @@
 //     console.log('Valid answers found:', validAnswers.length);
 //     console.log('Valid answers:', validAnswers);
 
-//     // Modified: Allow submission even if no answers (auto-submit scenario)
+//     // For auto-submit with no answers, send empty array (handled by backend)
+//     const finalAnswers = validAnswers.length === 0 && submissionType === 'auto-submit' 
+//       ? [] // Send empty array, backend will handle it
+//       : validAnswers.map(({ section, content }) => ({ section, answer: content.trim() }));
+
 //     const submissionData = {
 //       studentRegNo: examData.studentRegNo,
 //       examNo: examData.examNo,
 //       examName: examData.examName,
 //       courseId: examData.courseId,
-//       answers: validAnswers.map(({ section, content }) => ({ section, answer: content.trim() })),
+//       answers: finalAnswers,
 //       submissionTime: new Date().toISOString(),
-//       submissionType: validAnswers.length === 0 ? 'auto-submit' : 'manual', // Track submission type
+//       submissionType: submissionType,
 //     };
 
 //     console.log('Submission data prepared:', JSON.stringify(submissionData, null, 2));
@@ -368,12 +404,12 @@
 //       if (e.key === 'Escape' && !isSubmitting) {
 //         console.log('Escape key detected, initiating auto-submit');
 //         e.preventDefault(); // Prevent default browser behavior (e.g., exiting fullscreen)
-//         submitExam();
+//         submitExam('auto-submit'); // Pass auto-submit type
 //       }
 //     };
 //     window.addEventListener('keydown', handleKeyDown, { capture: true }); // Use capture phase
 //     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
-//   }, [isSubmitting, examData, answers]); // Include necessary dependencies
+//   }, [isSubmitting, examData, answers]);
 
 //   // Handle fullscreen exit attempt
 //   useEffect(() => {
@@ -381,12 +417,12 @@
 //       console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement); // Debug log
 //       if (!document.fullscreenElement && !isSubmitting) {
 //         console.log('Fullscreen exited, initiating auto-submit');
-//         submitExam();
+//         submitExam('auto-submit'); // Pass auto-submit type
 //       }
 //     };
 //     document.addEventListener('fullscreenchange', handleFullscreenChange);
 //     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-//   }, [isSubmitting, examData, answers]); // Include necessary dependencies
+//   }, [isSubmitting, examData, answers]);
 
 //   // Handle tab/window close attempt
 //   useEffect(() => {
@@ -394,7 +430,7 @@
 //       console.log('Window/tab about to close, initiating auto-submit');
 //       // Note: submitExam is async but beforeunload handlers should be synchronous
 //       // We'll attempt to submit but can't guarantee completion
-//       submitExam();
+//       submitExam('auto-submit');
       
 //       // Standard way to show confirmation dialog
 //       e.preventDefault();
@@ -404,7 +440,7 @@
     
 //     window.addEventListener('beforeunload', handleBeforeUnload);
 //     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-//   }, [examData, answers]); // Include necessary dependencies
+//   }, [examData, answers]);
 
 //   const renderCameraContainer = (): JSX.Element => (
 //     <div className="fixed top-5 right-5 w-[250px] bg-white border border-gray-200 rounded-lg p-4 shadow-lg z-[1000]">
@@ -478,7 +514,7 @@
 
 //   return (
 //     <div className="h-screen w-screen flex flex-col bg-gray-100 font-sans" tabIndex={0}>
-//       <div className="flex justify-between items-center px-6 py-3 bg-teal-800 text-white shadow">
+//       <div className="flex items-center justify-center px-6 py-3 bg-teal-800 text-white shadow">
 //         <div className="text-lg font-semibold">
 //           Clarke International University
 //         </div>
@@ -562,7 +598,7 @@
 //                         ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
 //                         : 'bg-teal-600 text-white hover:bg-teal-700'
 //                     }`} 
-//                     onClick={submitExam}
+//                     onClick={() => submitExam('manual')}
 //                     disabled={isSubmitting}
 //                   >
 //                     {isSubmitting ? 'Submitting...' : 'Submit Exam'}
@@ -591,18 +627,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -622,6 +646,11 @@ export type SecurityChecks = {
 };
 export type Violation = { type: string; timestamp: string };
 export type Answer = { section: string; content: string };
+export type LogEntry = {
+  eventType: string;
+  details: { [key: string]: any };
+  timestamp: string;
+};
 
 const ExamPage: React.FC = () => {
   const [timer, setTimer] = useState<Timer>({ hours: 0, minutes: 0, seconds: 0 });
@@ -650,7 +679,10 @@ const ExamPage: React.FC = () => {
   const [submissionStatus, setSubmissionStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const [logBuffer, setLogBuffer] = useState<LogEntry[]>([]);
+  const [logSummary, setLogSummary] = useState<{ [key: string]: { start: string; end: string; count: number } }>({});
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const faceDetectionInterval = useRef<NodeJS.Timeout | null>(null);
@@ -659,7 +691,37 @@ const ExamPage: React.FC = () => {
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
 
-  // Initialize timer from localStorage's currentExamDuration
+  // Aggregate logs into time ranges
+  const aggregateLogs = (logs: LogEntry[]) => {
+    const summary: { [key: string]: { start: string; end: string; count: number } } = {};
+    let currentEvent: string | null = null;
+    let startTime: string | null = null;
+
+    logs.forEach((log, index) => {
+      const eventKey = `${log.eventType}_${log.details.violationType || log.details.remainingTime || 'generic'}`;
+      if (!currentEvent || currentEvent !== eventKey) {
+        if (currentEvent && startTime) {
+          summary[currentEvent] = {
+            start: startTime,
+            end: logs[index - 1].timestamp,
+            count: (summary[currentEvent]?.count || 0) + 1,
+          };
+        }
+        currentEvent = eventKey;
+        startTime = log.timestamp;
+      }
+      if (index === logs.length - 1 && currentEvent && startTime) {
+        summary[currentEvent] = {
+          start: startTime,
+          end: log.timestamp,
+          count: (summary[currentEvent]?.count || 0) + 1,
+        };
+      }
+    });
+
+    return summary;
+  };
+
   useEffect(() => {
     const fetchExamData = async () => {
       const examNo = localStorage.getItem('currentExamNo') || roomId || '';
@@ -683,7 +745,7 @@ const ExamPage: React.FC = () => {
         setPdfUrl(url);
         setPdfError(null);
 
-        const sectionResponse = { hasSections: true, sections: ['A', 'B', 'C'] }; // Mock, replace with actual API
+        const sectionResponse = { hasSections: true, sections: ['A', 'B', 'C'] };
         setIsSectioned(sectionResponse.hasSections);
         setSections(sectionResponse.hasSections ? sectionResponse.sections : []);
         if (!sectionResponse.hasSections) {
@@ -705,7 +767,6 @@ const ExamPage: React.FC = () => {
           .filter((ans) => ans.section && ans.content.trim());
         setAnswers(savedAnswers);
 
-        // Initialize timer from currentExamDuration
         const duration = localStorage.getItem('currentExamDuration') || '0h 5m';
         console.log('Retrieved currentExamDuration:', duration);
         const match = duration.match(/(\d+)h\s*(\d+)m/);
@@ -731,7 +792,6 @@ const ExamPage: React.FC = () => {
     fetchExamData();
   }, [roomId]);
 
-  // Timer countdown logic
   useEffect(() => {
     if (!isTimerRunning) return;
     const interval = setInterval(() => {
@@ -745,9 +805,8 @@ const ExamPage: React.FC = () => {
             minutes = 59;
             hours--;
             if (hours < 0) {
-              // Auto-submit when timer reaches 00:00:00
               submitExam('auto-submit');
-              return { hours: 0, minutes: 0, seconds: 0 };
+              return { hours: 0, minutes: 1, seconds: 0 };
             }
           }
         }
@@ -849,9 +908,78 @@ const ExamPage: React.FC = () => {
     leaveRoom();
   };
 
+  const logEvent = (eventType: string, details: any) => {
+    const filteredDetails = { ...details };
+    delete filteredDetails.section; // Exclude section
+    delete filteredDetails.answers; // Exclude answers
+    const logEntry = {
+      eventType,
+      details: filteredDetails,
+      timestamp: new Date().toISOString(),
+    };
+    setLogBuffer((prev) => [...prev, logEntry]);
+  };
+
+  const submitAllLogs = async () => {
+    if (isSubmitting || hasSubmitted) return;
+
+    setIsSubmitting(true);
+    setSubmissionStatus('Submitting...');
+
+    if (logBuffer.length === 0) {
+      setSubmissionStatus('Exam submitted successfully');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Aggregate logs for console output
+    const summary = aggregateLogs(logBuffer);
+    console.log('Submitting summarized logs:', JSON.stringify(summary, null, 2));
+
+    try {
+      const response = await axios.post('http://localhost:3001/api/exams/exam_logs', {
+        studentRegNo: examData.studentRegNo,
+        examNo: examData.examNo,
+        courseId: examData.courseId,
+        logEntries: logBuffer.map(entry => ({
+          eventType: entry.eventType,
+          details: {
+            violationType: entry.details.violationType,
+            remainingTime: entry.details.remainingTime,
+            timestamp: entry.timestamp,
+          },
+        })),
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 30000,
+      });
+
+      if (response.status === 201) {
+        setSubmissionStatus('Exam submitted successfully');
+        setLogBuffer([]); // Clear buffer on success
+      } else {
+        throw new Error(`Unexpected status: ${response.status}`);
+      }
+    } catch (error) {
+      let errorMessage = 'Unknown error';
+      if (typeof error === 'object' && error !== null) {
+        const err = error as any;
+        errorMessage = err.response?.data?.message || err.message || 'Unknown error';
+        console.error('Log submission error:', err.response || err);
+      } else {
+        errorMessage = String(error);
+        console.error('Log submission error:', error);
+      }
+      setDebugInfo(`Error submitting logs: ${errorMessage}`);
+      setSubmissionStatus('Failed to submit exam. Please try again or contact support.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const submitExam = async (submissionType: string = 'manual'): Promise<void> => {
-    if (isSubmitting) {
-      console.log('Submission already in progress, ignoring duplicate submission attempt');
+    if (isSubmitting || hasSubmitted) {
+      console.log('Submission already in progress or completed, ignoring duplicate submission attempt');
       return;
     }
 
@@ -862,7 +990,6 @@ const ExamPage: React.FC = () => {
     setSubmissionStatus('Submitting...');
     setDebugInfo('');
 
-    // Get current answers from state AND localStorage
     const currentAnswers = [...answers];
     const localStorageAnswers = Object.keys(localStorage)
       .filter((key) => key.startsWith('answer_'))
@@ -886,9 +1013,8 @@ const ExamPage: React.FC = () => {
     console.log('Valid answers found:', validAnswers.length);
     console.log('Valid answers:', validAnswers);
 
-    // For auto-submit with no answers, send empty array (handled by backend)
     const finalAnswers = validAnswers.length === 0 && submissionType === 'auto-submit' 
-      ? [] // Send empty array, backend will handle it
+      ? [] 
       : validAnswers.map(({ section, content }) => ({ section, answer: content.trim() }));
 
     const submissionData = {
@@ -914,8 +1040,6 @@ const ExamPage: React.FC = () => {
       console.log(`=== SUBMISSION ATTEMPT ${attempt} of ${maxAttempts} ===`);
       
       try {
-        console.log('Making axios request...');
-        
         const response = await axios.post(submitURL, submissionData, {
           withCredentials: true,
           headers: {
@@ -932,11 +1056,10 @@ const ExamPage: React.FC = () => {
         console.log('Data:', response.data);
 
         if (response.status === 200) {
-          setSubmissionStatus(response.data.message || 'Exam submitted successfully!');
+          setSubmissionStatus('Exam submitted successfully');
+          setHasSubmitted(true);
           setIsSubmitting(false);
-          setDebugInfo('');
-          
-          // Clean up localStorage
+
           Object.keys(localStorage)
             .filter((key) => key.startsWith('answer_'))
             .forEach((key) => {
@@ -944,11 +1067,15 @@ const ExamPage: React.FC = () => {
               localStorage.removeItem(key);
             });
             
-            setShowPopup(true);
-    return;
-  } else {
-    throw new Error(`Unexpected response status: ${response.status}`);
-  }
+          await submitAllLogs(); // Submit combined logs after successful exam submission
+          setTimeout(() => {
+            console.log('Navigating to exam-complete page...');
+            navigate('/');
+          }, 2000);
+          return;
+        } else {
+          throw new Error(`Unexpected response status: ${response.status}`);
+        }
       } catch (err: any) {
         setDebugInfo(`Error: ${err.message}\n${err.response ? JSON.stringify(err.response.data, null, 2) : ''}`);
         console.error(`=== ATTEMPT ${attempt} FAILED ===`);
@@ -959,7 +1086,13 @@ const ExamPage: React.FC = () => {
           console.error('Response status:', err.response.status);
           console.error('Response headers:', err.response.headers);
           console.error('Response data:', err.response.data);
-          setSubmissionStatus(`Server error (${err.response.status}): ${err.response.data?.error || err.response.data?.message || 'Unknown server error'}`);
+          setSubmissionStatus(`Failed to submit exam: ${err.response.data?.error || err.response.data?.message || 'Unknown server error'}`);
+          if (err.response.status === 400 && err.response.data.error === 'Submission already exists for this exam and student') {
+            setHasSubmitted(true);
+            setIsSubmitting(false);
+            await submitAllLogs(); // Submit combined logs on duplicate
+            return;
+          }
         } else if (err.request) {
           console.error('No response received');
           console.error('Request details:', err.request);
@@ -971,7 +1104,7 @@ const ExamPage: React.FC = () => {
         
         if (attempt === maxAttempts) {
           console.error('=== ALL ATTEMPTS FAILED ===');
-          setSubmissionStatus(`Failed after ${maxAttempts} attempts. Please contact support.`);
+          setSubmissionStatus('Failed to submit exam after multiple attempts. Please contact support.');
           setIsSubmitting(false);
           return;
         }
@@ -982,50 +1115,44 @@ const ExamPage: React.FC = () => {
     }
   };
 
-  // Handle Escape key press to auto-submit exam
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log('Key pressed:', e.key); // Debug log
-      if (e.key === 'Escape' && !isSubmitting) {
+      console.log('Key pressed:', e.key);
+      if (e.key === 'Escape' && !isSubmitting && !hasSubmitted) {
         console.log('Escape key detected, initiating auto-submit');
-        e.preventDefault(); // Prevent default browser behavior (e.g., exiting fullscreen)
-        submitExam('auto-submit'); // Pass auto-submit type
+        e.preventDefault();
+        submitExam('auto-submit');
       }
     };
-    window.addEventListener('keydown', handleKeyDown, { capture: true }); // Use capture phase
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
-  }, [isSubmitting, examData, answers]);
+  }, [isSubmitting, hasSubmitted, examData, answers]);
 
-  // Handle fullscreen exit attempt
   useEffect(() => {
     const handleFullscreenChange = () => {
-      console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement); // Debug log
-      if (!document.fullscreenElement && !isSubmitting) {
+      console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement);
+      if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
         console.log('Fullscreen exited, initiating auto-submit');
-        submitExam('auto-submit'); // Pass auto-submit type
+        submitExam('auto-submit');
       }
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, [isSubmitting, examData, answers]);
+  }, [isSubmitting, hasSubmitted, examData, answers]);
 
-  // Handle tab/window close attempt
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       console.log('Window/tab about to close, initiating auto-submit');
-      // Note: submitExam is async but beforeunload handlers should be synchronous
-      // We'll attempt to submit but can't guarantee completion
-      submitExam('auto-submit');
-      
-      // Standard way to show confirmation dialog
+      if (!isSubmitting && !hasSubmitted) {
+        submitExam('auto-submit');
+      }
       e.preventDefault();
       e.returnValue = '';
       return '';
     };
-    
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [examData, answers]);
+  }, [isSubmitting, hasSubmitted, examData, answers]);
 
   const renderCameraContainer = (): JSX.Element => (
     <div className="fixed top-5 right-5 w-[250px] bg-white border border-gray-200 rounded-lg p-4 shadow-lg z-[1000]">
@@ -1055,10 +1182,28 @@ const ExamPage: React.FC = () => {
     if (cameraActive && videoRef.current) {
       faceDetectionInterval.current = setInterval(() => {
         if (videoRef.current) detectFaces(videoRef.current);
+        if (smoothedDetection === 0 && noFaceTimer >= NO_FACE_WARNING_SECONDS) {
+          logEvent('security_violation', { violationType: 'no_face' });
+        } else if (detectionBufferRef.current.length === DETECTION_BUFFER_SIZE && detectionBufferRef.current.every((v) => v === 2) && multiFaceTimer >= MULTIPLE_FACE_WARNING_SECONDS) {
+          logEvent('security_violation', { violationType: 'multiple_faces' });
+        }
       }, 500);
     }
     return () => { if (faceDetectionInterval.current) clearInterval(faceDetectionInterval.current); };
-  }, [cameraActive, isModelLoaded]);
+  }, [cameraActive, isModelLoaded, smoothedDetection, noFaceTimer, multiFaceTimer]);
+
+  useEffect(() => {
+    if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
+      logEvent('security_violation', { violationType: 'fullscreen_exit' });
+    }
+  }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
+
+  useEffect(() => {
+    if (isTimerRunning && timer.seconds === 0) {
+      const remainingTime = `${String(timer.hours).padStart(2, '0')}:${String(timer.minutes).padStart(2, '0')}:${String(timer.seconds).padStart(2, '0')}`;
+      logEvent('timer_update', { remainingTime });
+    }
+  }, [timer, isTimerRunning]);
 
   const handleAnswerChange = (e: React.ChangeEvent<HTMLTextAreaElement>, section: string) => {
     const newAnswer = e.target.value;
@@ -1068,12 +1213,12 @@ const ExamPage: React.FC = () => {
         updatedAnswers.push({ section, content: newAnswer });
       }
       localStorage.setItem(`answer_${section}`, newAnswer);
+      logEvent('answer_update', {});
       return updatedAnswers;
     });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Prevent Ctrl+C and Ctrl+V
     if (e.ctrlKey && (e.key === 'c' || e.key === 'v')) {
       e.preventDefault();
       alert('Copy and paste are disabled during the exam.');
@@ -1081,7 +1226,6 @@ const ExamPage: React.FC = () => {
   };
 
   const handleContextMenu = (e: React.MouseEvent<HTMLTextAreaElement>) => {
-    // Prevent right-click context menu
     e.preventDefault();
   };
 
@@ -1179,12 +1323,12 @@ const ExamPage: React.FC = () => {
                   </div>
                   <button 
                     className={`mt-4 w-full py-2 rounded-lg font-semibold ${
-                      isSubmitting 
+                      isSubmitting || hasSubmitted 
                         ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
                         : 'bg-teal-600 text-white hover:bg-teal-700'
                     }`} 
                     onClick={() => submitExam('manual')}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || hasSubmitted}
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Exam'}
                   </button>
@@ -1195,6 +1339,7 @@ const ExamPage: React.FC = () => {
                       
                     </div>
                   )}
+                  {debugInfo && <div className="mt-2 text-sm text-red-500">{debugInfo}</div>}
                 </div>
               </div>
             </div>

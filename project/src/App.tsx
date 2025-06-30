@@ -210,6 +210,7 @@ import EditLecturerModal from './components/admin/EditLecturerModal.tsx';
 import AdminCourses from './components/admin/AdminCourses.tsx';
 import LectCourses from './components/Lecturer/LecturerCourses.tsx';
 import LecturerTimetable from './components/Lecturer/LecturerTimetable.tsx';
+import ExamLogs from './components/ExamLogs.tsx'
 
 
 
@@ -369,7 +370,8 @@ function AppWrapper() {
         <Route path="/admin-create" element={<CreateAdminPage />} />
         <Route path="/loggs" element={<Logs />} />
         <Route path="/cleartoken" element={<Cleartoken/>}     />
-        
+        <Route path="/student_logs" element={<ExamLogs/>}     />
+
               </Routes>
             </Suspense>
           </div>
@@ -397,6 +399,7 @@ function AppWrapper() {
                 <Route path="/loggs" element={<Logs />} />
                 <Route path="/cleartoken" element={<Cleartoken/>}     />
                 <Route path="/verify-token" element={<TokenVerificationPage />} />
+                 <Route path="/student_logs" element={<ExamLogs/>}     />
                 
             </Routes>
           </Suspense>

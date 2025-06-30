@@ -239,6 +239,7 @@ export const getLecturerLoginLogs = async (req, res) => {
         .fontSize(12)
         .text(`University Number: ${log.universityNumber}`)
         .text(`Login Time: ${new Date(log.loginTime).toLocaleString()}`)
+        .text(`Logout Time: ${log.logoutTime ? new Date(log.logoutTime).toLocaleString() : 'N/A'}`)
         .moveDown();
     });
 
@@ -320,4 +321,17 @@ export const clearToken = async (req, res) => {
 
   // Token is valid
   res.status(200).json({ message: 'Token verified', adminId: admin._id });
+};
+
+
+export const adminLogout = async (req, res) => {
+  const { adminId } = req.body;
+
+  try {
+    await AdminToken.deleteMany({ adminId });
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Logout failed' });
+  }
 };

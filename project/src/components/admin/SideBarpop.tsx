@@ -32,6 +32,7 @@ export default function Sidebar() {
         // { text: "Manage Students", path: "/table" },
         { text: "Manage Lecturers",path:"/users"  },
         { text: "Lecturer Logs",path:"/loggs"  },
+        { text: "Student Exam Logs",path:"/student_logs"  },
         // { text: "Manage Administrators", path: "/adminuser" },
       ],
     },
