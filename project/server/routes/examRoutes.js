@@ -1,12 +1,10 @@
 
 import ExamLog  from '../models/exam_logs.js'; 
 
-
-
 import express from 'express';
 import ExamSubmission from '../models/examSubmission.js';
 import Lecturer from '../models/Lecturer.js';
-import Course from '../models/Course.js'; // Import Course model to fetch courseCode
+import Course from '../models/Course.js'; 
 import mongoose from 'mongoose';
 
 const router = express.Router();
