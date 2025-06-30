@@ -7,6 +7,8 @@ import { sendEmail } from '../utils/mailer.js';
 import LecturerLoginLog from '../models/LecturerLoginLog.js';
 import PDFDocument from 'pdfkit';
 import AdminToken from '../models/AdminToken.js';
+import ExamSubmission from '../models/examSubmission.js';
+
 
 
 
@@ -155,21 +157,20 @@ export const getCourseById = async (req, res) => {
   }
 };
 
-
-// UPDATE lecturer
 export const updateLecturer = async (req, res) => {
   const { id } = req.params;
-  const { firstName, lastName, email, universityNumber, courseIds } = req.body;
+  const { firstName, lastName, email, universityNumber, assignedCourses } = req.body;
 
   const updated = await Lecturer.findByIdAndUpdate(
-    id,
-    { firstName, lastName, email, universityNumber, assignedCourses: courseIds },
+    id.trim(), // trim the id here to fix ObjectId cast errors
+    { firstName, lastName, email, universityNumber, assignedCourses },
     { new: true }
   );
   if (!updated) return res.status(404).json({ message: 'Lecturer not found' });
 
   res.status(200).json(updated);
 };
+
 
 // UPDATE admin
 export const updateAdmin = async (req, res) => {
@@ -240,6 +241,7 @@ export const getLecturerLoginLogs = async (req, res) => {
         .text(`University Number: ${log.universityNumber}`)
         .text(`Login Time: ${new Date(log.loginTime).toLocaleString()}`)
         .text(`Logout Time: ${log.logoutTime ? new Date(log.logoutTime).toLocaleString() : 'N/A'}`)
+
         .moveDown();
     });
 
@@ -299,30 +301,100 @@ export const adminLogin = async (req, res) => {
   }
 };
 
-
 export const clearToken = async (req, res) => {
   const { username, token } = req.body;
 
   if (!username || !token) {
-    return res.status(400).json({ message: 'username  and token are required' });
+    return res.status(400).json({ message: 'Username and token are required' });
   }
 
-  // Find the lecturer using the university number
-  const admin = await Admin.findOne({ username });
-  if (!admin) {
-    return res.status(404).json({ message: 'admin not found' });
-  }
+  try {
+    // Find the admin by username
+    const admin = await Admin.findOne({ username });
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
 
-  // Check if the token matches the one stored for that lecturer
-  const tokenDoc = await AdminToken.findOne({ adminId: admin._id, token });
-  if (!tokenDoc) {
-    return res.status(401).json({ message: 'Invalid token' });
-  }
+    // Check if the token exists for this admin
+    const tokenDoc = await AdminToken.findOne({ adminId: admin._id, token });
+    if (!tokenDoc) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
 
-  // Token is valid
-  res.status(200).json({ message: 'Token verified', adminId: admin._id });
+    // Token is valid, optionally you might want to delete the token after verification
+    await AdminToken.deleteOne({ _id: tokenDoc._id });
+
+    // Respond with success and admin info
+    res.status(200).json({
+      message: 'Token verified',
+      adminId: admin._id,
+      username: admin.username,
+      email: admin.email,
+    });
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
+
+export const getLecturerSubmissions = async (req, res) => {
+  console.log('GET /lecturer/:lecturerId/submissions called with', req.params);
+  const { lecturerId } = req.params;
+
+  try {
+    const lecturer = await Lecturer.findById(lecturerId);
+    if (!lecturer) {
+      return res.status(404).json({ message: 'Lecturer not found' });
+    }
+
+    const assignedCourses = lecturer.assignedCourses;
+
+    const submissions = await ExamSubmission.find({
+      $or: [
+        { courseId: { $in: assignedCourses } },
+        {
+          courseId: {
+            $in: assignedCourses
+              .map(id => mongoose.Types.ObjectId.isValid(id) ? mongoose.Types.ObjectId(id) : null)
+              .filter(Boolean)
+          }
+        },
+        { courseCode: { $in: assignedCourses } }
+      ],
+    }).populate('courseId', 'courseCode');
+
+    res.status(200).json(submissions);
+  } catch (error) {
+    console.error('Error fetching submissions for lecturer:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+//getSubmissionById
+export const getSubmissionById = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid submission ID' });
+  }
+
+  try {
+    const submission = await ExamSubmission.findById(id).populate('courseId', 'courseCode');
+    
+    console.log('Fetched submission:', submission);
+
+
+    if (!submission) {
+      return res.status(404).json({ message: 'Submission not found' });
+    }
+
+    res.status(200).json(submission);
+  } catch (error) {
+    console.error('Error fetching submission:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
 
 export const adminLogout = async (req, res) => {
   const { adminId } = req.body;

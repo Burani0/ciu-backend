@@ -38,6 +38,7 @@ import authRoutes from './routes/authRoutes.js';
 
 
 
+
 // import { connectDB } from './config/db.js';
 // import adminRoutes from './routes/adminRoutes.js';
 // import authRoutes from './routes/authRoutes.js';
@@ -102,6 +103,9 @@ const io = new Server(httpServer, {
     transports: ['websocket', 'polling']
   },
 });
+
+
+
 
 const rooms = new Map();
 

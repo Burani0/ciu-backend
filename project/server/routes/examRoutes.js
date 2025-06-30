@@ -1,47 +1,92 @@
+import ExamLog  from '../models/exam_logs.js'; 
+
 import express from 'express';
 import ExamSubmission from '../models/examSubmission.js';
-import ExamLog  from '../models/exam_logs.js'; 
-import PDFDocument from 'pdfkit';
+import Lecturer from '../models/Lecturer.js';
+import Course from '../models/Course.js'; 
+import mongoose from 'mongoose';
+
 const router = express.Router();
 
 
+
 router.post('/submit_exam', async (req, res) => {
-  const { studentRegNo, examNo, examName, courseId, answers, submissionTime, submissionType } = req.body;
+  const {
+    studentRegNo,
+    examNo,
+    examName,
+    courseId,
+    answers,
+    submissionTime,
+    submissionType,
+  } = req.body;
+  console.log('🔥 Incoming Submission Payload:', req.body);
 
-  // Validate input
-  if (!studentRegNo || !examNo || !examName || !courseId || !answers || !Array.isArray(answers)) {
-    return res.status(400).json({ error: 'Missing required fields or invalid answers array' });
+  // Validate required fields
+  if (!studentRegNo || !examNo || !examName || !courseId || !submissionTime) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // Preprocess answers for auto-submit
-  let processedAnswers = [...answers];
+  // Validate answers array
+  if (!Array.isArray(answers)) {
+    return res.status(400).json({ error: 'Answers must be an array' });
+  }
+
+  // For auto-submit, allow empty answers array
   if (submissionType === 'auto-submit' && answers.length === 0) {
-    // For auto-submit with no answers, add a default entry
-    processedAnswers = [{ section: 'default', answer: 'Auto-submitted with no answers' }];
-  } else if (submissionType !== 'auto-submit' && answers.length === 0) {
-    return res.status(400).json({ error: 'Answers array cannot be empty for manual submission' });
+    console.log('Auto-submit with no answers detected, proceeding with empty answers');
+  } else {
+    // Validate section and question structure for non-empty answers
+    for (const section of answers) {
+      if (!section.section || !Array.isArray(section.questions)) {
+        return res.status(400).json({ error: 'Each answer section must have a section string and a questions array' });
+      }
+      for (const question of section.questions) {
+        if (!question.questionNumber || typeof question.answer !== 'string') {
+          return res.status(400).json({ error: 'Each question must have a questionNumber and a string answer' });
+        }
+      }
+    }
+
+    // For manual submission, ensure at least one non-empty answer
+    if (submissionType !== 'auto-submit') {
+      const hasAtLeastOneNonEmptyAnswer = answers.some(section =>
+        Array.isArray(section.questions) &&
+        section.questions.some(q => typeof q.answer === 'string' && q.answer.trim() !== '')
+      );
+      if (!hasAtLeastOneNonEmptyAnswer) {
+        return res.status(400).json({ error: 'At least one answer must have a non-empty answer field for manual submission' });
+      }
+    }
   }
 
-  // Validate each answer
-  for (const answer of processedAnswers) {
-    if (answer.answer !== undefined && typeof answer.answer !== 'string') {
-      return res.status(400).json({ error: 'Each answer must have a valid string answer field' });
-    }
-    // Ensure answer is not empty for non-auto-submit cases
-    if (submissionType !== 'auto-submit' && (!answer.answer || answer.answer.trim() === '')) {
-      return res.status(400).json({ error: 'Each answer must have a non-empty answer field for manual submission' });
-    }
-  }
+  console.log('Processed Answers:', answers);
 
   try {
+    // Look up course by ID or courseCode
+    let course = null;
+    if (mongoose.Types.ObjectId.isValid(courseId)) {
+      course = await Course.findById(courseId);
+    }
+    if (!course) {
+      course = await Course.findOne({ courseCode: courseId });
+    }
+    if (!course) {
+      return res.status(404).json(`{ error: Course not found for ID or Code: ${courseId} }`);
+    }
+
+    // Save submission to database
     const submission = await ExamSubmission.create({
       studentRegNo,
       examNo,
       examName,
-      courseId,
-      answers: processedAnswers,
-      submissionTime: submissionTime || new Date(),
+      courseId: course._id,
+      courseCode: course.courseCode,
+      answers,
+      submissionTime: new Date(submissionTime),
+      submissionType,
     });
+    console.log('✅ Submission saved:', submission);
 
     res.status(200).json({
       message: 'Exam submitted successfully',
@@ -55,21 +100,22 @@ router.post('/submit_exam', async (req, res) => {
   }
 });
 
-// Fetch all exams (no inputs)
 router.get('/fetch_all_exams', async (req, res) => {
   try {
     const submissions = await ExamSubmission.find({});
+
     const transformedSubmissions = submissions.map(sub => ({
       ...sub._doc,
-      answers: sub.answers.flatMap(answer => {
-        if (typeof answer === 'object' && answer.answer) {
-          // Split the answer by newlines and filter out empty lines
-          const splitAnswers = answer.answer.split('\n').filter(a => a.trim());
-          return splitAnswers.length > 1 ? splitAnswers : [answer.answer];
-        }
-        return [answer]; // Return as single item if not an object or no split needed
-      }),
+      answers: sub.answers.flatMap(section =>
+        section.questions.map(q => ({
+          section: section.section,
+          questionNumber: q.questionNumber,
+          answer: q.answer
+        }))
+      ),
+      
     }));
+
     res.status(200).json(transformedSubmissions);
   } catch (error) {
     console.error('Error fetching all exams:', error);
@@ -78,64 +124,85 @@ router.get('/fetch_all_exams', async (req, res) => {
 });
 
 
+  
 
+// Fetch submissions for lecturer's assigned courses
+router.get('/lecturer/:lecturerId/submissions', async (req, res) => {
+  const { lecturerId } = req.params;
 
+  console.log(`Fetching submissions for lecturerId: ${lecturerId}`);
 
-
-router.get('/fetch_exam_logs', async (req, res) => {
   try {
-    const { studentRegNo, examNo, courseId, download, format } = req.query;
+    const lecturer = await Lecturer.findById(lecturerId);
+    if (!lecturer) {
+      return res.status(404).json({ error: 'Lecturer not found' });
+    }
 
-    const filter = {};
-    if (studentRegNo) filter.studentRegNo = { $regex: studentRegNo, $options: 'i' };
-    if (examNo) filter.examNo = { $regex: examNo, $options: 'i' };
-    if (courseId) filter.courseId = { $regex: courseId, $options: 'i' };
+    console.log(`Lecturer found: ${lecturer._id}, assignedCourses:, lecturer.assignedCourses`);
 
-    const logs = await ExamLog.find(filter).sort({ 'logEntries.timestamp': -1 }).lean();
+    const assignedCourseIds = lecturer.assignedCourses.map(course =>
+      typeof course === 'string' ? course : course._id.toString()
+    );
+
+    console.log('Assigned course IDs:', assignedCourseIds);
+
+    const submissions = await ExamSubmission.find({
+      $or: [
+        { courseCode: { $in: assignedCourseIds } },
+        { courseId: { $in: assignedCourseIds } }
+      ]
+    });
+
+    console.log(`Found ${submissions.length} submissions for lecturer.`);
+
+    res.status(200).json(submissions);
+  } catch (error) {
+    console.error('Error fetching submissions for lecturer:', error);
+    res.status(500).json({ error: 'Failed to fetch submissions', details: error.message });
+  }
+});
+
+// ✅ Fetch single submission by ID
+router.get('/fetch_exam_by_id/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid submission ID' });
+    }
+
+    const submission = await ExamSubmission.findById(id);
+
+    if (!submission) {
+      return res.status(404).json({ error: 'Submission not found' });
+    }
+
+    res.status(200).json(submission);
+  } catch (error) {
+    console.error('Error fetching submission by ID:', error);
+    res.status(500).json({ error: 'Failed to fetch submission', details: error.message });
+  }
+});
+
+
+router.get('/exam_logs', async (req, res) => {
+  try {
+    // Fetch all logs and sort by the latest timestamp of logEntries
+    const logs = await ExamLog.find()
+      .sort({ 'logEntries.timestamp': -1 }) // Sort by the most recent logEntry timestamp
+      .lean(); // Convert to plain JavaScript object for better performance
 
     if (!logs || logs.length === 0) {
       return res.status(404).json({ message: 'No logs found' });
     }
 
-    // 📄 Generate PDF if requested
-    if (download === 'true' && format === 'pdf') {
-      const doc = new PDFDocument();
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename=exam_logs.pdf');
-      doc.pipe(res);
-
-      doc.fontSize(18).text('Exam Activity Logs', { align: 'center' });
-      doc.moveDown();
-
-      logs.forEach((log, index) => {
-        doc
-          .fontSize(12)
-          .text(`Student Reg No: ${log.studentRegNo}`)
-          .text(`Exam No: ${log.examNo}`)
-          .text(`Course ID: ${log.courseId}`)
-          .text('Log Entries:');
-
-        log.logEntries.forEach((entry, i) => {
-          doc.text(`  ${i + 1}. Event Type: ${entry.eventType}`);
-          Object.entries(entry.details).forEach(([key, value]) => {
-            doc.text(`     ${key}: ${value}`);
-          });
-        });
-
-        doc.moveDown();
-      });
-
-      doc.end();
-      return;
-    }
-
-    // ✅ Return JSON by default
     res.status(200).json(logs);
   } catch (error) {
     console.error('Error fetching logs:', error);
     res.status(500).json({ error: 'Failed to fetch logs', details: error.message });
   }
 });
+
 
 
 router.post('/exam_logs', async (req, res) => {
@@ -149,9 +216,9 @@ router.post('/exam_logs', async (req, res) => {
     const processedLogEntries = logEntries.map(entry => {
       const { eventType, details } = entry;
       const filteredDetails = {
-        violationType: details.violationType, // Only include if it's a security violation
-        remainingTime: details.remainingTime, // Only include if it's a timer update
-        timestamp: details.timestamp || new Date().toISOString(),
+        violationType: details?.violationType, // Only include if it's a security violation
+        remainingTime: details?.remainingTime, // Only include if it's a timer update
+        timestamp: details?.timestamp || new Date().toISOString(),
       };
       // Remove undefined fields
       Object.keys(filteredDetails).forEach(key => filteredDetails[key] === undefined && delete filteredDetails[key]);
@@ -162,10 +229,11 @@ router.post('/exam_logs', async (req, res) => {
       studentRegNo,
       examNo,
       courseId,
+      submissionTime: new Date(), // Capture submissionTime as current time
       logEntries: processedLogEntries,
     });
     await newLog.save();
-    res.status(201).json({ message: 'Logs created successfully' });
+    res.status(201).json({ message: 'Logs created successfully', submissionTime: newLog.submissionTime });
   } catch (error) {
     console.error('Error creating log:', error);
     res.status(500).json({ error: 'Failed to create log' });
@@ -173,5 +241,3 @@ router.post('/exam_logs', async (req, res) => {
 });
 
 export default router;
-
-
