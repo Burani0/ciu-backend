@@ -73,7 +73,7 @@ router.post('/submit_exam', async (req, res) => {
       course = await Course.findOne({ courseCode: courseId });
     }
     if (!course) {
-      return res.status(404).json(`{ error: Course not found for ID or Code: ${courseId} }`);
+      return res.status(404).json({ error: `Course not found for ID or Code: ${courseId}` });
     }
 
     // Save submission to database
@@ -186,23 +186,7 @@ router.get('/fetch_exam_by_id/:id', async (req, res) => {
 });
 
 
-router.get('/exam_logs', async (req, res) => {
-  try {
-    // Fetch all logs and sort by the latest timestamp of logEntries
-    const logs = await ExamLog.find()
-      .sort({ 'logEntries.timestamp': -1 }) // Sort by the most recent logEntry timestamp
-      .lean(); // Convert to plain JavaScript object for better performance
 
-    if (!logs || logs.length === 0) {
-      return res.status(404).json({ message: 'No logs found' });
-    }
-
-    res.status(200).json(logs);
-  } catch (error) {
-    console.error('Error fetching logs:', error);
-    res.status(500).json({ error: 'Failed to fetch logs', details: error.message });
-  }
-});
 
 
 
@@ -240,5 +224,26 @@ router.post('/exam_logs', async (req, res) => {
     res.status(500).json({ error: 'Failed to create log' });
   }
 });
+
+
+
+router.get('/exam_logs', async (req, res) => {
+  try {
+    // Fetch all logs and sort by the latest timestamp of logEntries
+    const logs = await ExamLog.find()
+      .sort({ 'logEntries.timestamp': -1 }) // Sort by the most recent logEntry timestamp
+      .lean(); // Convert to plain JavaScript object for better performance
+
+    if (!logs || logs.length === 0) {
+      return res.status(404).json({ message: 'No logs found' });
+    }
+
+    res.status(200).json(logs);
+  } catch (error) {
+    console.error('Error fetching logs:', error);
+    res.status(500).json({ error: 'Failed to fetch logs', details: error.message });
+  }
+});
+
 
 export default router;

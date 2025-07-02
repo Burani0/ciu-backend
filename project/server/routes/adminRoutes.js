@@ -12,11 +12,12 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   getSubmissionById,  
   clearToken,
   deleteAdmin,
-  adminLogout, } from '../controllers/adminController.js';
- 
+   adminLogout,
+ } from '../controllers/adminController.js';
   import { getLecturerSubmissions } from '../controllers/adminController.js';
   import { getLecturerById } from '../controllers/adminController.js';
   import { getCourseById }   from '../controllers/adminController.js';
+  
   
 
 
@@ -31,7 +32,6 @@ router.get('/dashboard', getDashboardStats);
 router.get('/courses', getAllCourses);
 router.get('/lecturers', getAllLecturers);
 router.get('/lecturers/:id', getLecturerById);
-router.get('/admins/:id', getAdminById);
 router.get('/courses/:id', getCourseById);
 router.get('/admins', getAllAdmins);
 router.get('/lecturer/:lecturerId/submissions', getLecturerSubmissions);
@@ -41,7 +41,7 @@ router.get('/fetch_exam_by_id/:id', getSubmissionById);
 router.put('/courses/:id', updateCourse);
 router.put('/lecturers/:id', updateLecturer);
 
-router.get('/admins/:id', getAdminById);
+router.get('/admin/:id', getAdminById);
 
 router.delete('/courses/:id', deleteCourse);
 router.delete('/lecturers/:id', deleteLecturer);
@@ -52,5 +52,4 @@ router.post('/admin-login', adminLogin);
 router.post('/cleartoken', clearToken );
 router.delete('/admins/:id', deleteAdmin);
 router.post('/adminlogout', adminLogout);
-
 export default router;

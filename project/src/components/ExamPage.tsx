@@ -7,7 +7,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import * as faceapi from 'face-api.js';
 import { emitStream, joinRoom, leaveRoom } from '../config/socket';
-import SuccessPopup from './SuccessPopup';
 
 export type Timer = { hours: number; minutes: number; seconds: number };
 export type SecurityChecks = {
@@ -37,7 +36,6 @@ const ExamPage: React.FC = () => {
   const [smoothedDetection, setSmoothedDetection] = useState<0 | 1 | 2>(1);
   const [noFaceTimer, setNoFaceTimer] = useState(0);
   const [multiFaceTimer, setMultiFaceTimer] = useState(0);
-  const [showPopup, setShowPopup] = useState(false);
   const [examData, setExamData] = useState({
     examLink: '',
     examNo: '',
@@ -311,7 +309,7 @@ const ExamPage: React.FC = () => {
     console.log('Submitting summarized logs:', JSON.stringify(summary, null, 2));
 
     try {
-      const response = await axios.post('https://ciu-backend.onrender.com/api/exams/exam_logs', {
+      const response = await axios.post('http://localhost:3001/api/exams/exam_logs', {
         studentRegNo: examData.studentRegNo,
         examNo: examData.examNo,
         courseId: examData.courseId,
@@ -410,7 +408,7 @@ const ExamPage: React.FC = () => {
     };
 
     console.log('Submission data prepared:', JSON.stringify(submissionData, null, 2));
-    
+
     const submitURL = 'http://localhost:3001/api/exams/submit_exam';
     console.log('Submitting to URL:', submitURL);
 
@@ -709,11 +707,9 @@ const ExamPage: React.FC = () => {
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Exam'}
                   </button>
-                  
                   {submissionStatus && (
                     <div className={`mt-2 text-sm ${submissionStatus.includes('successfully') || submissionStatus.includes('already submitted') ? 'text-green-600' : 'text-red-500'}`}>
                       {submissionStatus}
-                      
                     </div>
                   )}
                 </div>
@@ -721,12 +717,8 @@ const ExamPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <SuccessPopup show={showPopup} />
-
       </div>
-      
     </div>
-    
   );
 };
 

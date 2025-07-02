@@ -220,7 +220,7 @@ import LecturerSubmissions from './components/Lecturer/LecturerSubmission.tsx';
 import ViewExam from './components/Lecturer/ViewExam.tsx';
 
 import ExamLogs from './components/ExamLogs.tsx'
-
+import Examslogs from './components/Examslogs.tsx'
 
 
 
@@ -391,7 +391,7 @@ function AppWrapper() {
         {/* <Route path="/" element={<LoginWrapper />} /> */}
         
         <Route path="/student_logs" element={<ExamLogs/>}     />
-
+<Route path="/student_lect_logs" element={<ExamLogs/>}     />
               </Routes>
             </Suspense>
           </div>
@@ -428,7 +428,7 @@ function AppWrapper() {
                 <Route path="/" element={<JoinLogin/>}     />
                 {/* <Route path="/" element={<LoginWrapper />} /> */}
                  <Route path="/student_logs" element={<ExamLogs/>}     />
-                
+                <Route path="/student_lect_logs" element={<Examslogs/>}     />
             </Routes>
           </Suspense>
         )}
