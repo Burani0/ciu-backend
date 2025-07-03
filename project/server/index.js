@@ -117,18 +117,16 @@ io.on('connection', (socket) => {
     try {
       socket.join(roomId);
       if (!rooms.has(roomId)) {
-        rooms.set(roomId, { viewers: new Set(), streamers: new Set() });
-
+        rooms.set(roomId, { viewers: new Set(), streamer: null });
       }
       const room = rooms.get(roomId);
 
       const isStreamer = socket.handshake.headers.referer?.includes('/stream/');
       if (isStreamer) {
-  room.streamers.add(socket.id);
-} else {
-  room.viewers.add(socket.id);
-}
-
+        room.streamer = socket.id;
+      } else {
+        room.viewers.add(socket.id);
+      }
 
       io.to(roomId).emit('room-update', {
         viewerCount: room.viewers.size,
@@ -144,10 +142,7 @@ io.on('connection', (socket) => {
       const roomId = Array.from(socket.rooms)[1];
       if (roomId) {
         console.log(`Broadcasting stream to room ${roomId}. Data size: ${data.length}`);
-        socket.to(roomId).emit('receive-stream', {
-  streamerId: socket.id,
-  data,
-});
+        socket.to(roomId).emit('receive-stream', data);
       }
     } catch (error) {
       console.error('Error in stream-video:', error);
@@ -160,7 +155,7 @@ io.on('connection', (socket) => {
       if (roomId) {
         const room = rooms.get(roomId);
         if (room) {
-          if (room.streamers.delete(socket.id)) {
+          if (room.streamer === socket.id) {
             room.streamer = null;
           } else {
             room.viewers.delete(socket.id);
@@ -178,7 +173,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     rooms.forEach((room, roomId) => {
-      if (room.streamers.delete(socket.id)) {
+      if (room.streamer === socket.id) {
         room.streamer = null;
       } else {
         room.viewers.delete(socket.id);

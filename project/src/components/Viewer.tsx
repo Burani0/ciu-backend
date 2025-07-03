@@ -22,18 +22,16 @@ function Viewer() {
 
     joinRoom(roomId);
 
-    onStream(({ streamerId, data }) => {
-  setStreams((prev) => {
-    const exists = prev.find((stream) => stream.id === streamerId);
-    if (exists) {
-      return prev.map((stream) =>
-        stream.id === streamerId ? { ...stream, data } : stream
-      );
-    }
-    return [...prev, { id: streamerId, data }];
-  });
-});
-
+    onStream((data: string) => {
+      setStreams((prev) => {
+        const id = data.substring(0, 10); // Dummy unique ID based on data
+        const exists = prev.find((stream) => stream.id === id);
+        if (exists) {
+          return prev.map((stream) => (stream.id === id ? { ...stream, data } : stream));
+        }
+        return [...prev, { id, data }];
+      });
+    });
 
     return () => {
       leaveRoom();

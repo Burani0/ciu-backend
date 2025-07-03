@@ -20,6 +20,6 @@ export const emitStream = (data: any) => {
   socket.emit('stream-video', data);
 };
 
-export const onStream = (callback: (stream: { streamerId: string; data: any }) => void) => {
+export const onStream = (callback: (data: any) => void) => {
   socket.on('receive-stream', callback);
 };
