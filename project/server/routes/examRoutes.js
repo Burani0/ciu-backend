@@ -563,16 +563,6 @@ for (const section of processedAnswers) {
   }
 }
 
-// For manual submissions, check if at least one answer is non-empty
-// if (submissionType !== 'auto-submit') {
-//   const hasAtLeastOneNonEmptyAnswer = processedAnswers.some(
-//     answer => answer.answer && answer.answer.trim() !== ''
-//   );
-
-//   if (!hasAtLeastOneNonEmptyAnswer) {
-//     return res.status(400).json({ error: 'At least one answer must have a non-empty answer field for manual submission' });
-//   }
-// }
 if (submissionType !== 'auto-submit') {
   const hasAtLeastOneNonEmptyAnswer = processedAnswers.some(section =>
     Array.isArray(section.questions) &&
@@ -586,41 +576,9 @@ if (submissionType !== 'auto-submit') {
 
   console.log('Processed Answers:', processedAnswers);
 
-  // for (const section of processedSections) {
-  //   if (!section.sectionNumber || !Array.isArray(section.questions)) {
-  //     return res.status(400).json({ error: 'Each section must have a sectionNumber and an array of questions' });
-  //   }
-  
-  //   for (const question of section.questions) {
-  //     if (typeof question.answer !== 'string') {
-  //       return res.status(400).json({ error: 'Each question answer must be a string' });
-  //     }
-  
-  //     if (submissionType !== 'auto-submit' && (!question.answer || question.answer.trim() === '')) {
-  //       return res.status(400).json({ error: 'Each question must have a non-empty answer for manual submission' });
-  //     }
-  //   }
-  // }
   
   try {
-    // 🔍 Fetch course to get courseCode
-    // const course = await Course.findById(courseId);
-    // if (!course) {
-    //   return res.status(404).json({ error: 'Course not found' });
-    // }
-
-      //     let course;
-      // if (mongoose.Types.ObjectId.isValid(courseId)) {
-      //   course = await Course.findById(courseId);
-      // } else {
-      //   course = await Course.findOne({ courseCode: courseId });
-      // }
-
-      // if (!course) {
-      //   return res.status(404).json({ error: 'Course not found' });
-      // }
-
-      // 🔍 Look up course by ID or courseCode
+  
         let course = null;
 
         if (mongoose.Types.ObjectId.isValid(courseId)) {
@@ -635,17 +593,6 @@ if (submissionType !== 'auto-submit') {
         if (!course) {
           return res.status(404).json({ error: `Course not found for ID or Code: ${courseId}` });
         }
-
-
-    // const submission = await ExamSubmission.create({
-    //   studentRegNo,
-    //   examNo,
-    //   examName,
-    //   courseId,
-    //   courseCode: course.courseCode, // Store courseCode as string
-    //   answers: processedAnswers,
-    //   submissionTime: submissionTime || new Date(),
-    // });
 
     console.log('Saving to DB:', {
       studentRegNo,
@@ -681,29 +628,6 @@ if (submissionType !== 'auto-submit') {
     res.status(500).json({ error: 'Failed to submit exam', details: error.message });
   }
 });
-
-
-// Fetch all exams
-// router.get('/fetch_all_exams', async (req, res) => {
-//   try {
-//     const submissions = await ExamSubmission.find({});
-//     const transformedSubmissions = submissions.map(sub => ({
-//       ...sub._doc,
-//       answers: sub.answers.flatMap(answer => {
-//         if (typeof answer === 'object' && answer.answer) {
-//           // Split the answer by newlines and filter out empty lines
-//           const splitAnswers = answer.answer.split('\n').filter(a => a.trim());
-//           return splitAnswers.length > 1 ? splitAnswers : [answer.answer];
-//         }
-//         return [answer]; // Return as single item if not an object or no split needed
-//       }),
-//     }));
-//     res.status(200).json(transformedSubmissions);
-//   } catch (error) {
-//     console.error('Error fetching all exams:', error);
-//     res.status(500).json({ error: 'Failed to fetch all exams', details: error.message });
-//   }
-// });
 
 router.get('/fetch_all_exams', async (req, res) => {
   try {
