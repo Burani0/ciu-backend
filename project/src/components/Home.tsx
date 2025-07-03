@@ -586,12 +586,12 @@ function Home() {
     <div className="max-w-4xl mx-auto mt-10 p-6">
       <div className="bg-[#10211f] rounded-xl shadow-md p-8">
         <h1 className="text-3xl font-bold text-[#edf2f7] mb-6 text-center">
-          Welcome to ProctorStream
+          CIU Exam Mornitoring System
         </h1>
 
         <div className="mb-8">
           <p className="text-[#a0aec0] text-center">
-            Enter a room ID to start or view a proctoring session
+            
           </p>
         </div>
 
@@ -624,7 +624,7 @@ function Home() {
               className="flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white bg-[#6366f1] hover:bg-[#4c51bf]"
             >
               <Camera className="h-5 w-5 mr-2" />
-              Join as Streamer
+              Join Exam
             </button>
           </div>
         </form>

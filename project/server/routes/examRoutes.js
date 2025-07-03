@@ -186,23 +186,7 @@ router.get('/fetch_exam_by_id/:id', async (req, res) => {
 });
 
 
-router.get('/exam_logs', async (req, res) => {
-  try {
-    // Fetch all logs and sort by the latest timestamp of logEntries
-    const logs = await ExamLog.find()
-      .sort({ 'logEntries.timestamp': -1 }) // Sort by the most recent logEntry timestamp
-      .lean(); // Convert to plain JavaScript object for better performance
 
-    if (!logs || logs.length === 0) {
-      return res.status(404).json({ message: 'No logs found' });
-    }
-
-    res.status(200).json(logs);
-  } catch (error) {
-    console.error('Error fetching logs:', error);
-    res.status(500).json({ error: 'Failed to fetch logs', details: error.message });
-  }
-});
 
 
 
@@ -241,10 +225,25 @@ router.post('/exam_logs', async (req, res) => {
   }
 });
 
+
+
+router.get('/exam_logs', async (req, res) => {
+  try {
+    // Fetch all logs and sort by the latest timestamp of logEntries
+    const logs = await ExamLog.find()
+      .sort({ 'logEntries.timestamp': -1 }) // Sort by the most recent logEntry timestamp
+      .lean(); // Convert to plain JavaScript object for better performance
+
+    if (!logs || logs.length === 0) {
+      return res.status(404).json({ message: 'No logs found' });
+    }
+
+    res.status(200).json(logs);
+  } catch (error) {
+    console.error('Error fetching logs:', error);
+    res.status(500).json({ error: 'Failed to fetch logs', details: error.message });
+  }
+});
+
+
 export default router;
-
-
-
-
-
-

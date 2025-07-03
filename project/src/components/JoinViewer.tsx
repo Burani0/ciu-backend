@@ -22,7 +22,7 @@ function JoinViewer() {
 
   return (
     <div className="max-w-md mx-auto mt-16 p-6 bg-[#10211f] rounded-xl shadow-md">
-      <h2 className="text-2xl font-bold text-[#edf2f7] mb-4 text-center">Join as Viewer</h2>
+      <h2 className="text-2xl font-bold text-[#edf2f7] mb-4 text-center">CIU Exam Monitoring System</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
@@ -37,7 +37,7 @@ function JoinViewer() {
           className="w-full flex items-center justify-center bg-[#48bb78] hover:bg-[#38a169] text-white p-2 rounded-md"
         >
           <Eye className="w-5 h-5 mr-2" />
-          Join Viewing
+          Invigilate Exam
         </button>
       </form>
     </div>

@@ -42,17 +42,27 @@ const LectCourses = () => {
     }
 
     const fetchCourses = async () => {
-      try {
-        const res = await fetch(`https://ciu-backend.onrender.com/api/admin/lecturers/${lecturerId}`);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        const data = await res.json();
-        setCourses(data.assignedCourses || []);
-      } catch (error) {
-        console.error("Failed to fetch lecturer courses", error);
-      }
-    };
+  try {
+    const res = await fetch(`https://ciu-backend.onrender.com/api/admin/lecturers/${lecturerId}`);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    const courseIds = data.assignedCourses || [];
+
+    const coursePromises = courseIds.map(async (courseId: string) => {
+      const res = await fetch(`https://ciu-backend.onrender.com/api/admin/courses/${courseId}`);
+      if (!res.ok) throw new Error(`Failed to fetch course ${courseId}`);
+      return await res.json();
+    });
+
+    const coursesData = await Promise.all(coursePromises);
+    setCourses(coursesData);
+  } catch (error) {
+    console.error("Failed to fetch lecturer courses", error);
+  }
+};
+
 
     fetchCourses();
   }, [lecturerId, navigate]);

@@ -80,7 +80,7 @@ const EditLecturerModal: React.FC<EditLecturerModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      await axios.put(`http://localhost:3001/api/admin/lecturers/${lecturerId}`, {
+      await axios.put(`https://ciu-backend.onrender.com/api/admin/lecturers/${lecturerId}`, {
         ...formData,
         assignedCourses: selectedCourses.map((c) => c.value),
       });

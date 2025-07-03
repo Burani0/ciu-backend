@@ -15,9 +15,6 @@
 
 
 
-
-
-
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -62,10 +59,26 @@ connectDB();
 
 // Enable CORS for the frontend origin
 app.use(cors({
-  origin: ['https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app', 'http://localhost:5173', 'https://ciu-backend-1.onrender.com'],
-  methods: ['GET', 'POST',"PUT", "DELETE"],
+  origin: function (origin, callback) {
+    console.log('Incoming origin:', origin);
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
+      'https://ciu-backend-1.onrender.com',
+      'https://ciu-backend.onrender.com',
+      'https://ciu-backend-huhl.vercel.app',
+      'https://examiner.ciu.ac.ug',
+
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
+  credentials: true
 }));
 
 // MongoDB Connection

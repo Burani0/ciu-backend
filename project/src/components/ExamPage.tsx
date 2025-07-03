@@ -102,7 +102,7 @@ const ExamPage: React.FC = () => {
         return;
       }
 
-      const examLink = `https://eadmin.ciu.ac.ug/API/doc_verification.aspx?doc=Exam&ExamNo=${examNo}`;
+      const examLink = `https://ciu-backend.onrender.com/api/exam-pdf?ExamNo=${examNo}`;
       console.log('Fetching exam data from:', examLink);
 
       try {
@@ -341,7 +341,7 @@ const ExamPage: React.FC = () => {
     console.log('Submitting summarized logs:', JSON.stringify(summary, null, 2));
 
     try {
-      const response = await axios.post('http://localhost:3001/api/exams/exam_logs', {
+      const response = await axios.post('https://ciu-backend.onrender.com/api/exams/exam_logs', {
         studentRegNo: examData.studentRegNo,
         examNo: examData.examNo,
         courseId: examData.courseId,
@@ -445,7 +445,7 @@ const ExamPage: React.FC = () => {
 
     console.log('Submission data prepared:', JSON.stringify(submissionData, null, 2));
 
-    const submitURL = 'http://localhost:3001/api/exams/submit_exam';
+    const submitURL = 'https://ciu-backend.onrender.com/api/exams/submit_exam';
     console.log('Submitting to URL:', submitURL);
 
     let attempt = 0;
