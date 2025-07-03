@@ -21,7 +21,9 @@ export default function Login(): JSX.Element {
   const [semester, setSemester] = useState("");
 
  const handleAdminLogin = async () => {
-    setErrorMessage('');
+    setIsSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
     try {
       const adminResponse = await axios.post('https://ciu-backend.onrender.com/api/admin/admin-login', {
         username: identifier,
