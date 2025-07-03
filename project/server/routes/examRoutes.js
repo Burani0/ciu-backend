@@ -227,7 +227,7 @@ router.post('/exam_logs', async (req, res) => {
 
 
 
-router.get('/exam_logs', async (req, res) => {
+router.get('/fetch_exam_logs', async (req, res) => {
   try {
     // Fetch all logs and sort by the latest timestamp of logEntries
     const logs = await ExamLog.find()
