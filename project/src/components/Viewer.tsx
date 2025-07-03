@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { joinRoom, leaveRoom, onStream } from '../config/socket';
@@ -85,4 +84,3 @@ function Viewer() {
 }
 
 export default Viewer;
-

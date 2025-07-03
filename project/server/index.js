@@ -1,6 +1,3 @@
-
-
-
 // import express from 'express';
 // import { createServer } from 'http';
 // import { Server } from 'socket.io';
@@ -194,6 +191,5 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3001;
 
 httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
- 
