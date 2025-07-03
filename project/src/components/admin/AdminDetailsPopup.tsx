@@ -136,8 +136,9 @@ type AdminDetailsPopupProps = {
 type UserData = {
   profileImageSrc: string;
   name: string;
+  username:string;
   email: string;
-  id: string;
+ 
 };
 
 const fetchAdminData = async (
@@ -146,26 +147,21 @@ const fetchAdminData = async (
 ) => {
   try {
     const id = localStorage.getItem('adminId');
-    const token = localStorage.getItem('token');
-
-    if (!id || !token) {
+    if (!id) {
       setError('User is not authenticated.');
       return;
     }
 
-    const response = await axios.get(`https://ciu-backend.onrender.com/api/admins/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(`https://ciu-backend.onrender.com/api/admin/admins/${id}`);
 
-    const { username, email, _id } = response.data;
+    const { first_name, last_name, username, email, } = response.data;
 
     setUserData({
-      profileImageSrc: '/IMG_9472.jpg', // Update this to dynamic image path if needed
-      name: username,
+      profileImageSrc: "/IMG_9472.jpg",// Update this to dynamic image path if needed
+      name: `${first_name} ${last_name}`,
+      username: username,
       email,
-      id: _id,
+    
     });
     setError(null);
   } catch (err) {
@@ -227,7 +223,7 @@ export default function UserDetailsPopup({ children }: AdminDetailsPopupProps) {
                 />
                 <h2 className="text-lg font-semibold mb-1">{userData.name}</h2>
                 <p className="text-sm text-gray-500">{userData.email}</p>
-                <p className="text-sm text-gray-500">{userData.id}</p>
+                <p className="text-sm text-gray-500">{userData.username}</p>
               </div>
               <div className="border-t border-gray-200 p-4">
                 <button

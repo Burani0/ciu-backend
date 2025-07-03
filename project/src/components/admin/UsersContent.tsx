@@ -254,7 +254,7 @@ function UserList({ users, deleteUser }) {
   };
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto pt-5">
+    <div className="w-full max-w-[1200px] mx-auto pt-5 font-['Roboto']">
       {/* Register User Modal */}
       {isCreateLecturerModalOpen && (
   <CreateLecturerModal
@@ -380,11 +380,41 @@ export default function UsersContent() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetch("https://ciu-backend.onrender.com/api/admin/lecturers")
-      .then((response) => response.json())
-      .then((data) => setUsers(data))
-      .catch((error) => console.error("Error fetching users:", error));
-  }, []);
+  const fetchLecturersWithCourses = async () => {
+    try {
+      const res = await fetch("https://ciu-backend.onrender.com/api/admin/lecturers");
+      const lecturers = await res.json();
+
+      const enrichedLecturers = await Promise.all(
+        lecturers.map(async (lecturer) => {
+          if (!lecturer.assignedCourses || lecturer.assignedCourses.length === 0) {
+            return { ...lecturer, assignedCourses: [] };
+          }
+
+          const courseDetails = await Promise.all(
+            lecturer.assignedCourses.map(async (courseId) => {
+              const res = await fetch(`https://ciu-backend.onrender.com/api/admin/courses/${courseId}`);
+              if (!res.ok) return null;
+              return await res.json();
+            })
+          );
+
+          return {
+            ...lecturer,
+            assignedCourses: courseDetails.filter(Boolean),
+          };
+        })
+      );
+
+      setUsers(enrichedLecturers);
+    } catch (error) {
+      console.error("Error fetching users with courses:", error);
+    }
+  };
+
+  fetchLecturersWithCourses();
+}, []);
+
   
   const deleteUser = (id) => {
     fetch(`https://ciu-backend.onrender.com/api/admin/lecturers/${id}`, {
