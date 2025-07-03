@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { joinRoom, leaveRoom, onStream } from '../config/socket';
@@ -23,16 +22,18 @@ function Viewer() {
 
     joinRoom(roomId);
 
-    onStream((data: string) => {
-      setStreams((prev) => {
-        const id = data.substring(0, 10); // Dummy unique ID based on data
-        const exists = prev.find((stream) => stream.id === id);
-        if (exists) {
-          return prev.map((stream) => (stream.id === id ? { ...stream, data } : stream));
-        }
-        return [...prev, { id, data }];
-      });
-    });
+    onStream(({ streamerId, data }) => {
+  setStreams((prev) => {
+    const exists = prev.find((stream) => stream.id === streamerId);
+    if (exists) {
+      return prev.map((stream) =>
+        stream.id === streamerId ? { ...stream, data } : stream
+      );
+    }
+    return [...prev, { id: streamerId, data }];
+  });
+});
+
 
     return () => {
       leaveRoom();
@@ -85,4 +86,3 @@ function Viewer() {
 }
 
 export default Viewer;
-
