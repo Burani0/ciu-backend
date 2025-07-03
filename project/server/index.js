@@ -65,6 +65,9 @@ app.use(cors({
       'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
       'https://ciu-backend-1.onrender.com',
       'https://ciu-backend.onrender.com',
+      'https://ciu-backend-huhl.vercel.app',
+      'https://examiner.ciu.ac.ug/',
+
     ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
