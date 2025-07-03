@@ -26,7 +26,7 @@
 //     }
 
 //     const { id } = user;
-//     const response = await axios.get(`http://localhost:3001/lecturerReg/profile/${id}`, {
+//     const response = await axios.get(`https://ciu-backend.onrender.com/lecturerReg/profile/${id}`, {
 //       headers: { Authorization: `Bearer ${token}` },
 //     });
 
