@@ -113,24 +113,43 @@ const rooms = new Map();
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  socket.on('join-room', (roomId) => {
+  socket.on('join-room', (data) => {
     try {
+      const { roomId, userType, streamerId } = data;
       socket.join(roomId);
+      
       if (!rooms.has(roomId)) {
-        rooms.set(roomId, { viewers: new Set(), streamer: null });
+        rooms.set(roomId, { 
+          viewers: new Set(), 
+          streamers: new Map() // Changed to Map to store multiple streamers
+        });
       }
+      
       const room = rooms.get(roomId);
 
-      const isStreamer = socket.handshake.headers.referer?.includes('/stream/');
-      if (isStreamer) {
-        room.streamer = socket.id;
+      if (userType === 'streamer') {
+        // Use provided streamerId or generate one based on socket.id
+        const id = streamerId || socket.id;
+        room.streamers.set(id, {
+          socketId: socket.id,
+          streamerId: id,
+          isActive: true
+        });
+        socket.streamerId = id; // Store streamer ID on socket for later reference
+        console.log(`Streamer ${id} joined room ${roomId}`);
       } else {
         room.viewers.add(socket.id);
+        console.log(`Viewer ${socket.id} joined room ${roomId}`);
       }
 
+      // Send updated room info to all clients
       io.to(roomId).emit('room-update', {
         viewerCount: room.viewers.size,
-        hasStreamer: !!room.streamer
+        streamerCount: room.streamers.size,
+        streamers: Array.from(room.streamers.values()).map(s => ({
+          streamerId: s.streamerId,
+          isActive: s.isActive
+        }))
       });
     } catch (error) {
       console.error('Error in join-room:', error);
@@ -141,8 +160,18 @@ io.on('connection', (socket) => {
     try {
       const roomId = Array.from(socket.rooms)[1];
       if (roomId) {
-        console.log(`Broadcasting stream to room ${roomId}. Data size: ${data.length}`);
-        socket.to(roomId).emit('receive-stream', data);
+        const room = rooms.get(roomId);
+        if (room) {
+          // Include streamer ID with the stream data
+          const streamData = {
+            data: data,
+            streamerId: socket.streamerId || socket.id,
+            timestamp: Date.now()
+          };
+          
+          console.log(`Broadcasting stream from ${socket.streamerId || socket.id} to room ${roomId}`);
+          socket.to(roomId).emit('receive-stream', streamData);
+        }
       }
     } catch (error) {
       console.error('Error in stream-video:', error);
@@ -155,14 +184,23 @@ io.on('connection', (socket) => {
       if (roomId) {
         const room = rooms.get(roomId);
         if (room) {
-          if (room.streamer === socket.id) {
-            room.streamer = null;
+          // Check if this socket is a streamer
+          if (socket.streamerId && room.streamers.has(socket.streamerId)) {
+            room.streamers.delete(socket.streamerId);
+            console.log(`Streamer ${socket.streamerId} left room ${roomId}`);
           } else {
             room.viewers.delete(socket.id);
+            console.log(`Viewer ${socket.id} left room ${roomId}`);
           }
+          
+          // Send updated room info
           io.to(roomId).emit('room-update', {
             viewerCount: room.viewers.size,
-            hasStreamer: !!room.streamer
+            streamerCount: room.streamers.size,
+            streamers: Array.from(room.streamers.values()).map(s => ({
+              streamerId: s.streamerId,
+              isActive: s.isActive
+            }))
           });
         }
       }
@@ -173,20 +211,27 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     rooms.forEach((room, roomId) => {
-      if (room.streamer === socket.id) {
-        room.streamer = null;
+      // Check if disconnecting socket is a streamer
+      if (socket.streamerId && room.streamers.has(socket.streamerId)) {
+        room.streamers.delete(socket.streamerId);
+        console.log(`Streamer ${socket.streamerId} disconnected from room ${roomId}`);
       } else {
         room.viewers.delete(socket.id);
       }
+      
+      // Send updated room info
       io.to(roomId).emit('room-update', {
         viewerCount: room.viewers.size,
-        hasStreamer: !!room.streamer
+        streamerCount: room.streamers.size,
+        streamers: Array.from(room.streamers.values()).map(s => ({
+          streamerId: s.streamerId,
+          isActive: s.isActive
+        }))
       });
     });
     console.log('User disconnected:', socket.id);
   });
 });
-
  
 const PORT = process.env.PORT || 3001;
 
