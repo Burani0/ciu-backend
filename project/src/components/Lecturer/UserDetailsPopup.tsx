@@ -1,4 +1,4 @@
-// UserDetailsPopup.tsx
+// // UserDetailsPopup.tsx
 import { useState, useEffect, useRef } from 'react';
 import { Settings, LogOut, X } from "lucide-react";
 import axios from 'axios';
@@ -25,6 +25,7 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
 
 
   const fetchLoggedInUserData = async () => {
+    setIsLoading(true);
     try {
       const id = localStorage.getItem('lecturerId');
       if (!id) {
@@ -34,9 +35,11 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
   
       const res = await axios.get(`https://ciu-backend.onrender.com/api/admin/lecturers/${id}`);
       const { firstName, lastName, email, universityNumber, profileImageSrc } = res.data;
-  
+      
       setUserData({
-        profileImageSrc: profileImageSrc || '/avatar2.jpg',
+        // profileImageSrc: profileImageSrc || '/avatar2.jpg',
+      profileImageSrc: profileImageSrc || '/avatar2.jpg',
+
         name: `${firstName} ${lastName}`,
         email,
         universityNumber,
@@ -54,6 +57,7 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
   const togglePopup = () => {
     setIsOpen(!isOpen);
   };
+ 
   
   useEffect(() => {
     fetchLoggedInUserData(); // ✅ fetch once on load
@@ -118,7 +122,8 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
                   e.preventDefault();
                   const fileInput = e.currentTarget.elements.namedItem('profileImage') as HTMLInputElement;
                   const file = fileInput?.files?.[0];
-                  if (!file) return;
+                  // if (!file) return;
+                  if (!file || !userData) return;
 
                   const formData = new FormData();
                   formData.append('profileImage', file);
@@ -131,8 +136,10 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
                       `http://localhost:3001/api/lecturer/uploads/upload-profile-image/${lecturerId}`,
                       formData
                     );
-                    const imageUrl = res.data.imageUrl || res.data.path;
-                    setUserData((prev) => prev ? { ...prev, profileImageSrc: imageUrl } : null);
+                    const imageUrl = res.data.imageUrl;
+                    // setUserData((prev) => prev ? { ...prev, profileImageSrc: imageUrl } : null);
+                    setUserData({ ...userData, profileImageSrc: imageUrl });
+
                   } catch (err) {
                     console.error("Upload failed:", err);
                   }finally {

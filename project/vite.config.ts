@@ -12,7 +12,7 @@ export default defineConfig({
         target: 'ws://localhost:3001',
         ws: true,
       },
-
+      
       // API Proxy for cleared students
       '/api/cleared-students': {
         target: 'https://eadmin.ciu.ac.ug',

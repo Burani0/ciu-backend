@@ -3,12 +3,13 @@ import { Settings, LogOut, X } from "lucide-react";
 import axios from 'axios';
 
 type UserData = {
+  _id: string;
   profileImageSrc: string;
   first_name: string;
   last_name: string;
   username: string;
   email: string;
-  id: string;
+ 
 };
 
 type Props = {
@@ -43,14 +44,16 @@ const fetchAdminData = async () => {
     });
 
     const { first_name, last_name, username, email, _id, profileImageSrc } = response.data;
+    // const { first_name, last_name, username, email, } = response.data;
 
     setUserData({
+      _id,
       profileImageSrc: profileImageSrc || '/avatar2.jpg',
       first_name,
       last_name,
       username,
       email,
-      id: _id,
+    
     });
 
     setHasLoadedOnce(true);
@@ -145,7 +148,7 @@ const togglePopup = () => {
                     const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
                     const response = await axios.post(
-                      `${BASE_URL}/api/admin/uploads/upload-profile-image/${userData.id}`,
+                      `${BASE_URL}/api/admin/uploads/upload-profile-image/${userData._id}`,
                       formData,
                       {
                         headers: {
@@ -207,7 +210,7 @@ const togglePopup = () => {
                       if (!userData) return;
 
                       await axios.put(
-                        `http://localhost:3001/api/admin/uploads/remove-profile-image/${userData.id}`
+                        `http://localhost:3001/api/admin/uploads/remove-profile-image/${userData._id}`
                       );
 
                       setUserData((prev) =>

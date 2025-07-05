@@ -25,7 +25,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ adminId, onClose, onSuc
     console.log("Fetching admin for ID:", adminId);
     const fetchAdmin = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/admin/admins/${adminId}`);
+        const response = await fetch(`https://ciu-backend.onrender.com/api/admin/admin/${adminId}`);
         if (!response.ok) throw new Error("Failed to fetch admin");
         const data = await response.json();
         console.log("Fetched admin data:", data); 
@@ -53,7 +53,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ adminId, onClose, onSuc
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/admins/${adminId}`, {
+      const response = await fetch(`https://ciu-backend.onrender.com/api/admin/admin/${adminId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

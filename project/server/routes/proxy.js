@@ -75,5 +75,4 @@ router.get('/cleared-students', async (req, res) => {
   }
 });
 
-
 export default router;

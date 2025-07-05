@@ -80,3 +80,31 @@ export const verifyToken = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+export const lecturerLogout = async (req, res) => {
+  const { lecturerId } = req.body;
+
+  try {
+    // Fetch lecturer to get universityNumber
+    const lecturer = await Lecturer.findById(lecturerId);
+    if (!lecturer) return res.status(404).json({ message: 'Lecturer not found' });
+
+    // Update latest login log with logoutTime
+    await LecturerLoginLog.findOneAndUpdate(
+      { universityNumber: lecturer.universityNumber },
+      { logoutTime: new Date() },
+      { sort: { loginTime: -1 } }
+    );
+
+    // Remove token(s)
+    await Token.deleteMany({ lecturerId });
+
+    res.json({ message: 'Lecturer logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Logout failed' });
+  }
+};
+
+

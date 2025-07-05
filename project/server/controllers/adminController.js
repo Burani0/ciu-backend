@@ -177,16 +177,22 @@ export const updateLecturer = async (req, res) => {
 
 // UPDATE admin
 export const updateAdmin = async (req, res) => {
+  console.log("UPDATE ADMIN HIT:", req.params.id);
   const { id } = req.params;
-  const { username, password } = req.body;
+  const { first_name, last_name, username, email } = req.body;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const updated = await Admin.findByIdAndUpdate(
+    id.trim(),
+    { first_name, last_name, username, email },
+    { new: true }
+  );
 
-  const updated = await Admin.findByIdAndUpdate(id, { username, password: hashedPassword }, { new: true });
   if (!updated) return res.status(404).json({ message: 'Admin not found' });
 
   res.status(200).json(updated);
 };
+
+
 
 // DELETE course
 export const deleteCourse = async (req, res) => {
@@ -243,6 +249,8 @@ export const getLecturerLoginLogs = async (req, res) => {
         .fontSize(12)
         .text(`University Number: ${log.universityNumber}`)
         .text(`Login Time: ${new Date(log.loginTime).toLocaleString()}`)
+        .text(`Logout Time: ${log.logoutTime ? new Date(log.logoutTime).toLocaleString() : 'N/A'}`)
+
         .moveDown();
     });
 
@@ -394,5 +402,17 @@ export const getSubmissionById = async (req, res) => {
   } catch (error) {
     console.error('Error fetching submission:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const adminLogout = async (req, res) => {
+  const { adminId } = req.body;
+
+  try {
+    await AdminToken.deleteMany({ adminId });
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Logout failed' });
   }
 };

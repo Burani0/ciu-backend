@@ -219,7 +219,8 @@ import JoinLogin from './pages/JoinLogin.tsx';
 import LecturerSubmissions from './components/Lecturer/LecturerSubmission.tsx';
 import ViewExam from './components/Lecturer/ViewExam.tsx';
 
-
+import ExamLogs from './components/ExamLogs.tsx'
+import Examslogs from './components/Examslogs.tsx'
 
 
 
@@ -340,7 +341,7 @@ function AppWrapper() {
                 <div className="flex items-center justify-between h-16">
                   <Link to="/" className="flex items-center text-[#edf2f7] font-bold text-xl">
                     <Camera className="h-8 w-8 text-[#4c51bf] mr-2" />
-                    ProctorStream
+                    CIU Exam Management System
                   </Link>
                   <span
                     className={`px-4 py-2 rounded-full text-sm font-medium ${
@@ -389,6 +390,8 @@ function AppWrapper() {
         <Route path="/" element={<JoinLogin/>}     />
         {/* <Route path="/" element={<LoginWrapper />} /> */}
         
+        <Route path="/student_logs" element={<ExamLogs/>}     />
+<Route path="/student_lect_logs" element={<ExamLogs/>}     />
               </Routes>
             </Suspense>
           </div>
@@ -424,7 +427,8 @@ function AppWrapper() {
                 <Route path="/answers/:submissionId" element={<ViewExam />} />
                 <Route path="/" element={<JoinLogin/>}     />
                 {/* <Route path="/" element={<LoginWrapper />} /> */}
-                
+                 <Route path="/student_logs" element={<ExamLogs/>}     />
+                <Route path="/student_lect_logs" element={<Examslogs/>}     />
             </Routes>
           </Suspense>
         )}

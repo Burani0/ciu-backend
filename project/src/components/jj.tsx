@@ -724,7 +724,7 @@ useEffect(() => {
     if (!ExamNo) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/exam/${ExamNo}`);
+      const response = await fetch(`https://ciu-backend.onrender.com/api/exam/${ExamNo}`);
       if (!response.ok) {
         throw new Error('Failed to fetch exam data');
       }
