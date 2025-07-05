@@ -24,7 +24,7 @@ export default function Login(): JSX.Element {
     setErrorMessage("");
     setIsSubmitting(true);
     try {
-      const adminResponse = await axios.post("http://localhost:3001/api/admin/admin-login", {
+      const adminResponse = await axios.post("http://localhost:3001/api/admin/adminlogin", {
         username: identifier,
         password,
       });
