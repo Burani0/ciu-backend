@@ -27,6 +27,8 @@ function Viewer() {
   const [roomInfo, setRoomInfo] = useState<RoomUpdate | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Map<string, number>>(new Map());
   const [fitAll, setFitAll] = useState(true);
+  
+  // Refs for each stream
   const streamRefs = useRef<Map<string, HTMLImageElement>>(new Map());
 
   useEffect(() => {
@@ -35,9 +37,13 @@ function Viewer() {
       return;
     }
 
+    // Join the room as viewer
     joinRoom(roomId, 'viewer');
 
+    // Listen for video streams
     onStream((streamData: StreamData) => {
+      console.log("Received stream from:", streamData.streamerId);
+      
       setStreams(prev => {
         const newStreams = new Map(prev);
         newStreams.set(streamData.streamerId, streamData.data);
@@ -50,39 +56,46 @@ function Viewer() {
         return newUpdate;
       });
 
+      // Update the corresponding image element
       const imgElement = streamRefs.current.get(streamData.streamerId);
       if (imgElement) {
         imgElement.src = streamData.data;
       }
     });
 
+    // Listen for room updates
     onRoomUpdate((data: RoomUpdate) => {
-      setRoomInfo({
-        streamerCount: data.streamerCount,
-        streamers: Array.isArray(data.streamers) ? data.streamers : [],
-      });
-
+      console.log("Room update:", data);
+      setRoomInfo(data);
+      
+      // Clean up streams for disconnected streamers
       setStreams(prev => {
         const newStreams = new Map(prev);
         const activeStreamerIds = new Set(data.streamers.map(s => s.streamerId));
+        
+        // Remove streams for disconnected streamers
         for (const [streamerId] of newStreams) {
           if (!activeStreamerIds.has(streamerId)) {
             newStreams.delete(streamerId);
             streamRefs.current.delete(streamerId);
           }
         }
+        
         return newStreams;
       });
     });
 
     return () => {
+      // Cleanup on component unmount
       leaveRoom();
     };
   }, [roomId]);
 
+  // Function to set ref for each stream
   const setStreamRef = (streamerId: string) => (element: HTMLImageElement | null) => {
     if (element) {
       streamRefs.current.set(streamerId, element);
+      // Set current stream data if available
       const currentStream = streams.get(streamerId);
       if (currentStream) {
         element.src = currentStream;
@@ -95,6 +108,7 @@ function Viewer() {
   const getStreamStatus = (streamerId: string) => {
     const lastUpdateTime = lastUpdate.get(streamerId);
     if (!lastUpdateTime) return 'No Data';
+    
     const timeDiff = Date.now() - lastUpdateTime;
     if (timeDiff > 5000) return 'Disconnected';
     if (timeDiff > 2000) return 'Poor Connection';
@@ -110,7 +124,7 @@ function Viewer() {
     }
   };
 
-  const toggleLayout = () => setFitAll(prev => !prev);
+  const toggleLayout = () => setFitAll((prev) => !prev);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -124,9 +138,9 @@ function Viewer() {
           {fitAll ? 'Scroll Mode' : 'Fit All Mode'}
         </button>
       </div>
-
       {error && <p style={{ color: 'red' }}>{error}</p>}
-
+      
+      {/* Room Information */}
       {roomInfo && (
         <div style={{ 
           background: '#f5f5f5', 
@@ -140,6 +154,7 @@ function Viewer() {
         </div>
       )}
 
+      {/* Multiple Streams Display */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: fitAll 
@@ -149,7 +164,7 @@ function Viewer() {
         marginTop: '20px',
         ...(fitAll ? {} : { maxHeight: '80vh', overflowY: 'auto' })
       }}>
-        {(roomInfo?.streamers ?? []).map((streamerInfo) => {
+        {roomInfo?.streamers.map((streamerInfo) => {
           const status = getStreamStatus(streamerInfo.streamerId);
           return (
             <div key={streamerInfo.streamerId} style={{
@@ -179,7 +194,7 @@ function Viewer() {
                   {status}
                 </span>
               </div>
-
+              
               <div style={{ 
                 width: '100%', 
                 height: fitAll ? '150px' : '300px',
@@ -221,7 +236,7 @@ function Viewer() {
                   </div>
                 )}
               </div>
-
+              
               {!fitAll && (
                 <div style={{ 
                   marginTop: '10px', 
@@ -239,6 +254,7 @@ function Viewer() {
         })}
       </div>
 
+      {/* No Streamers Message */}
       {roomInfo && roomInfo.streamerCount === 0 && (
         <div style={{
           textAlign: 'center',
