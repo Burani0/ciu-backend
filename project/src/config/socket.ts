@@ -8,8 +8,8 @@ export const socket: Socket = io(SOCKET_URL, {
   reconnectionAttempts: 5,
 });
 
-export const joinRoom = (roomId: string, userType: 'streamer' | 'viewer', streamerId?: string) => {
-  socket.emit('join-room', { roomId, userType, streamerId });
+export const joinRoom = (roomId: string) => {
+  socket.emit('join-room', roomId);
 };
 
 export const leaveRoom = () => {
@@ -22,8 +22,4 @@ export const emitStream = (data: any) => {
 
 export const onStream = (callback: (data: any) => void) => {
   socket.on('receive-stream', callback);
-};
-
-export const onRoomUpdate = (callback: (data: any) => void) => {
-  socket.on('room-update', callback);
 };
