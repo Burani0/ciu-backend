@@ -391,7 +391,7 @@ export default function Login(): JSX.Element {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full h-full bg-transparent border-none outline-none border-[2px] border-white/10 rounded-[40px] text-[16px] text-black px-[20px] pr-[45px] placeholder:text-[#4f4e4e]"
               />
-              <FaLock className="absolute right-5 top-1/2 -translate-y-1/2 text-[16px]" />
+             
             </div>
 
             <button

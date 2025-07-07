@@ -596,7 +596,7 @@ const ProctoringPage: React.FC = () => {
           </button>
 
           <button
-            // onClick={() => navigate("/student")} // Uncomment and update as needed
+            onClick={() => navigate("/ExamInterface")} // Uncomment and update as needed
             className="flex items-center gap-2 text-red-600 hover:text-red-800 transition duration-300"
           >
             <IoExitOutline className="text-xl" />
