@@ -4,7 +4,7 @@ import {
   FileText,
   LogOut,
   Video,
-  HelpCircle,
+  ClipboardCheck,
   ChevronDown,
   X,
 } from 'lucide-react';
@@ -21,7 +21,7 @@ const Sidebar: React.FC = () => {
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, text: 'Dashboard', path: '/lecturer' },
     { icon: <FileText size={20} />, text: 'Courses', path: '/lecturer-courses' },
-    { icon: <HelpCircle size={20} />, text: 'Timetable', path: '/timetable' },
+    { icon: <ClipboardCheck size={20} />, text: 'Student Exam Logs', path: '/student_lect_logs' },
     { icon: <Video size={20} />, text: 'Manual Proctoring', path: '/join-viewer' },
     {
       icon: <FileText size={20} />,

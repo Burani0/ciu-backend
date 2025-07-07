@@ -6,7 +6,7 @@ import ExamSubmission from '../models/examSubmission.js';
 import Lecturer from '../models/Lecturer.js';
 import Course from '../models/Course.js'; 
 import mongoose from 'mongoose';
-
+import PDFDocument from 'pdfkit';
 const router = express.Router();
 
 
@@ -229,15 +229,52 @@ router.post('/exam_logs', async (req, res) => {
 
 router.get('/fetch_exam_logs', async (req, res) => {
   try {
-    // Fetch all logs and sort by the latest timestamp of logEntries
-    const logs = await ExamLog.find()
-      .sort({ 'logEntries.timestamp': -1 }) // Sort by the most recent logEntry timestamp
-      .lean(); // Convert to plain JavaScript object for better performance
+    const { studentRegNo, examNo, courseId, download, format } = req.query;
+
+    const filter = {};
+    if (studentRegNo) filter.studentRegNo = { $regex: studentRegNo, $options: 'i' };
+    if (examNo) filter.examNo = { $regex: examNo, $options: 'i' };
+    if (courseId) filter.courseId = { $regex: courseId, $options: 'i' };
+
+    const logs = await ExamLog.find(filter).sort({ 'logEntries.timestamp': -1 }).lean();
 
     if (!logs || logs.length === 0) {
       return res.status(404).json({ message: 'No logs found' });
     }
 
+    // 📄 Generate PDF if requested
+    if (download === 'true' && format === 'pdf') {
+      const doc = new PDFDocument();
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=exam_logs.pdf');
+      doc.pipe(res);
+
+      doc.fontSize(18).text('Exam Activity Logs', { align: 'center' });
+      doc.moveDown();
+
+      logs.forEach((log, index) => {
+        doc
+          .fontSize(12)
+          .text(`Student Reg No: ${log.studentRegNo}`)
+          .text(`Exam No: ${log.examNo}`)
+          .text(`Course ID: ${log.courseId}`)
+          .text('Log Entries:');
+
+        log.logEntries.forEach((entry, i) => {
+          doc.text(`  ${i + 1}. Event Type: ${entry.eventType}`);
+          Object.entries(entry.details).forEach(([key, value]) => {
+            doc.text(`     ${key}: ${value}`);
+          });
+        });
+
+        doc.moveDown();
+      });
+
+      doc.end();
+      return;
+    }
+
+    // ✅ Return JSON by default
     res.status(200).json(logs);
   } catch (error) {
     console.error('Error fetching logs:', error);

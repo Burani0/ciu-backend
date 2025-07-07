@@ -3,7 +3,6 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   getAllAdmins,
   updateCourse,
   updateLecturer,
-  updateAdmin,
   deleteCourse,
   getAdminById,
   deleteLecturer,
@@ -17,6 +16,7 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   import { getLecturerSubmissions } from '../controllers/adminController.js';
   import { getLecturerById } from '../controllers/adminController.js';
   import { getCourseById }   from '../controllers/adminController.js';
+  import { updateAdmin } from '../controllers/adminController.js';
   
   
 
@@ -42,6 +42,7 @@ router.put('/courses/:id', updateCourse);
 router.put('/lecturers/:id', updateLecturer);
 
 router.get('/admin/:id', getAdminById);
+router.put('/admin/:id', updateAdmin);
 
 router.delete('/courses/:id', deleteCourse);
 router.delete('/lecturers/:id', deleteLecturer);
@@ -50,6 +51,6 @@ router.delete('/lecturers/:id', deleteLecturer);
 router.post('/create-admin', createAdmin);
 router.post('/admin-login', adminLogin);
 router.post('/cleartoken', clearToken );
-router.delete('/admins/:id', deleteAdmin);
+router.delete('/admin/:id', deleteAdmin);
 router.post('/adminlogout', adminLogout);
 export default router;

@@ -68,7 +68,9 @@ const LectCourses = () => {
   }, [lecturerId, navigate]);
 
   const filteredCourses = courses.filter((course) =>
-    course.courseTitle.toLowerCase().includes(searchTerm.toLowerCase())
+    // course.courseTitle.toLowerCase().includes(searchTerm.toLowerCase())
+  (course?.courseTitle ?? '').toLowerCase().includes(searchTerm.toLowerCase())
+
   );
 
   return (
