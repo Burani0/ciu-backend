@@ -53,7 +53,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ adminId, onClose, onSuc
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`https://ciu-backend.onrender.com/api/admin/admin/${adminId}`, {
+      const response = await fetch(`https://ciu-backend.onrender.com/api/admin/${adminId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

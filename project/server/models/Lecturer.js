@@ -9,7 +9,7 @@ const lecturerSchema = new mongoose.Schema({
   // assignedCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   assignedCourses: [{ type: String }],
 
-  profileImage: { type: String, default: '' },
+  profileImageSrc: { type: String, default: '' },
 
 
 });

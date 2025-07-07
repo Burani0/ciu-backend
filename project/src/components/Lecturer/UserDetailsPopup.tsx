@@ -80,7 +80,7 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
         aria-label="User profile"
       >
 
-         {!hasLoadedOnce ? (
+         {/* {!hasLoadedOnce ? (
             <div className="w-full h-full bg-gray-200 animate-pulse rounded-full" />
           ) : (
             <img
@@ -88,7 +88,16 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
               alt="User profile"
               className="w-full h-full object-cover rounded-full"
             />
-          )}
+          )} */}
+        {!userData ? (
+  <div className="w-full h-full bg-gray-200 animate-pulse rounded-full" />
+) : (
+  <img
+    src={userData.profileImageSrc || "/avatar2.jpg"}
+    alt="User profile"
+    className="w-full h-full object-cover rounded-full"
+  />
+)}
 
       </button>
 

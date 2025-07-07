@@ -279,7 +279,7 @@ function UserList({ users, deleteUser }) {
 
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={isDialogOpen} onClose={() => setDialogOpen(false)}>
+      {/* <Dialog open={isDialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle className="text-red-700 font-bold">Confirm Delete</DialogTitle>
         <DialogContent className="text-gray-700">
           Are you sure you want to delete this Lecturer Account? This action
@@ -293,7 +293,23 @@ function UserList({ users, deleteUser }) {
             Delete
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
+
+<Dialog open={isDialogOpen} onClose={() => setDialogOpen(false)}>
+  <DialogTitle className="text-red-700 font-bold">Confirm Delete</DialogTitle>
+  <DialogContent className="text-gray-700">
+    Are you sure you want to delete{" "}
+    <strong>{selectedUser?.firstName} {selectedUser?.lastName}</strong>? This action cannot be undone.
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setDialogOpen(false)} color="inherit">
+      Cancel
+    </Button>
+    <Button onClick={confirmDelete} color="error" variant="contained">
+      Delete
+    </Button>
+  </DialogActions>
+</Dialog>
 
       {/* Header and Search */}
       <div className="flex flex-col sm:flex-row justify-between items-center py-5 gap-4">
