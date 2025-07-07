@@ -40,10 +40,21 @@ const ExamLogs = () => {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    setError('');
     try {
-      const url = `https://ciu-backend.onrender.com/api/exams/fetch_exam_logs?download=true&format=pdf`;
-      window.open(url, '_blank');
+      const response = await axios.get(
+        'https://ciu-backend.onrender.com/api/exams/fetch_exam_logs?download=true&format=pdf',
+        { responseType: 'blob' }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'exam_logs.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (error) {
       setError('Failed to download PDF');
     }
