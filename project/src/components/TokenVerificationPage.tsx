@@ -266,6 +266,7 @@ const TokenVerificationPage = () => {
   const [universityNumber, setUniversityNumber] = useState('');
   const [token, setToken] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -278,6 +279,7 @@ const TokenVerificationPage = () => {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     console.log('Attempting verification with:', { universityNumber, token });
 
     try {
@@ -309,6 +311,8 @@ const TokenVerificationPage = () => {
       }
 
       setTimeout(() => setError(''), 3000);
+    } finally {
+      setLoading(false); // ✅ Stop spinner
     }
   };
 
@@ -352,11 +356,40 @@ const TokenVerificationPage = () => {
             <FaKey className="absolute right-5 top-1/2 -translate-y-1/2 text-[16px]" />
           </div>
 
-          <button
+          {/* <button
             type="submit"
             className="w-full h-[45px] bg-[#106053] text-white border-none outline-none cursor-pointer text-[16px] font-bold hover:bg-[#0b3f37]"
           >
             Verify Token
+          </button> */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-[45px] bg-[#106053] text-white border-none outline-none cursor-pointer text-[16px] font-bold hover:bg-[#0b3f37] flex items-center justify-center disabled:opacity-50"
+          >
+            {loading && (
+              <svg
+                className="animate-spin h-5 w-5 mr-2 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
+            {loading ? 'Verifying...' : 'Verify Token'}
           </button>
 
           {error && (

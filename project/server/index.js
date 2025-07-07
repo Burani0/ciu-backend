@@ -1,6 +1,3 @@
-
-
-
 // import express from 'express';
 // import { createServer } from 'http';
 // import { Server } from 'socket.io';
@@ -129,20 +126,22 @@ io.on('connection', (socket) => {
     try {
       socket.join(roomId);
       if (!rooms.has(roomId)) {
-        rooms.set(roomId, { viewers: new Set(), streamer: null });
+        rooms.set(roomId, { viewers: new Set(), streamers: new Set() });
       }
       const room = rooms.get(roomId);
 
-      const isStreamer = socket.handshake.headers.referer?.includes('/stream/');
+      const isStreamer = socket.handshake.headers.referer?.includes('/exam/');
       if (isStreamer) {
-        room.streamer = socket.id;
+        room.streamers.add(socket.id);
+        console.log(`Streamer ${socket.id} joined room ${roomId}`);
       } else {
         room.viewers.add(socket.id);
+        console.log(`Viewer ${socket.id} joined room ${roomId}`);
       }
 
       io.to(roomId).emit('room-update', {
         viewerCount: room.viewers.size,
-        hasStreamer: !!room.streamer
+        streamerCount: room.streamers.size
       });
     } catch (error) {
       console.error('Error in join-room:', error);
@@ -153,8 +152,12 @@ io.on('connection', (socket) => {
     try {
       const roomId = Array.from(socket.rooms)[1];
       if (roomId) {
-        console.log(`Broadcasting stream to room ${roomId}. Data size: ${data.length}`);
-        socket.to(roomId).emit('receive-stream', data);
+        console.log(`Broadcasting stream from ${socket.id} to room ${roomId}. Data size: ${data.length}`);
+        // Include the streamer's socket ID with the stream data
+        socket.to(roomId).emit('receive-stream', {
+          streamerId: socket.id,
+          data: data
+        });
       }
     } catch (error) {
       console.error('Error in stream-video:', error);
@@ -167,14 +170,16 @@ io.on('connection', (socket) => {
       if (roomId) {
         const room = rooms.get(roomId);
         if (room) {
-          if (room.streamer === socket.id) {
-            room.streamer = null;
+          if (room.streamers.has(socket.id)) {
+            room.streamers.delete(socket.id);
+            console.log(`Streamer ${socket.id} left room ${roomId}`);
           } else {
             room.viewers.delete(socket.id);
+            console.log(`Viewer ${socket.id} left room ${roomId}`);
           }
           io.to(roomId).emit('room-update', {
             viewerCount: room.viewers.size,
-            hasStreamer: !!room.streamer
+            streamerCount: room.streamers.size
           });
         }
       }
@@ -185,24 +190,23 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     rooms.forEach((room, roomId) => {
-      if (room.streamer === socket.id) {
-        room.streamer = null;
+      if (room.streamers.has(socket.id)) {
+        room.streamers.delete(socket.id);
+        console.log(`Streamer ${socket.id} disconnected from room ${roomId}`);
       } else {
         room.viewers.delete(socket.id);
       }
       io.to(roomId).emit('room-update', {
         viewerCount: room.viewers.size,
-        hasStreamer: !!room.streamer
+        streamerCount: room.streamers.size
       });
     });
     console.log('User disconnected:', socket.id);
   });
 });
 
- 
 const PORT = process.env.PORT || 3001;
 
 httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
- 

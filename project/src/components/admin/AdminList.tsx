@@ -276,7 +276,7 @@ function Adminuser() {
 
   const deleteUser = async (id: string) => {
     try {
-      await axios.delete(`https://ciu-backend.onrender.com/api/admin/admins/${id}`);
+      await axios.delete(`https://ciu-backend.onrender.com/api/admin/admin/${id}`);
       setUsers((prev) => prev.filter((user) => user._id !== id));
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to delete user");

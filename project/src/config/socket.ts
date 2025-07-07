@@ -1,4 +1,3 @@
-
 import { io, Socket } from 'socket.io-client';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL as string;
@@ -24,5 +23,3 @@ export const emitStream = (data: any) => {
 export const onStream = (callback: (data: any) => void) => {
   socket.on('receive-stream', callback);
 };
-
-

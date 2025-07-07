@@ -421,3 +421,7 @@ const CreateLecturerModal: React.FC<Props> = ({ onClose, onSuccess }) => {
 };
 
 export default CreateLecturerModal;
+
+
+
+

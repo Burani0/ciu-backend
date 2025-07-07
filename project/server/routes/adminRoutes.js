@@ -17,6 +17,7 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   import { getLecturerById } from '../controllers/adminController.js';
   import { getCourseById }   from '../controllers/adminController.js';
   import { updateAdmin } from '../controllers/adminController.js';
+  import { deleteAdmin } from '../controllers/adminController';
   
   
 
@@ -46,6 +47,7 @@ router.put('/admin/:id', updateAdmin);
 
 router.delete('/courses/:id', deleteCourse);
 router.delete('/lecturers/:id', deleteLecturer);
+router.delete('/admin/:id', deleteAdmin);
 
 
 router.post('/create-admin', createAdmin);
