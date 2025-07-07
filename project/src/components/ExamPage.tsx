@@ -1,7 +1,5 @@
 
 
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -34,8 +32,8 @@ const ExamPage: React.FC = () => {
   const [faceDetectionError, setFaceDetectionError] = useState<string | null>(null);
   const [isModelLoaded, setIsModelLoaded] = useState<boolean>(false);
   const [smoothedDetection, setSmoothedDetection] = useState<0 | 1 | 2>(1);
-  const [noFaceTimer, setNoFaceTimer] = useState(0);
-  const [multiFaceTimer, setMultiFaceTimer] = useState(0);
+  const [noFaceTimer, setNoFaceTimer] = useState(0); // Kept for compatibility
+  const [multiFaceTimer, setMultiFaceTimer] = useState(0); // Kept for compatibility
   const [examData, setExamData] = useState({
     examLink: '',
     examNo: '',
@@ -201,19 +199,44 @@ const ExamPage: React.FC = () => {
     loadModels();
   }, []);
 
-  const DETECTION_BUFFER_SIZE = 6;
-  const NO_FACE_WARNING_SECONDS = 3;
-  const MULTIPLE_FACE_WARNING_SECONDS = 2;
+  const DETECTION_BUFFER_SIZE = 3; // Reduced buffer size for faster response
 
   const detectFaces = async (video: HTMLVideoElement): Promise<void> => {
     if (!video || !isModelLoaded) return;
     try {
-      const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }));
-      let detectionType: 0 | 1 | 2 = detections.length === 1 ? 1 : detections.length > 1 ? 2 : 0;
+      const detections = await faceapi.detectAllFaces(
+        video,
+        new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }) // Increased threshold for better accuracy
+      );
+
+      const detectionType: 0 | 1 | 2 = detections.length === 1 ? 1 : detections.length > 1 ? 2 : 0;
+
+      // Immediately handle multiple faces
+      if (detectionType === 2) {
+        setFaceDetectionError('Multiple faces detected. Only one face is allowed.');
+        setSmoothedDetection(2);
+        logEvent('security_violation', { violationType: 'multiple_faces' });
+        return;
+      }
+
+      // Update detection buffer
       detectionBufferRef.current.push(detectionType);
-      if (detectionBufferRef.current.length > DETECTION_BUFFER_SIZE) detectionBufferRef.current.shift();
-      const smoothedType = detectionBufferRef.current.reduce((acc, val) => acc + val, 0) >= DETECTION_BUFFER_SIZE ? 2 : detectionType;
+      if (detectionBufferRef.current.length > DETECTION_BUFFER_SIZE) {
+        detectionBufferRef.current.shift();
+      }
+
+      // Calculate smoothed detection
+      const smoothedType = detectionBufferRef.current.every(val => val === 0)
+        ? 0
+        : detectionBufferRef.current.every(val => val === 1)
+        ? 1
+        : detectionBufferRef.current.some(val => val === 2)
+        ? 2
+        : 1; // Default to single face if mixed but no multiple faces
+
       setSmoothedDetection(smoothedType);
+      setFaceDetectionError(null); // Clear error if detection is valid
+
       if (roomId) joinRoom(roomId);
     } catch (error) {
       setFaceDetectionError('Face detection failed. Please check your camera.');
@@ -223,23 +246,32 @@ const ExamPage: React.FC = () => {
 
   useEffect(() => {
     if (!detectionBufferRef.current) detectionBufferRef.current = [];
-    let noFaceInt: NodeJS.Timeout | undefined;
-    let multiFaceInt: NodeJS.Timeout | undefined;
-    if (smoothedDetection === 0) noFaceInt = setInterval(() => setNoFaceTimer((t) => t + 1), 1000);
-    else setNoFaceTimer(0);
-    const multiFaceBufferStable = detectionBufferRef.current.length === DETECTION_BUFFER_SIZE && detectionBufferRef.current.every((v) => v === 2);
-    if (multiFaceBufferStable) multiFaceInt = setInterval(() => setMultiFaceTimer((t) => t + 1), 1000);
-    else setMultiFaceTimer(0);
-    return () => { if (noFaceInt) clearInterval(noFaceInt); if (multiFaceInt) clearInterval(multiFaceInt); };
+    setNoFaceTimer(0); // Reset for compatibility
+    setMultiFaceTimer(0); // Reset for compatibility
   }, [smoothedDetection]);
 
-  const showNoFaceWarning = smoothedDetection === 0 && noFaceTimer >= NO_FACE_WARNING_SECONDS;
-  const showMultiFaceWarning = detectionBufferRef.current.length === DETECTION_BUFFER_SIZE && detectionBufferRef.current.every((v) => v === 2) && multiFaceTimer >= MULTIPLE_FACE_WARNING_SECONDS;
-  const showFaceDetected = smoothedDetection === 1;
+  useEffect(() => {
+    if (cameraActive && videoRef.current) {
+      detectionBufferRef.current = []; // Reset buffer on camera start
+      faceDetectionInterval.current = setInterval(() => {
+        if (videoRef.current) detectFaces(videoRef.current);
+        if (smoothedDetection === 0) {
+          logEvent('security_violation', { violationType: 'no_face' });
+        } else if (smoothedDetection === 2) {
+          // Error is already set in detectFaces
+        }
+      }, 300); // Faster interval for quicker detection
+      return () => {
+        if (faceDetectionInterval.current) clearInterval(faceDetectionInterval.current);
+      };
+    }
+  }, [cameraActive, isModelLoaded, smoothedDetection]);
 
   const initializeCamera = async (): Promise<void> => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { min: 640, ideal: 1280 }, height: { min: 480, ideal: 720 }, facingMode: 'user', frameRate: { ideal: 30 } } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { min: 640, ideal: 1280 }, height: { min: 480, ideal: 720 }, facingMode: 'user', frameRate: { ideal: 30 } },
+      });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await new Promise<void>((resolve) => {
@@ -313,7 +345,7 @@ const ExamPage: React.FC = () => {
         studentRegNo: examData.studentRegNo,
         examNo: examData.examNo,
         courseId: examData.courseId,
-        submissionTime: new Date().toISOString(), // Added submissionTime
+        submissionTime: new Date().toISOString(),
         logEntries: logBuffer.map(entry => ({
           eventType: entry.eventType,
           details: {
@@ -342,6 +374,7 @@ const ExamPage: React.FC = () => {
   };
 
   function parseQuestionsFromContent(content: string) {
+    content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     return content
       .split('\n')
       .filter(line => line.trim() !== '')
@@ -396,6 +429,9 @@ const ExamPage: React.FC = () => {
           section,
           questions: parseQuestionsFromContent(content),
         }));
+
+    
+        
 
     const submissionData = {
       studentRegNo: examData.studentRegNo,
@@ -518,7 +554,6 @@ const ExamPage: React.FC = () => {
       if (!isSubmitting && !hasSubmitted) {
         submitExam('auto-submit');
       }
-      e.preventDefault();
       e.returnValue = '';
       return '';
     };
@@ -536,33 +571,17 @@ const ExamPage: React.FC = () => {
             <div className="text-teal-600 italic">⌛ Loading face detection...</div>
           ) : faceDetectionError ? (
             <div className="text-red-500 font-medium">⚠️ {faceDetectionError}</div>
-          ) : showNoFaceWarning ? (
-            <div className="text-red-500 font-medium">⚠️ No Face Detected for {noFaceTimer}s</div>
-          ) : showMultiFaceWarning ? (
-            <div className="text-red-500 font-medium">⚠️ Multiple Faces Detected for {multiFaceTimer}s</div>
-          ) : showFaceDetected ? (
+          ) : smoothedDetection === 0 ? (
+            <div className="text-red-500 font-medium">⚠️ No Face Detected</div>
+          ) : smoothedDetection === 1 ? (
             <div className="text-green-600 font-medium">✓ Face Detected</div>
           ) : (
-            <div className="text-red-500 font-medium">⚠️ Detecting...</div>
+            <div className="text-red-500 font-medium">⚠️ Multiple Faces Detected</div>
           )}
         </div>
       </div>
     </div>
   );
-
-  useEffect(() => {
-    if (cameraActive && videoRef.current) {
-      faceDetectionInterval.current = setInterval(() => {
-        if (videoRef.current) detectFaces(videoRef.current);
-        if (smoothedDetection === 0 && noFaceTimer >= NO_FACE_WARNING_SECONDS) {
-          logEvent('security_violation', { violationType: 'no_face' });
-        } else if (detectionBufferRef.current.length === DETECTION_BUFFER_SIZE && detectionBufferRef.current.every((v) => v === 2) && multiFaceTimer >= MULTIPLE_FACE_WARNING_SECONDS) {
-          logEvent('security_violation', { violationType: 'multiple_faces' });
-        }
-      }, 500);
-    }
-    return () => { if (faceDetectionInterval.current) clearInterval(faceDetectionInterval.current); };
-  }, [cameraActive, isModelLoaded, smoothedDetection, noFaceTimer, multiFaceTimer]);
 
   useEffect(() => {
     if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
