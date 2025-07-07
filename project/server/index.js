@@ -23,6 +23,8 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
  
 import examRoutes from './routes/examRoutes.js'; 
+import uploadRoutes from './routes/uploadRoutes.js';
+import lecturerUploadRoutes from './routes/lecturerUploadRoutes.js';
 
  
 import lecturerRoutes from './routes/lecturerRoutes.js';
@@ -52,6 +54,10 @@ const httpServer = createServer(app);
 
 app.use(express.json());
 connectDB();
+
+app.use('/uploads', express.static('uploads'));
+
+
 
 
 // Enable CORS for the frontend origin
@@ -94,6 +100,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/lecturer', lecturerRoutes);
 app.use('/api', proxyRoutes);
 app.use('/api/exams', examRoutes);
+app.use('/api/admin/uploads', uploadRoutes);
+app.use('/api/lecturer/uploads', lecturerUploadRoutes);
+
  
 
 const io = new Server(httpServer, {

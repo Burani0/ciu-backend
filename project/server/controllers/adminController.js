@@ -92,15 +92,18 @@ export const getLecturerById = async (req, res) => {
   try {
     const { id } = req.params;
     const lecturer = await Lecturer.findById(id).populate('assignedCourses'); // if using mongoose
+    console.log(JSON.stringify(lecturer, null, 2));
     if (!lecturer) {
       return res.status(404).json({ message: 'Lecturer not found' });
     }
     res.status(200).json(lecturer);
+    
   } catch (error) {
     console.error('Error fetching lecturer by ID:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // GET all admins
 export const getAllAdmins = async (req, res) => {
@@ -174,16 +177,22 @@ export const updateLecturer = async (req, res) => {
 
 // UPDATE admin
 export const updateAdmin = async (req, res) => {
+  // console.log("UPDATE ADMIN HIT:", req.params.id);
   const { id } = req.params;
-  const { username, password } = req.body;
+  const { first_name, last_name, username, email } = req.body;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const updated = await Admin.findByIdAndUpdate(
+    id.trim(),
+    { first_name, last_name, username, email },
+    { new: true }
+  );
 
-  const updated = await Admin.findByIdAndUpdate(id, { username, password: hashedPassword }, { new: true });
   if (!updated) return res.status(404).json({ message: 'Admin not found' });
 
   res.status(200).json(updated);
 };
+
+
 
 // DELETE course
 export const deleteCourse = async (req, res) => {
