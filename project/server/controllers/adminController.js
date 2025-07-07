@@ -161,36 +161,73 @@ export const getCourseById = async (req, res) => {
 };
 
 export const updateLecturer = async (req, res) => {
-  const { id } = req.params;
-  const { firstName, lastName, email, universityNumber, assignedCourses } = req.body;
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, email, universityNumber, assignedCourses } = req.body;
 
-  const updated = await Lecturer.findByIdAndUpdate(
-    id.trim(), // trim the id here to fix ObjectId cast errors
-    { firstName, lastName, email, universityNumber, assignedCourses },
-    { new: true }
-  );
-  if (!updated) return res.status(404).json({ message: 'Lecturer not found' });
+    const lecturer = await Lecturer.findById(id.trim());
+    if (!lecturer) return res.status(404).json({ message: 'Lecturer not found' });
 
-  res.status(200).json(updated);
+    const oldUniversityNumber = lecturer.universityNumber;
+
+    // Update fields
+    lecturer.firstName = firstName;
+    lecturer.lastName = lastName;
+    lecturer.email = email;
+    lecturer.universityNumber = universityNumber;
+    lecturer.assignedCourses = assignedCourses;
+
+    const updated = await lecturer.save();
+
+    if (oldUniversityNumber !== universityNumber) {
+      await sendEmail(
+        email,
+        'University Number Updated',
+        `Hello ${firstName},\n\nYour university number has been changed from "${oldUniversityNumber}" to "${universityNumber}".`
+      );
+    }
+
+    res.status(200).json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
 };
-
 
 // UPDATE admin
 export const updateAdmin = async (req, res) => {
-  // console.log("UPDATE ADMIN HIT:", req.params.id);
-  const { id } = req.params;
-  const { first_name, last_name, username, email } = req.body;
+  try {
+    const { id } = req.params;
+    const { first_name, last_name, username, email } = req.body;
 
-  const updated = await Admin.findByIdAndUpdate(
-    id.trim(),
-    { first_name, last_name, username, email },
-    { new: true }
-  );
+    const admin = await Admin.findById(id.trim());
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
-  if (!updated) return res.status(404).json({ message: 'Admin not found' });
+    const oldUsername = admin.username;
 
-  res.status(200).json(updated);
+    // Update fields
+    admin.first_name = first_name;
+    admin.last_name = last_name;
+    admin.username = username;
+    admin.email = email;
+
+    const updated = await admin.save();
+
+    if (oldUsername !== username) {
+      await sendEmail(
+        email,
+        'Username Updated',
+        `Hello ${first_name},\n\nYour username has been changed from "${oldUsername}" to "${username}".`
+      );
+    }
+
+    res.status(200).json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
 };
+
 
 
 
