@@ -218,6 +218,8 @@ import LandingPage from './pages/LandingPage.tsx';
 import JoinLogin from './pages/JoinLogin.tsx';
 import LecturerSubmissions from './components/Lecturer/LecturerSubmission.tsx';
 import ViewExam from './components/Lecturer/ViewExam.tsx';
+import AdminLogin from "./pages/AdminLogin.tsx";
+import StudentLogin from "./pages/StudentLogin.tsx";
 
 import ExamLogs from './components/ExamLogs.tsx'
 import Examslogs from './components/Examslogs.tsx'
@@ -325,7 +327,7 @@ function AppWrapper() {
     }
   }, []);
 
-  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/','/admin-create','/adminlist','/editadmin','/Landingpage','/Submitted-exam','/answers/:submissionId',];
+  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/','/admin-create','/adminlist','/editadmin','/Landingpage','/Submitted-exam','/answers/:submissionId','/studentlogin','/adminlogin',];
   // const isLayoutVisible = !noLayoutRoutes.includes(location.pathname);
   const isLayoutVisible = !noLayoutRoutes.some(route =>
     matchPath({ path: route, end: false }, location.pathname)
@@ -360,7 +362,7 @@ function AppWrapper() {
                 <Route path="/exam/:roomId" element={<ExamPage />} />
                 <Route path="/view/:roomId" element={<Viewer />} />
                 <Route path="/proctoring" element={<ProctoringPage />} />
-                <Route path="/" element={<Login/>}     />
+                {/* <Route path="/" element={<Login/>}     /> */}
                 {/* <Route path="/LOGIN" element={<Login />} /> */}
                 <Route path="/admin" element={<AdminDashboard />} /> {/* ❌ No layout */}
                 <Route path="/lecturer" element={<LecturerDashboard />} />
@@ -384,10 +386,12 @@ function AppWrapper() {
         <Route path="/editadmin" element={<EditAdminModal/>} />
         <Route path="/loggs" element={<Logs />} />
         <Route path="/cleartoken" element={<Cleartoken/>}     />
-        <Route path="/LandingPage" element={<LandingPage/>}     />
+        <Route path="/" element={<LandingPage/>}     />
         <Route path="/Submitted-exam" element={<LecturerSubmissions/>}     />
         <Route path="/answers/:submissionId" element={<ViewExam />} />
-        <Route path="/" element={<JoinLogin/>}     />
+        <Route path="/JoinLogin" element={<JoinLogin/>}     />
+        <Route path="/adminlogin" element={<AdminLogin />} />
+        <Route path="/studentlogin" element={<StudentLogin />} />
         {/* <Route path="/" element={<LoginWrapper />} /> */}
         
         <Route path="/student_logs" element={<ExamLogs/>}     />
@@ -402,7 +406,7 @@ function AppWrapper() {
               <Route path="/exam/:roomId" element={<ExamPage />} />
               <Route path="/view/:roomId" element={<Viewer />} />
               <Route path="/proctoring" element={<ProctoringPage />} />
-              <Route path="/" element={<Login/>}     />
+              {/* <Route path="/" element={<Login/>}     /> */}
               {/* <Route path="/LOGIN" element={<Login />} /> ❌ No layout */}
               <Route path="/admin" element={<AdminDashboard />} /> {/* ❌ No layout */}
               <Route path="/lecturer" element={<LecturerDashboard />} />
@@ -422,13 +426,15 @@ function AppWrapper() {
                 <Route path="/admin-create" element={<CreateAdminPage />} />
                 <Route path="/adminlist" element={<AdminList />} />
                 <Route path="/editadmin" element={<EditAdminModal/>} />
-                <Route path="/LandingPage" element={<LandingPage/>}     />
+                <Route path="/" element={<LandingPage/>}     />
                 <Route path="/Submitted-exam" element={<LecturerSubmissions/>}     />
                 <Route path="/answers/:submissionId" element={<ViewExam />} />
-                <Route path="/" element={<JoinLogin/>}     />
+                <Route path="/JoinLogin" element={<JoinLogin/>}     />
                 {/* <Route path="/" element={<LoginWrapper />} /> */}
                  <Route path="/student_logs" element={<ExamLogs/>}     />
                 <Route path="/student_lect_logs" element={<Examslogs/>}     />
+                <Route path="/adminlogin" element={<AdminLogin />} />
+                <Route path="/studentlogin" element={<StudentLogin />} />
             </Routes>
           </Suspense>
         )}

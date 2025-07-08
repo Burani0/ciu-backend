@@ -17,7 +17,7 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   import { getLecturerById } from '../controllers/adminController.js';
   import { getCourseById }   from '../controllers/adminController.js';
   import { updateAdmin } from '../controllers/adminController.js';
-  import { deleteAdmin } from '../controllers/adminController';
+ 
   
   
 
