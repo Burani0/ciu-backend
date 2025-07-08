@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import StudentLogin from "./StudentLogin";
-import Login from "./Login";
+import Login from "./AdminLogin";
 
 export default function UnifiedLoginWrapper(): JSX.Element {
   const [userType, setUserType] = useState<"student" | "lecturer">("student");
