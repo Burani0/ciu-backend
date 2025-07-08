@@ -327,7 +327,7 @@ function AppWrapper() {
     }
   }, []);
 
-  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/','/admin-create','/adminlist','/editadmin','/Landingpage','/Submitted-exam','/answers/:submissionId','/studentlogin','/adminlogin',];
+  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/','/admin-create','/adminlist','/editadmin','/Landingpage','/Submitted-exam','/answers/:submissionId','/studentlogin','/admin-login',];
   // const isLayoutVisible = !noLayoutRoutes.includes(location.pathname);
   const isLayoutVisible = !noLayoutRoutes.some(route =>
     matchPath({ path: route, end: false }, location.pathname)
@@ -390,7 +390,7 @@ function AppWrapper() {
         <Route path="/Submitted-exam" element={<LecturerSubmissions/>}     />
         <Route path="/answers/:submissionId" element={<ViewExam />} />
         <Route path="/JoinLogin" element={<JoinLogin/>}     />
-        <Route path="/adminlogin" element={<AdminLogin />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/studentlogin" element={<StudentLogin />} />
         {/* <Route path="/" element={<LoginWrapper />} /> */}
         
@@ -433,7 +433,7 @@ function AppWrapper() {
                 {/* <Route path="/" element={<LoginWrapper />} /> */}
                  <Route path="/student_logs" element={<ExamLogs/>}     />
                 <Route path="/student_lect_logs" element={<Examslogs/>}     />
-                <Route path="/adminlogin" element={<AdminLogin />} />
+                <Route path="/admin-login" element={<AdminLogin />} />
                 <Route path="/studentlogin" element={<StudentLogin />} />
             </Routes>
           </Suspense>

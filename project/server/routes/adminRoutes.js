@@ -11,6 +11,7 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   getSubmissionById,  
   clearToken,
   deleteAdmin,
+ 
    adminLogout,
  } from '../controllers/adminController.js';
   import { getLecturerSubmissions } from '../controllers/adminController.js';

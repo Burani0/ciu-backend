@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { BiSolidUserRectangle } from 'react-icons/bi';
 import { FaUser, FaKey } from 'react-icons/fa';
 
@@ -11,24 +11,15 @@ const Cleartoken = () => {
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // const handleVerify = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   try {
-  //     await axios.post('https://ciu-backend.onrender.com/api/admin/cleartoken', {
-  //       username,
-  //       token,
-  //     });
+  // Auto-fill username from login page
+  useEffect(() => {
+    if (location.state?.username) {
+      setUsername(location.state.username);
+    }
+  }, [location.state]);
 
-  //     localStorage.setItem('adminVerified', 'true');
-  //     localStorage.setItem('adminId', adminId);
-  //     localStorage.setItem('token', token);
-  //     navigate('/admin');
-  //   } catch (err: any) {
-  //     setError(err.response?.data?.message || 'Verification failed');
-  //     setTimeout(() => setError(''), 3000);
-  //   }
-  // };
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -52,10 +43,9 @@ const Cleartoken = () => {
       setError(err.response?.data?.message || 'Verification failed');
       setTimeout(() => setError(''), 3000);
     } finally {
-      setLoading(false); // ✅ Stop spinner
+      setLoading(false);
     }
   };
-  
 
   return (
     <div className="font-['Roboto'] flex justify-center items-center min-h-screen bg-[#ebebeb] py-5">
@@ -97,12 +87,6 @@ const Cleartoken = () => {
             <FaKey className="absolute right-5 top-1/2 -translate-y-1/2 text-[16px]" />
           </div>
 
-          {/* <button
-            type="submit"
-            className="w-full h-[45px] bg-[#106053] text-white border-none outline-none cursor-pointer text-[16px] font-bold hover:bg-[#0b3f37]"
-          >
-            Verify Token
-          </button> */}
           <button
             type="submit"
             disabled={loading}
