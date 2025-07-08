@@ -72,11 +72,11 @@ function Viewer() {
           <div className="flex items-center gap-4 mt-2 text-sm text-[#106053]">
             <div className="flex items-center gap-1">
               <Users size={16} />
-              <span>{roomInfo.viewerCount} viewers</span>
+              <span>{roomInfo.viewerCount} Invigilators</span>
             </div>
             <div className="flex items-center gap-1">
               <Monitor size={16} />
-              <span>{roomInfo.streamerCount} streamers</span>
+              <span>{roomInfo.streamerCount} Students</span>
             </div>
           </div>
         </div>
@@ -98,8 +98,8 @@ function Viewer() {
       {streams.length === 0 ? (
         <div className="text-center text-gray-500 mt-10">
           <Monitor size={48} className="mx-auto mb-4 opacity-50" />
-          <p>No active streams in this room</p>
-          <p className="text-sm mt-2">Waiting for streamers to join...</p>
+          <p>No active sessions in this room</p>
+          <p className="text-sm mt-2">Waiting for students to join...</p>
         </div>
       ) : (
         <div

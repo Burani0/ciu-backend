@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-
 import axios from 'axios';
-import Header from '../components/Lecturer/Headerpop';
-import Sidebar from '../components/Lecturer/Sidebarpop';
-import MobileMenu from '../components/Lecturer/MobileMenu';
-import { SidebarProvider2 } from '../components/Lecturer/SidebarContext2';
+
+import Header from '../components/admin/Headerpop';
+import Sidebar from '../components/admin/SideBarpop';
+import MobileMenu from '../components/admin/MobileMenu';
+import { SidebarProvider1 } from '../components/admin/SidebarContext';
 
 const Examslogs = () => {
   const [logs, setLogs] = useState([]);
@@ -40,10 +40,21 @@ const Examslogs = () => {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    setError('');
     try {
-      const url = `https://ciu-backend.onrender.com/api/exams/fetch_exam_logs?download=true&format=pdf`;
-      window.open(url, '_blank');
+      const response = await axios.get(
+        'https://ciu-backend.onrender.com/api/exams/fetch_exam_logs?download=true&format=pdf',
+        { responseType: 'blob' }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'exam_logs.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (error) {
       setError('Failed to download PDF');
     }
@@ -77,11 +88,11 @@ const Examslogs = () => {
   );
 
   return (
-    <SidebarProvider2>
-      <div className="font-['Roboto'] m-0 p-0 bg-white min-h-screen text-black">
-        <div className="flex flex-col h-screen">
+    <SidebarProvider1>
+      <div className="font-['Roboto'] m-0 p-0">
+        <div className={`flex flex-col h-screen ${isMobileMenuOpen ? 'pointer-events-none' : ''}`}>
           <Header toggleMobileMenu={toggleMobileMenu} isMobile={isMobile} />
-          <div className="flex flex-1 w-full overflow-hidden">
+          <div className="flex flex-1 overflow-scroll flex-col md:flex-row">
             {!isMobile && <Sidebar />}
             {isMobile && (
               <>
@@ -139,39 +150,38 @@ const Examslogs = () => {
                           <th className="border px-4 py-2">Student Reg No</th>
                           <th className="border px-4 py-2">Exam No</th>
                           <th className="border px-4 py-2">Course ID</th>
-                          <th className="border px-4 py-2">Event Type</th>
-                          <th className="border px-4 py-2">Details</th>
+                          <th className="border px-4 py-2">Log Entries</th>
+
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredLogs.map((log, index) =>
-                          log.logEntries.map((entry, i) => (
-                            <tr key={`${index}-${i}`} className="hover:bg-gray-50 text-gray-800">
-                              <td className="border px-4 py-2">{log.studentRegNo}</td>
-                              <td className="border px-4 py-2">{log.examNo}</td>
-                              <td className="border px-4 py-2">{log.courseId}</td>
-                              <td className="border px-4 py-2">{entry.eventType}</td>
-                              <td className="border px-4 py-2 whitespace-pre-wrap">
-                                {Object.entries(entry.details).map(([key, value]) => (
-                                  <div key={key}>
-                                    <strong>{key}:</strong>{' '}
-                                    {key === 'timestamp'
-                                      ? formatTimestamp(value as string)
-                                      : value?.toString()}
-                                  </div>
-                                ))}
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                        {filteredLogs.length === 0 && (
-                          <tr>
-                            <td colSpan={5} className="text-center py-6 text-gray-500">
-                              No matching logs found.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
+  {filteredLogs.map((log, index) => (
+    <tr key={index} className="hover:bg-gray-50 text-gray-800">
+      <td className="border px-4 py-2">{log.studentRegNo}</td>
+      <td className="border px-4 py-2">{log.examNo}</td>
+      <td className="border px-4 py-2">{log.courseId}</td>
+      <td className="border px-4 py-2 whitespace-pre-wrap">
+        {log.logEntries.map((entry, i) => (
+          <div key={i} className="mb-2">
+            <div><strong>{i + 1}. Event Type:</strong> {entry.eventType}</div>
+            {Object.entries(entry.details).map(([key, value]) => (
+              <div key={key} className="ml-4">
+                <strong>{key}:</strong> {key === 'timestamp' ? formatTimestamp(value) : value?.toString()}
+              </div>
+            ))}
+          </div>
+        ))}
+      </td>
+    </tr>
+  ))}
+  {filteredLogs.length === 0 && (
+    <tr>
+      <td colSpan={4} className="text-center py-6 text-gray-500">
+        No matching logs found.
+      </td>
+    </tr>
+  )}
+</tbody>
                     </table>
                   </div>
                 )}
@@ -184,7 +194,7 @@ const Examslogs = () => {
           </div>
         </div>
       </div>
-    </SidebarProvider2>
+    </SidebarProvider1>
   );
 };
 

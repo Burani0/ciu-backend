@@ -305,48 +305,46 @@ const ExamInterface: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-24 bg-white rounded-xl shadow-lg overflow-hidden">
-      <h2 className="text-[1.8rem] font-semibold mb-6 text-center text-[#106053]">
-        Your Exams
-      </h2>
+    <div className="max-w-4xl mx-auto mt-20 p-6 bg-white rounded-xl shadow-lg m-4">
+      <h2 className="text-2xl font-bold mb-6 text-center" style={{ color: '#1A3C1A' }}>Your Exams</h2>
 
       {loading ? (
-        <div className="text-center py-10">Loading exams...</div>
+        <div className="text-center py-4">Loading exams...</div>
       ) : error ? (
-        <div className="text-center text-red-600 py-10">{error}</div>
+        <div className="text-center text-red-600 py-4">{error}</div>
       ) : exams.length === 0 ? (
-        <div className="text-center py-10">No cleared exams found.</div>
+        <div className="text-center py-4">No cleared exams found.</div>
       ) : (
-        <div className="overflow-x-auto max-h-[400px]">
+        <div className="overflow-x-auto">
           <table className="w-full border-collapse">
-            <thead className="bg-[#106053] text-white sticky top-0 z-10">
+            <thead className="bg-[#C1E1C1] text-black">
               <tr>
-                <th className="py-4 px-6 text-left">Exam Name</th>
-                <th className="py-4 px-6 text-left">Course ID</th>
-                <th className="py-4 px-6 text-left">Status</th>
-                <th className="py-4 px-6 text-left">Date</th>
-                <th className="py-4 px-6 text-left">Start</th>
-                <th className="py-4 px-6 text-left">End</th>
-                <th className="py-4 px-6 text-left">Duration</th>
-                <th className="py-4 px-6 text-left">Action</th>
+                <th className="py-2 px-2 text-left border-b border-gray-300 text-sm">Exam Name</th>
+                <th className="py-2 px-2 text-left border-b border-gray-300 text-sm">Course ID</th>
+                <th className="py-2 px-2 text-left border-b border-gray-300 text-sm">Status</th>
+                <th className="py-2 px-2 text-left border-b border-gray-300 text-sm">Date</th>
+                <th className="py-2 px-2 text-left border-b border-gray-300 text-sm">Start</th>
+                <th className="py-2 px-2 text-left border-b border-gray-300 text-sm">End</th>
+                <th className="py-2 px-2 text-left border-b border-gray-300 text-sm">Duration</th>
+                <th className="py-2 px-2 text-left border-b border-gray-300 text-sm">Action</th>
               </tr>
             </thead>
             <tbody>
               {exams.map((exam, index) => (
-                <tr key={index} className="hover:bg-gray-100 transition-colors">
-                  <td className="py-4 px-6 border-b">{exam.courseName}</td>
-                  <td className="py-4 px-6 border-b">{exam.courseID}</td>
-                  <td className="py-4 px-6 border-b">{exam.course_status}</td>
-                  <td className="py-4 px-6 border-b">{exam.ExamDate}</td>
-                  <td className="py-4 px-6 border-b">{exam.StartTime}</td>
-                  <td className="py-4 px-6 border-b">{exam.EndTime}</td>
-                  <td className="py-4 px-6 border-b">
+                <tr key={index} className="hover:bg-gray-50 transition-colors">
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.courseName}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.courseID}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.course_status}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.ExamDate}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.StartTime}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.EndTime}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">
                     {calculateDuration(exam.StartTime, exam.EndTime)}
                   </td>
-                  <td className="py-4 px-6 border-b">
+                  <td className="py-2 px-2 border-b border-gray-200">
                     <button
                       onClick={() => handleStartExam(exam)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+                      className="bg-[#1A3C1A] hover:bg-[#143D14] text-white px-2 py-1 rounded-md text-xs"
                     >
                       Start Exam
                     </button>

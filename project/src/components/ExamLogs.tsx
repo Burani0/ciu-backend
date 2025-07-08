@@ -150,39 +150,38 @@ const ExamLogs = () => {
                           <th className="border px-4 py-2">Student Reg No</th>
                           <th className="border px-4 py-2">Exam No</th>
                           <th className="border px-4 py-2">Course ID</th>
-                          <th className="border px-4 py-2">Event Type</th>
-                          <th className="border px-4 py-2">Details</th>
+                          <th className="border px-4 py-2">Log Entries</th>
+
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredLogs.map((log, index) =>
-                          log.logEntries.map((entry, i) => (
-                            <tr key={`${index}-${i}`} className="hover:bg-gray-50 text-gray-800">
-                              <td className="border px-4 py-2">{log.studentRegNo}</td>
-                              <td className="border px-4 py-2">{log.examNo}</td>
-                              <td className="border px-4 py-2">{log.courseId}</td>
-                              <td className="border px-4 py-2">{entry.eventType}</td>
-                              <td className="border px-4 py-2 whitespace-pre-wrap">
-                                {Object.entries(entry.details).map(([key, value]) => (
-                                  <div key={key}>
-                                    <strong>{key}:</strong>{' '}
-                                    {key === 'timestamp'
-                                      ? formatTimestamp(value as string)
-                                      : value?.toString()}
-                                  </div>
-                                ))}
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                        {filteredLogs.length === 0 && (
-                          <tr>
-                            <td colSpan={5} className="text-center py-6 text-gray-500">
-                              No matching logs found.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
+  {filteredLogs.map((log, index) => (
+    <tr key={index} className="hover:bg-gray-50 text-gray-800">
+      <td className="border px-4 py-2">{log.studentRegNo}</td>
+      <td className="border px-4 py-2">{log.examNo}</td>
+      <td className="border px-4 py-2">{log.courseId}</td>
+      <td className="border px-4 py-2 whitespace-pre-wrap">
+        {log.logEntries.map((entry, i) => (
+          <div key={i} className="mb-2">
+            <div><strong>{i + 1}. Event Type:</strong> {entry.eventType}</div>
+            {Object.entries(entry.details).map(([key, value]) => (
+              <div key={key} className="ml-4">
+                <strong>{key}:</strong> {key === 'timestamp' ? formatTimestamp(value) : value?.toString()}
+              </div>
+            ))}
+          </div>
+        ))}
+      </td>
+    </tr>
+  ))}
+  {filteredLogs.length === 0 && (
+    <tr>
+      <td colSpan={4} className="text-center py-6 text-gray-500">
+        No matching logs found.
+      </td>
+    </tr>
+  )}
+</tbody>
                     </table>
                   </div>
                 )}

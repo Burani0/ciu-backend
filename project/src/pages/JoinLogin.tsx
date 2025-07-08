@@ -20,29 +20,55 @@ export default function Login(): JSX.Element {
   const [academicYear, setAcademicYear] = useState("");
   const [semester, setSemester] = useState("");
 
-  const handleAdminLogin = async () => {
-    setErrorMessage("");
-    setIsSubmitting(true);
+//  const handleAdminLogin = async () => {
+//     setErrorMessage('');
+//     try {
+//       const adminResponse = await axios.post('https://ciu-backend.onrender.com/api/admin/admin-login', {
+//         username: identifier,
+//         password,
+//       });
+//       alert(adminResponse.data.message);
+//       return navigate('/cleartoken');
+//     } catch {
+//       try {
+//         const lecturerResponse = await axios.post('https://ciu-backend.onrender.com/api/auth/login', {
+//           universityNumber: identifier,
+//           password,
+//         });
+//         alert(lecturerResponse.data.message);
+//         return navigate('/verify-token');
+//       } catch {
+//         setErrorMessage('Invalid credentials for both admin and lecturer.');
+//       }
+//     }
+//   };
+const handleAdminLogin = async () => {
+  setErrorMessage('');
+  setIsSubmitting(true); // <-- add this
+  try {
+    const adminResponse = await axios.post('https://ciu-backend.onrender.com/api/admin/admin-login', {
+      username: identifier,
+      password,
+    });
+    alert(adminResponse.data.message);
+    return navigate('/cleartoken');
+  } catch {
     try {
-      const adminResponse = await axios.post("http://localhost:3001/api/admin/adminlogin", {
-        username: identifier,
+      const lecturerResponse = await axios.post('https://ciu-backend.onrender.com/api/auth/login', {
+        universityNumber: identifier,
         password,
       });
-      alert(adminResponse.data.message);
-      navigate("/cleartoken");
+      alert(lecturerResponse.data.message);
+      return navigate('/verify-token');
     } catch {
-      try {
-        const lecturerResponse = await axios.post("http://localhost:3001/api/auth/login", {
-          universityNumber: identifier,
-          password,
-        });
-        alert(lecturerResponse.data.message);
-        navigate("/verify-token");
-      } catch {
-        setErrorMessage("Invalid credentials for both admin and lecturer.");
-      }
+      setErrorMessage('Invalid credentials for both admin and lecturer.');
     }
-  };
+  } finally {
+    setIsSubmitting(false); // <-- also add this
+  }
+};
+
+
 
   const handleStudentLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,34 +82,84 @@ export default function Login(): JSX.Element {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const apiUrl = `https://eadmin.ciu.ac.ug/API/ClearedStudentsAPI.aspx?acad=${academicYear}&sem=${semester}`;
+    const apiUrl = `https://ciu-backend.onrender.com/api/cleared-students?acad=${academicYear}&sem=${semester}`;
+     try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
 
-    try {
-      const response = await axios.get(apiUrl);
-      let clearedStudents = typeof response.data === "string" ? JSON.parse(response.data) : response.data;
+      let clearedStudents;
+      if (typeof response.data === "string") {
+        try {
+          clearedStudents = JSON.parse(response.data);
+        } catch (parseError) {
+          throw new Error("Unable to parse server response.");
+        }
+      } else {
+        clearedStudents = response.data;
+      }
 
-      if (!Array.isArray(clearedStudents)) throw new Error("Invalid data format received from the server.");
+      if (!Array.isArray(clearedStudents)) {
+        throw new Error("Invalid data format received from the server.");
+      }
 
-      const studentCleared = clearedStudents.some((student: any) =>
-        student?.RegistrationNo?.trim().toLowerCase() === regNo.trim().toLowerCase()
-      );
+      const studentCleared = clearedStudents.some((student: any) => {
+        const studentRegNo = student?.RegistrationNo?.trim().toLowerCase();
+        return studentRegNo === regNo.trim().toLowerCase();
+      });
 
       if (studentCleared) {
         setSuccessMessage("Login successful!");
         localStorage.setItem("studentRegNo", regNo.trim());
         localStorage.setItem("studentYear", academicYear.trim());
         localStorage.setItem("studentSem", semester.trim());
-        navigate("/ExamInterface", {
-          state: { regNo: regNo.trim(), academicYear: academicYear.trim(), semester: semester.trim() },
-        });
+        // Fetch cleared students and store extra details for the logged-in student
+        try {
+          const clearedRes = await axios.get(
+            `https://ciu-backend.onrender.com/api/cleared-students?acad=${academicYear}&sem=${semester}`
+          );
+          let clearedStudents = clearedRes.data;
+          if (typeof clearedStudents === "string") {
+            try { clearedStudents = JSON.parse(clearedStudents); } catch { clearedStudents = []; }
+          }
+          const matchedStudent = clearedStudents.find(
+            (student: any) => student.RegistrationNo?.trim().toLowerCase() === regNo.trim().toLowerCase()
+          );
+          if (matchedStudent) {
+            localStorage.setItem("StudyYear", matchedStudent.StudyYear || "");
+            localStorage.setItem("Semester", matchedStudent.Semester || "");
+            localStorage.setItem("AcademicYear", matchedStudent.AcademicYear || "");
+            localStorage.setItem("StudentName", matchedStudent.StudentName || "");
+          }
+        } catch (error) {
+          console.error("API Error fetching cleared students:", error);
+        }
+        setTimeout(() => {
+          navigate("/ExamInterface", {
+            state: {
+              regNo: regNo.trim(),
+              academicYear: academicYear.trim(),
+              semester: semester.trim(),
+            },
+          });
+        }, 1000);
       } else {
         setErrorMessage("Registration number not found or not cleared.");
       }
     } catch (err: any) {
+      console.error("Login error:", err);
+
       if (err.response) {
-        setErrorMessage(`Server Error: ${err.response.status} - ${err.response.statusText}`);
+        setErrorMessage(
+          `Server Error: ${err.response.status} - ${err.response.statusText}`
+        );
       } else if (err.message.includes("Network Error")) {
-        setErrorMessage("Network error: Please check your internet connection.");
+        setErrorMessage(
+          "Network error: Please check your internet connection."
+        );
       } else {
         setErrorMessage(err.message || "Unexpected error occurred.");
       }
@@ -150,39 +226,41 @@ export default function Login(): JSX.Element {
                 />
                 <FaLock className="absolute right-5 top-1/2 -translate-y-1/2 text-[16px]" />
               </div>
-              <button
-                onClick={handleAdminLogin}
-                disabled={isSubmitting}
-                className="w-full h-[45px] bg-[#106053] text-white font-bold hover:bg-[#0b3f37] disabled:opacity-50 flex items-center justify-center"
+
+                <button
+            onClick={handleAdminLogin}
+            disabled={isSubmitting}
+            className="w-full h-[45px] bg-[#106053] text-white font-bold hover:bg-[#0b3f37] disabled:opacity-50 flex items-center justify-center"
+          >
+            {isSubmitting ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
                 >
-                {isSubmitting ? (
-                    <>
-                    <svg
-                        className="animate-spin h-5 w-5 mr-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                    >
-                        <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        ></circle>
-                        <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                        ></path>
-                    </svg>
-                    Logging in...
-                    </>
-                ) : (
-                    "Login"
-                )}
-                </button>
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                Logging in...
+              </>
+            ) : (
+              "Login"
+            )}
+          </button>
+
 
             </>
           ) : (
@@ -278,4 +356,3 @@ export default function Login(): JSX.Element {
     </div>
   );
 }
-
