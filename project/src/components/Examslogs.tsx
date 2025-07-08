@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
-import Header from '../components/admin/Headerpop';
-import Sidebar from '../components/admin/SideBarpop';
-import MobileMenu from '../components/admin/MobileMenu';
-import { SidebarProvider1 } from '../components/admin/SidebarContext';
+import axios from 'axios';
+import Header from '../components/Lecturer/Headerpop';
+import Sidebar from '../components/Lecturer/Sidebarpop';
+import MobileMenu from '../components/Lecturer/MobileMenu';
+import { SidebarProvider2 } from '../components/Lecturer/SidebarContext2';
 
 const Examslogs = () => {
   const [logs, setLogs] = useState([]);
@@ -40,21 +40,10 @@ const Examslogs = () => {
     }
   };
 
-  const handleDownload = async () => {
-    setError('');
+  const handleDownload = () => {
     try {
-      const response = await axios.get(
-        'https://ciu-backend.onrender.com/api/exams/fetch_exam_logs?download=true&format=pdf',
-        { responseType: 'blob' }
-      );
-
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'exam_logs.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const url = `https://ciu-backend.onrender.com/api/exams/fetch_exam_logs?download=true&format=pdf`;
+      window.open(url, '_blank');
     } catch (error) {
       setError('Failed to download PDF');
     }
@@ -88,11 +77,11 @@ const Examslogs = () => {
   );
 
   return (
-    <SidebarProvider1>
-      <div className="font-['Roboto'] m-0 p-0">
-        <div className={`flex flex-col h-screen ${isMobileMenuOpen ? 'pointer-events-none' : ''}`}>
+    <SidebarProvider2>
+      <div className="font-['Roboto'] m-0 p-0 bg-white min-h-screen text-black">
+        <div className="flex flex-col h-screen">
           <Header toggleMobileMenu={toggleMobileMenu} isMobile={isMobile} />
-          <div className="flex flex-1 overflow-scroll flex-col md:flex-row">
+          <div className="flex flex-1 w-full overflow-hidden">
             {!isMobile && <Sidebar />}
             {isMobile && (
               <>
@@ -151,10 +140,9 @@ const Examslogs = () => {
                           <th className="border px-4 py-2">Exam No</th>
                           <th className="border px-4 py-2">Course ID</th>
                           <th className="border px-4 py-2">Log Entries</th>
-
                         </tr>
                       </thead>
-                      <tbody>
+                                            <tbody>
   {filteredLogs.map((log, index) => (
     <tr key={index} className="hover:bg-gray-50 text-gray-800">
       <td className="border px-4 py-2">{log.studentRegNo}</td>
@@ -194,7 +182,7 @@ const Examslogs = () => {
           </div>
         </div>
       </div>
-    </SidebarProvider1>
+    </SidebarProvider2>
   );
 };
 

@@ -7,43 +7,41 @@ import { FaLock, FaUser } from "react-icons/fa";
 
 export default function AdminLogin(): JSX.Element {
   const navigate = useNavigate();
-
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [identifier, setIdentifier] = useState("");
-  const [showPassword, setShowPassword]= useState(false);
+ 
 
 
   const handleAdminLogin = async () => {
     setErrorMessage("");
     setIsSubmitting(true);
     try {
-      const adminResponse = await axios.post("http://localhost:3001/api/admin/adminlogin", {
+      const adminResponse = await axios.post("https://ciu-backend.onrender.com/api/admin/admin-login", {
         username: identifier,
         password,
       });
       alert(adminResponse.data.message);
-      navigate("/cleartoken");
+      return navigate('/cleartoken', { state: { username: identifier } });
     } catch {
       try {
-        const lecturerResponse = await axios.post("http://localhost:3001/api/auth/login", {
+        const lecturerResponse = await axios.post("https://ciu-backend.onrender.com/api/auth/login", {
           universityNumber: identifier,
           password,
         });
         alert(lecturerResponse.data.message);
-        navigate("/verify-token");
+        return navigate('/verify-token', { state: { username: identifier } });
       } catch {
         setErrorMessage("Invalid credentials for both admin and lecturer.");
       }
     }
     setIsSubmitting(false);
   };
-
-  const togglePasswordVisibility = () => {
+const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
   return (
     <div className="font-['Roboto'] flex justify-center items-center min-h-screen bg-[#ebebeb] py-5">
       <div className="relative w-[420px] bg-white text-[#106053]">
@@ -75,15 +73,15 @@ export default function AdminLogin(): JSX.Element {
             <FaUser className="absolute right-5 top-1/2 -translate-y-1/2 text-[16px]" />
           </div>
 
-          <div className="relative w-full h-[50px] bg-[#d6d6d6] mb-8">
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-full bg-transparent border-none outline-none border-[2px] border-white/10 rounded-[40px] text-[16px] text-black px-[20px] pr-[45px] placeholder:text-[#4f4e4e]"
-            />
-            <button
+                        <div className="relative w-full h-[50px] bg-[#d6d6d6] mb-8">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full h-full bg-transparent border-none outline-none border-[2px] border-white/10 rounded-[40px] text-[16px] text-black px-[20px] pr-[45px] placeholder:text-[#4f4e4e]"
+                />
+                <button
                   type="button"
                   onClick={togglePasswordVisibility}
                   className="absolute right-5 top-1/2 -translate-y-1/2 text-[#106053] hover:text-[#0b3f37]"
@@ -100,8 +98,7 @@ export default function AdminLogin(): JSX.Element {
                     </svg>
                   )}
                 </button>
-          </div>
-
+</div>
           <button
             onClick={handleAdminLogin}
             disabled={isSubmitting}
