@@ -71,6 +71,7 @@ app.use(cors({
       'https://ciu-backend.onrender.com',
       'https://ciu-backend-huhl.vercel.app',
       'https://examiner.ciu.ac.ug',
+      'http://81.199.139.112'
 
     ];
     if (!origin || allowedOrigins.includes(origin)) {
