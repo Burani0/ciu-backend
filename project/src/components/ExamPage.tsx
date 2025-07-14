@@ -373,21 +373,176 @@ const ExamPage: React.FC = () => {
     }
   };
 
-  function parseQuestionsFromContent(content: string) {
-    content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    return content
-      .split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => {
-        const match = line.match(/^(.+?\))\s*(.*)$/);
-        if (match) {
-          return { questionNumber: match[1], answer: match[2] };
-        } else {
-          return { questionNumber: '', answer: line.trim() };
-        }
-      });
+  // function parseQuestionsFromContent(content: string) {
+  //   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  //   return content
+  //     .split('\n')
+  //     .filter(line => line.trim() !== '')
+  //     .map(line => {
+  //       const match = line.match(/^(.+?\))\s*(.*)$/);
+  //       if (match) {
+  //         return { questionNumber: match[1], answer: match[2] };
+  //       } else {
+  //         return { questionNumber: '', answer: line.trim() };
+  //       }
+  //     });
+  // }
+    
+  // function parseQuestionsFromContent(content: string) {
+  //   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  
+  //   const lines = content.split('\n').map(line => line.trim()).filter(line => line !== '');
+  //   const questions = [];
+  //   let currentQuestion = { questionNumber: '', answer: '' };
+  
+  //   const questionStartRegex = /^(?:Q|Question)?\s*(\d+)[\)\.\:\-\s]*([\s\S]*)$/i;
+  
+  //   for (let i = 0; i < lines.length; i++) {
+  //     const line = lines[i];
+  //     const match = line.match(questionStartRegex);
+  
+  //     if (match) {
+  //       // Save the previous question if it exists
+  //       if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
+  //         questions.push({ ...currentQuestion });
+  //       }
+  
+  //       currentQuestion = {
+  //         questionNumber: match[1] + ')',
+  //         answer: match[2].trim()
+  //       };
+  //     } else {
+  //       // Line is a continuation of the previous answer
+  //       currentQuestion.answer += (currentQuestion.answer ? ' ' : '') + line;
+  //     }
+  //   }
+  
+  //   // Push the final question if present
+  //   if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
+  //     questions.push(currentQuestion);
+  //   }
+  
+  //   return questions;
+  // }
+
+  // const parseQuestionsFromContent = (content: string) => {
+  //   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  
+  //   // Keep empty lines to preserve paragraph breaks (optional: remove if you want)
+  //   const lines = content.split('\n').map(line => line.trimEnd()); // don't filter empty lines
+  
+  //   const questions = [];
+  //   let currentQuestion = { questionNumber: '', answer: '' };
+  
+  //   // Regex to match question start formats like:
+  //   // 1, 1) 1. qn1 qn.1 qn1) qn(1) (1)
+  //   // const questionStartRegex = /^\s*(?:qn\.?\s*|\(?qn\.?\s*|\(?|)(\d+)[\)\.,:\-\s→]*([\s\S]*)$/i;
+  //   const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)(\d+)[\)\.\:\,\-\s→]*\s*(.*)$/i;
+
+  
+  //   for (let i = 0; i < lines.length; i++) {
+  //     const line = lines[i];
+  //     const match = line.match(questionStartRegex);
+  
+  //     if (match) {
+  //       if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
+  //         questions.push({ ...currentQuestion });
+  //       }
+  
+  //       currentQuestion = {
+  //         questionNumber: match[1] + ')',  // normalize to "1)" style
+  //         answer: match[2].trim(),
+  //       };
+  //     } else {
+  //       // Append line preserving line breaks
+  //       currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
+  //     }
+  //   }
+  
+  //   // Push last question
+  //   if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
+  //     questions.push(currentQuestion);
+  //   }
+  
+  //   return questions;
+  // };
+
+//   const parseQuestionsFromContent = (content: string) => {
+//   // Normalize all line endings to \n
+//   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+//   // Split content into lines and trim end spaces
+//   const lines = content.split('\n').map(line => line.trimEnd());
+
+//   const questions = [];
+//   let currentQuestion = { questionNumber: '', answer: '' };
+
+//   // Regex: supports numeric, alphanumeric, single-letter, and Roman numerals
+//   const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?(\d+[a-z]*|[a-z]+|[ivxlcdm]+)[\)\.\:\,\-\s→]*\s*(.*)$/i;
+
+//   for (let i = 0; i < lines.length; i++) {
+//     const line = lines[i];
+//     const match = line.match(questionStartRegex);
+
+//     if (match) {
+//       // Save previous question regardless of whether answer is empty
+//       if (currentQuestion.questionNumber) {
+//         questions.push({ ...currentQuestion });
+//       }
+
+//       currentQuestion = {
+//         questionNumber: match[1] + ')',
+//         answer: match[2].trim()
+//       };
+//     } else {
+//       currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
+//     }
+//   }
+
+//   // Push the last question, even if the answer is empty
+//   if (currentQuestion.questionNumber) {
+//     questions.push(currentQuestion);
+//   }
+
+//   return questions;
+// };
+
+const parseQuestionsFromContent = (content: string) => {
+  content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = content.split('\n').map(line => line.trimEnd());
+
+  const questions = [];
+  let currentQuestion = { questionNumber: '', answer: '' };
+
+  const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?(\d+[a-z]*|[a-z]+|[ivxlcdm]+)[\)\.\:\,\-\s→]*\s*(.*)$/i;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const match = line.match(questionStartRegex);
+
+    if (match) {
+      if (currentQuestion.questionNumber) {
+        questions.push({ ...currentQuestion });
+      }
+
+      currentQuestion = {
+        questionNumber: match[1] + ')',
+        answer: (match[2] || '').trim(), // <== ensure answer is always a string
+      };
+    } else {
+      currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
+    }
   }
 
+  if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
+    questions.push(currentQuestion);
+  }
+
+  return questions;
+};
+
+  
+  
   const submitExam = async (submissionType: string = 'manual'): Promise<void> => {
     if (isSubmitting || hasSubmitted) {
       console.log('Submission already in progress or completed, ignoring duplicate submission attempt');
@@ -428,6 +583,7 @@ const ExamPage: React.FC = () => {
       : validAnswers.map(({ section, content }) => ({
           section,
           questions: parseQuestionsFromContent(content),
+
         }));
 
     
