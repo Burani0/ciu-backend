@@ -315,23 +315,44 @@ const ViewExam = () => {
                           {section.questions.map((q: any, questionIndex: number) => {
                             const index = flatIndex++;
                             return (
+                              // <div key={questionIndex}>
+                              //   <p className="font-semibold">
+                              //     Question {q.questionNumber}: {q.answer}, Score{" "}
+                              //     <select
+                              //       value={scores[index]}
+                              //       onChange={(e) => handleScoreChange(index, Number(e.target.value))}
+                              //       className="px-2 py-1 border rounded bg-white text-sm inline-block ml-2"
+                              //     >
+                              //       <option value={0}>--</option>
+                              //       {[...Array(25)].map((_, i) => (
+                              //         <option key={i + 1} value={i + 1}>
+                              //           {i + 1}
+                              //         </option>
+                              //       ))}
+                              //     </select>
+                              //   </p>
+                              // </div>
                               <div key={questionIndex}>
-                                <p className="font-semibold">
-                                  Question {q.questionNumber}: {q.answer}, Score{" "}
-                                  <select
-                                    value={scores[index]}
-                                    onChange={(e) => handleScoreChange(index, Number(e.target.value))}
-                                    className="px-2 py-1 border rounded bg-white text-sm inline-block ml-2"
-                                  >
-                                    <option value={0}>--</option>
-                                    {[...Array(25)].map((_, i) => (
-                                      <option key={i + 1} value={i + 1}>
-                                        {i + 1}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </p>
-                              </div>
+  <div className="font-semibold whitespace-pre-line">
+    Question {q.questionNumber}: {q.answer}
+  </div>
+  <div className="mt-1">
+    Score{" "}
+    <select
+      value={scores[index]}
+      onChange={(e) => handleScoreChange(index, Number(e.target.value))}
+      className="px-2 py-1 border rounded bg-white text-sm inline-block ml-2"
+    >
+      <option value={0}>--</option>
+      {[...Array(25)].map((_, i) => (
+        <option key={i + 1} value={i + 1}>
+          {i + 1}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
                             );
                           })}
                         </div>

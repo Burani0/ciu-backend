@@ -507,17 +507,93 @@ const ExamPage: React.FC = () => {
 //   return questions;
 // };
 
+// const parseQuestionsFromContent = (content: string) => {
+//   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+//   const lines = content.split('\n').map(line => line.trimEnd());
+
+//   const questions = [];
+//   let currentQuestion = { questionNumber: '', answer: '' };
+
+//   const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?(\d+[a-z]*|[a-z]+|[ivxlcdm]+)[\)\.\:\,\-\s→]*\s*(.*)$/i;
+
+//   for (let i = 0; i < lines.length; i++) {
+//     const line = lines[i];
+//     const match = line.match(questionStartRegex);
+
+//     if (match) {
+//       if (currentQuestion.questionNumber) {
+//         questions.push({ ...currentQuestion });
+//       }
+
+//       currentQuestion = {
+//         questionNumber: match[1] + ')',
+//         answer: (match[2] || '').trim(), // <== ensure answer is always a string
+//       };
+//     } else {
+//       currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
+//     }
+//   }
+
+//   if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
+//     questions.push(currentQuestion);
+//   }
+
+//   return questions;
+// };
+
+
+// const parseQuestionsFromContent = (content: string) => {
+//   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+//   const lines = content.split('\n').map(line => line.trim());
+
+//   const questions = [];
+//   let currentQuestion = { questionNumber: '', answer: '' };
+
+//   // Match question numbers like: 1), 2a), i), etc. at the start of a line
+//   // const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?((\d+[a-z]?|[ivxlcdm]+))[\)\.\:\,\-\s→]*\s*(.*)$/i;
+//   // const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?((\d+[a-z]?|[ivxlcdm]+|[a-z]))(?=[\)\.\:\s,\-\*])\s*(.*)$/i;
+//   const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?((\d+[a-f]?|[ivxlcdm]+|[a-z]))(?=[\)\.\:\s,\-\*])\s*(.*)$/i;
+
+ 
+//   for (let i = 0; i < lines.length; i++) {
+//     const line = lines[i];
+//     const match = line.match(questionStartRegex);
+
+//     if (match && match[1].length < 5) { // keep it tight to avoid false matches like “LIKEWISE”
+//       if (currentQuestion.questionNumber) {
+//         questions.push({ ...currentQuestion });
+//       }
+
+//       currentQuestion = {
+//         // questionNumber: match[1] + ')',
+//         questionNumber: match[1].replace(/[).:\-→]*$/, '') + ')',
+
+//         answer: (match[3] || '').trim(),
+//       };
+//     } else {
+//       currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
+//     }
+//   }
+
+//   if (currentQuestion.questionNumber) {
+//     questions.push(currentQuestion);
+//   }
+
+//   return questions;
+// };
+
+// const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?((\d+[a-z]?|[ivxlcdm]+))[\)\.\:\,\-\s→]*\s*(.*)$/i;
+const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question|No)[\.:)]?\s*)?((\d+[a-z]?|[a-z]|[ivxlcdm]+))[\)\.\:\,\-\s→]*\s*(.*)$/i;
+
 const parseQuestionsFromContent = (content: string) => {
   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
   const lines = content.split('\n').map(line => line.trimEnd());
 
   const questions = [];
   let currentQuestion = { questionNumber: '', answer: '' };
 
-  const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?(\d+[a-z]*|[a-z]+|[ivxlcdm]+)[\)\.\:\,\-\s→]*\s*(.*)$/i;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  for (const line of lines) {
     const match = line.match(questionStartRegex);
 
     if (match) {
@@ -525,21 +601,27 @@ const parseQuestionsFromContent = (content: string) => {
         questions.push({ ...currentQuestion });
       }
 
+      const rawNum = match[1]?.trim().replace(/[).:\-→]*$/, '');
+      const rawAnswer = match[3]?.trim() || '';
+
+      const cleanedAnswer = rawAnswer.replace(/^[\s\)\-:.,→•*]+/, '');
+
       currentQuestion = {
-        questionNumber: match[1] + ')',
-        answer: (match[2] || '').trim(), // <== ensure answer is always a string
+        questionNumber: rawNum ? `${rawNum})` : '',
+        answer: cleanedAnswer,
       };
-    } else {
-      currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
+    } else if (currentQuestion.questionNumber) {
+      currentQuestion.answer += '\n' + line;
     }
   }
 
-  if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
-    questions.push(currentQuestion);
+  if (currentQuestion.questionNumber) {
+    questions.push({ ...currentQuestion });
   }
 
   return questions;
 };
+
 
   
   
