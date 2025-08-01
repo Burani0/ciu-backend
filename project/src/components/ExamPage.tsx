@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -34,6 +32,9 @@ const ExamPage: React.FC = () => {
   const [smoothedDetection, setSmoothedDetection] = useState<0 | 1 | 2>(1);
   const [noFaceTimer, setNoFaceTimer] = useState(0); // Kept for compatibility
   const [multiFaceTimer, setMultiFaceTimer] = useState(0); // Kept for compatibility
+  const [violationCount, setViolationCount] = useState<number>(0);
+  const [examEndTime, setExamEndTime] = useState<number>(0); // <-- newly added
+  const [resumeMode, setResumeMode] = useState<boolean>(false);
   const [examData, setExamData] = useState({
     examLink: '',
     examNo: '',
@@ -60,6 +61,65 @@ const ExamPage: React.FC = () => {
   const detectionBufferRef = useRef<number[]>([]);
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
+
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const currentTime = Date.now();
+      localStorage.setItem("lastSeen", currentTime.toString());
+      localStorage.setItem("examEndTime", examEndTime.toString());
+      localStorage.setItem("violationCount", violationCount.toString());
+      localStorage.setItem("resumeMode", "true"); // Flag that the user had an ongoing exam
+    };
+  
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [examEndTime, violationCount]);
+  
+
+  useEffect(() => {
+    const storedLastSeen = localStorage.getItem("lastSeen");
+    const storedEndTime = localStorage.getItem("examEndTime");
+    const now = Date.now();
+  
+    if (storedLastSeen && storedEndTime) {
+      const lastSeen = parseInt(storedLastSeen, 10);
+      const examEnd = parseInt(storedEndTime, 10);
+      const gracePeriod = 10 * 60 * 1000;
+  
+      if (now - lastSeen <= gracePeriod) {
+        // ✅ RESUME: within grace period
+        const remainingTime = examEnd - now;
+        const seconds = Math.max(0, Math.floor(remainingTime / 1000));
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+  
+        setTimer({ hours: h, minutes: m, seconds: s });
+        setExamEndTime(examEnd);
+        setResumeMode(true);
+        setIsTimerRunning(true);
+  
+        // Restore violations and sections
+        const storedViolations = localStorage.getItem("violationCount");
+        if (storedViolations) setViolationCount(parseInt(storedViolations));
+  
+        const savedSection = localStorage.getItem("currentSection");
+        const savedIsSectioned = localStorage.getItem("isSectioned");
+        if (savedSection) setCurrentSection(savedSection);
+        if (savedIsSectioned) setIsSectioned(JSON.parse(savedIsSectioned));
+      } else {
+        // ❌ Past grace period: Submit if it was an ongoing exam
+        const wasInExamBefore = localStorage.getItem("resumeMode");
+        if (wasInExamBefore === "true") {
+          console.log("Grace period expired. Auto-submitting...");
+          submitExam('auto-submit');
+          localStorage.removeItem("resumeMode");
+        }
+      }
+    }
+  }, []);
+  
 
   // Aggregate logs into time ranges
   const aggregateLogs = (logs: LogEntry[]) => {
@@ -91,6 +151,8 @@ const ExamPage: React.FC = () => {
 
     return summary;
   };
+
+  
 
   useEffect(() => {
     const fetchExamData = async () => {
@@ -147,9 +209,23 @@ const ExamPage: React.FC = () => {
         } else {
           console.error('Invalid duration format:', duration);
         }
-        setTimer({ hours, minutes, seconds: 0 });
-        setIsTimerRunning(true);
-        initializeCamera();
+
+        if (!resumeMode) {
+          setTimer({ hours, minutes, seconds: 0 });
+          const endTimestamp = new Date().getTime() + hours * 3600000 + minutes * 60000;
+          setExamEndTime(endTimestamp);
+          setIsTimerRunning(true);
+        }
+        // setTimer({ hours, minutes, seconds: 0 });
+        // setIsTimerRunning(true);
+        // initializeCamera();
+
+        try {
+          await initializeCamera();
+        } catch (cameraError) {
+          console.warn("Camera initialization failed:", cameraError);
+        }
+        
       } catch (err) {
         console.error('Error fetching exam data:', err);
         setPdfError('Failed to load exam data. Please try again or contact support.');
@@ -161,6 +237,19 @@ const ExamPage: React.FC = () => {
     fetchExamData();
   }, [roomId]);
 
+  useEffect(() => {
+    if (resumeMode) {
+      initializeCamera();
+      setResumeMode(false);
+    }
+  }, [resumeMode]);
+
+  useEffect(() => {
+    localStorage.setItem("currentSection", currentSection);
+    localStorage.setItem("isSectioned", JSON.stringify(isSectioned));
+  }, [currentSection, isSectioned]);
+  
+  
   useEffect(() => {
     if (!isTimerRunning) return;
     const interval = setInterval(() => {
@@ -216,6 +305,7 @@ const ExamPage: React.FC = () => {
         setFaceDetectionError('Multiple faces detected. Only one face is allowed.');
         setSmoothedDetection(2);
         logEvent('security_violation', { violationType: 'multiple_faces' });
+        incrementViolation();
         return;
       }
 
@@ -257,6 +347,7 @@ const ExamPage: React.FC = () => {
         if (videoRef.current) detectFaces(videoRef.current);
         if (smoothedDetection === 0) {
           logEvent('security_violation', { violationType: 'no_face' });
+          incrementViolation();
         } else if (smoothedDetection === 2) {
           // Error is already set in detectFaces
         }
@@ -266,6 +357,27 @@ const ExamPage: React.FC = () => {
       };
     }
   }, [cameraActive, isModelLoaded, smoothedDetection]);
+
+  useEffect(() => {
+    const reinitializeCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+          setCameraActive(true);
+          setCameraError(null);
+        }
+      } catch (err: any) {
+        setCameraError("Unable to access camera/microphone. Please check your permissions.");
+      }
+    };
+  
+    if (resumeMode) {
+      reinitializeCamera();
+    }
+  }, [resumeMode]);
+  
 
   const initializeCamera = async (): Promise<void> => {
     try {
@@ -296,6 +408,8 @@ const ExamPage: React.FC = () => {
       console.log('Camera initialization error:', err);
     }
   };
+
+  
 
   const startFrameStreaming = () => {
     const canvas = document.createElement('canvas');
@@ -333,6 +447,15 @@ const ExamPage: React.FC = () => {
     };
     setLogBuffer((prev) => [...prev, logEntry]);
   };
+
+  const incrementViolation = () => {
+    setViolationCount((prev) => {
+      const newCount = prev + 1;
+      localStorage.setItem("violationCount", newCount.toString());
+      return newCount;
+    });
+  };
+  
 
   const submitAllLogs = async () => {
     if (isSubmitting || hasSubmitted) return;
@@ -373,217 +496,8 @@ const ExamPage: React.FC = () => {
     }
   };
 
-  // function parseQuestionsFromContent(content: string) {
-  //   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  //   return content
-  //     .split('\n')
-  //     .filter(line => line.trim() !== '')
-  //     .map(line => {
-  //       const match = line.match(/^(.+?\))\s*(.*)$/);
-  //       if (match) {
-  //         return { questionNumber: match[1], answer: match[2] };
-  //       } else {
-  //         return { questionNumber: '', answer: line.trim() };
-  //       }
-  //     });
-  // }
-    
-  // function parseQuestionsFromContent(content: string) {
-  //   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  
-  //   const lines = content.split('\n').map(line => line.trim()).filter(line => line !== '');
-  //   const questions = [];
-  //   let currentQuestion = { questionNumber: '', answer: '' };
-  
-  //   const questionStartRegex = /^(?:Q|Question)?\s*(\d+)[\)\.\:\-\s]*([\s\S]*)$/i;
-  
-  //   for (let i = 0; i < lines.length; i++) {
-  //     const line = lines[i];
-  //     const match = line.match(questionStartRegex);
-  
-  //     if (match) {
-  //       // Save the previous question if it exists
-  //       if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
-  //         questions.push({ ...currentQuestion });
-  //       }
-  
-  //       currentQuestion = {
-  //         questionNumber: match[1] + ')',
-  //         answer: match[2].trim()
-  //       };
-  //     } else {
-  //       // Line is a continuation of the previous answer
-  //       currentQuestion.answer += (currentQuestion.answer ? ' ' : '') + line;
-  //     }
-  //   }
-  
-  //   // Push the final question if present
-  //   if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
-  //     questions.push(currentQuestion);
-  //   }
-  
-  //   return questions;
-  // }
+const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question|No)[\.:)]?\s*)?((\d+[a-z]?|[ivxlcdm]+)|[a-z])[\)\.\:\,\-\s→]\s+(.*)$/i;
 
-  // const parseQuestionsFromContent = (content: string) => {
-  //   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  
-  //   // Keep empty lines to preserve paragraph breaks (optional: remove if you want)
-  //   const lines = content.split('\n').map(line => line.trimEnd()); // don't filter empty lines
-  
-  //   const questions = [];
-  //   let currentQuestion = { questionNumber: '', answer: '' };
-  
-  //   // Regex to match question start formats like:
-  //   // 1, 1) 1. qn1 qn.1 qn1) qn(1) (1)
-  //   // const questionStartRegex = /^\s*(?:qn\.?\s*|\(?qn\.?\s*|\(?|)(\d+)[\)\.,:\-\s→]*([\s\S]*)$/i;
-  //   const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)(\d+)[\)\.\:\,\-\s→]*\s*(.*)$/i;
-
-  
-  //   for (let i = 0; i < lines.length; i++) {
-  //     const line = lines[i];
-  //     const match = line.match(questionStartRegex);
-  
-  //     if (match) {
-  //       if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
-  //         questions.push({ ...currentQuestion });
-  //       }
-  
-  //       currentQuestion = {
-  //         questionNumber: match[1] + ')',  // normalize to "1)" style
-  //         answer: match[2].trim(),
-  //       };
-  //     } else {
-  //       // Append line preserving line breaks
-  //       currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
-  //     }
-  //   }
-  
-  //   // Push last question
-  //   if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
-  //     questions.push(currentQuestion);
-  //   }
-  
-  //   return questions;
-  // };
-
-//   const parseQuestionsFromContent = (content: string) => {
-//   // Normalize all line endings to \n
-//   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-//   // Split content into lines and trim end spaces
-//   const lines = content.split('\n').map(line => line.trimEnd());
-
-//   const questions = [];
-//   let currentQuestion = { questionNumber: '', answer: '' };
-
-//   // Regex: supports numeric, alphanumeric, single-letter, and Roman numerals
-//   const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?(\d+[a-z]*|[a-z]+|[ivxlcdm]+)[\)\.\:\,\-\s→]*\s*(.*)$/i;
-
-//   for (let i = 0; i < lines.length; i++) {
-//     const line = lines[i];
-//     const match = line.match(questionStartRegex);
-
-//     if (match) {
-//       // Save previous question regardless of whether answer is empty
-//       if (currentQuestion.questionNumber) {
-//         questions.push({ ...currentQuestion });
-//       }
-
-//       currentQuestion = {
-//         questionNumber: match[1] + ')',
-//         answer: match[2].trim()
-//       };
-//     } else {
-//       currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
-//     }
-//   }
-
-//   // Push the last question, even if the answer is empty
-//   if (currentQuestion.questionNumber) {
-//     questions.push(currentQuestion);
-//   }
-
-//   return questions;
-// };
-
-// const parseQuestionsFromContent = (content: string) => {
-//   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-//   const lines = content.split('\n').map(line => line.trimEnd());
-
-//   const questions = [];
-//   let currentQuestion = { questionNumber: '', answer: '' };
-
-//   const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?(\d+[a-z]*|[a-z]+|[ivxlcdm]+)[\)\.\:\,\-\s→]*\s*(.*)$/i;
-
-//   for (let i = 0; i < lines.length; i++) {
-//     const line = lines[i];
-//     const match = line.match(questionStartRegex);
-
-//     if (match) {
-//       if (currentQuestion.questionNumber) {
-//         questions.push({ ...currentQuestion });
-//       }
-
-//       currentQuestion = {
-//         questionNumber: match[1] + ')',
-//         answer: (match[2] || '').trim(), // <== ensure answer is always a string
-//       };
-//     } else {
-//       currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
-//     }
-//   }
-
-//   if (currentQuestion.questionNumber && currentQuestion.answer.trim()) {
-//     questions.push(currentQuestion);
-//   }
-
-//   return questions;
-// };
-
-
-// const parseQuestionsFromContent = (content: string) => {
-//   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-//   const lines = content.split('\n').map(line => line.trim());
-
-//   const questions = [];
-//   let currentQuestion = { questionNumber: '', answer: '' };
-
-//   // Match question numbers like: 1), 2a), i), etc. at the start of a line
-//   // const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?((\d+[a-z]?|[ivxlcdm]+))[\)\.\:\,\-\s→]*\s*(.*)$/i;
-//   // const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?((\d+[a-z]?|[ivxlcdm]+|[a-z]))(?=[\)\.\:\s,\-\*])\s*(.*)$/i;
-//   const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?((\d+[a-f]?|[ivxlcdm]+|[a-z]))(?=[\)\.\:\s,\-\*])\s*(.*)$/i;
-
- 
-//   for (let i = 0; i < lines.length; i++) {
-//     const line = lines[i];
-//     const match = line.match(questionStartRegex);
-
-//     if (match && match[1].length < 5) { // keep it tight to avoid false matches like “LIKEWISE”
-//       if (currentQuestion.questionNumber) {
-//         questions.push({ ...currentQuestion });
-//       }
-
-//       currentQuestion = {
-//         // questionNumber: match[1] + ')',
-//         questionNumber: match[1].replace(/[).:\-→]*$/, '') + ')',
-
-//         answer: (match[3] || '').trim(),
-//       };
-//     } else {
-//       currentQuestion.answer += (currentQuestion.answer ? '\n' : '') + line;
-//     }
-//   }
-
-//   if (currentQuestion.questionNumber) {
-//     questions.push(currentQuestion);
-//   }
-
-//   return questions;
-// };
-
-// const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question)[\.:)]?\s*|(?:No[\.:]?\s*|No)?)?((\d+[a-z]?|[ivxlcdm]+))[\)\.\:\,\-\s→]*\s*(.*)$/i;
-const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question|No)[\.:)]?\s*)?((\d+[a-z]?|[a-z]|[ivxlcdm]+))[\)\.\:\,\-\s→]*\s*(.*)$/i;
 
 const parseQuestionsFromContent = (content: string) => {
   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -710,6 +624,8 @@ const parseQuestionsFromContent = (content: string) => {
           setIsSubmitting(false);
           setAnswers([]);
 
+          localStorage.removeItem("resumeMode");
+
           Object.keys(localStorage)
             .filter((key) => key.startsWith('answer_'))
             .forEach((key) => {
@@ -734,6 +650,9 @@ const parseQuestionsFromContent = (content: string) => {
             setSubmissionStatus('Exam already submitted');
             setHasSubmitted(true);
             setIsSubmitting(false);
+
+            localStorage.removeItem("resumeMode");
+
             await submitAllLogs();
             setTimeout(() => navigate('/'), 2000);
             return;
@@ -824,6 +743,8 @@ const parseQuestionsFromContent = (content: string) => {
   useEffect(() => {
     if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
       logEvent('security_violation', { violationType: 'fullscreen_exit' });
+      incrementViolation();
+
     }
   }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
 
@@ -831,6 +752,8 @@ const parseQuestionsFromContent = (content: string) => {
     if (isTimerRunning && timer.seconds === 0) {
       const remainingTime = `${String(timer.hours).padStart(2, '0')}:${String(timer.minutes).padStart(2, '0')}:${String(timer.seconds).padStart(2, '0')}`;
       logEvent('timer_update', { remainingTime });
+      incrementViolation();
+
     }
   }, [timer, isTimerRunning]);
 
@@ -843,6 +766,8 @@ const parseQuestionsFromContent = (content: string) => {
       }
       localStorage.setItem(`answer_${section}`, newAnswer);
       logEvent('answer_update', {});
+      incrementViolation();
+
       return updatedAnswers;
     });
     if (submissionStatus) setSubmissionStatus(null);
