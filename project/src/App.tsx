@@ -490,6 +490,7 @@ import AdminLogin from './pages/AdminLogin.tsx';
 import StudentLogin from './pages/StudentLogin.tsx';
 import ExamLogs from './components/ExamLogs.tsx';
 import Examslogs from './components/Examslogs.tsx';
+import Notifications from './components/Notification.tsx';
 
 const Home = React.lazy(() => import('./components/Home'));
 const Viewer = React.lazy(() => import('./components/Viewer'));
@@ -678,6 +679,8 @@ function AppWrapper() {
                 <Route path="/studentlogin" element={<StudentLogin />} />
                 <Route path="/student_logs" element={<ExamLogs />} />
                 <Route path="/student_lect_logs" element={<ExamLogs />} />
+
+                <Route path='/notifications' element={<Notifications/>} />
               </Routes>
             </Suspense>
           </div>
@@ -715,6 +718,7 @@ function AppWrapper() {
               <Route path="/adminlogin" element={<AdminLogin />} />
               <Route path="/student_logs" element={<ExamLogs />} />
               <Route path="/student_lect_logs" element={<Examslogs />} />
+              <Route path='/notifications' element={<Notifications/>} />
             </Routes>
           </Suspense>
         )}

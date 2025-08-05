@@ -8,6 +8,7 @@ import Course from '../models/Course.js';
 import mongoose from 'mongoose';
 import PDFDocument from 'pdfkit';
 const router = express.Router();
+import { Server } from 'socket.io';
 
 
 
@@ -218,6 +219,12 @@ router.post('/exam_logs', async (req, res) => {
       logEntries: processedLogEntries,
     });
     await newLog.save();
+
+      io.to(examNo).emit('new-log-entry', {
+      studentRegNo: newLog.studentRegNo,
+      examNo: newLog.examNo,
+      logEntry: newLog.logEntries.at(-1), // only emit the last log entry
+    });
     res.status(201).json({ message: 'Logs created successfully', submissionTime: newLog.submissionTime });
   } catch (error) {
     console.error('Error creating log:', error);
