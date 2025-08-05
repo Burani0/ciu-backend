@@ -164,6 +164,20 @@ io.on('connection', (socket) => {
       console.error('Error in stream-video:', error);
     }
   });
+  
+  socket.on('violation-detected', (violationData) => {
+  try {
+    const roomId = Array.from(socket.rooms)[1];
+    if (roomId) {
+      console.log(`Violation in room ${studentRegNo}:`, violationData);
+
+      io.to(roomId).emit('violation-alert', violationData);
+    }
+  } catch (error) {
+    console.error('Error in violation-detected:', error);
+  }
+});
+
 
   socket.on('leave-room', () => {
     try {

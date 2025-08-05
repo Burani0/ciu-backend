@@ -8,7 +8,7 @@ import { emitStream, joinRoom, leaveRoom } from '../config/socket';
 
 export type Timer = { hours: number; minutes: number; seconds: number };
 export type SecurityChecks = {
-  fullscreen: boolean;
+  // fullscreen: boolean;
   safeBrowser: boolean;
   noScreenCapture: boolean;
   noCopyPaste: boolean;
@@ -536,17 +536,19 @@ const ExamPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
   }, [isSubmitting, hasSubmitted, examData, answers]);
 
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement);
-      if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
-        console.log('Fullscreen exited, initiating auto-submit');
-        submitExam('auto-submit');
-      }
-    };
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, [isSubmitting, hasSubmitted, examData, answers]);
+  // useEffect(() => {
+  //   const handleFullscreenChange = () => {
+  //     console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement);
+  //     if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
+  //       console.log('Fullscreen exited, initiating auto-submit');
+  //       submitExam('auto-submit');
+  //     }
+  //   };
+
+  
+  //   document.addEventListener('fullscreenchange', handleFullscreenChange);
+  //   return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  // }, [isSubmitting, hasSubmitted, examData, answers]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -583,11 +585,11 @@ const ExamPage: React.FC = () => {
     </div>
   );
 
-  useEffect(() => {
-    if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
-      logEvent('security_violation', { violationType: 'fullscreen_exit' });
-    }
-  }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
+  // useEffect(() => {
+  //   if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
+  //     logEvent('security_violation', { violationType: 'fullscreen_exit' });
+  //   }
+  // }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
 
   useEffect(() => {
     if (isTimerRunning && timer.seconds === 0) {

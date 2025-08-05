@@ -37,7 +37,7 @@ const LandingPage: React.FC = () => {
         <div className="flex justify-center items-center">
           <img src="\public\Landing Page Student Pic.png.jpeg" alt="Logo" className="w-4/5 md:w-[70%]" />
         </div>
-        <Link
+          <Link
           to="/studentlogin"
           className="flex justify-center items-center w-full py-2 mt-1 font-bold text-[#105f53] bg-white hover:bg-[#105f53] hover:text-white transition"
         >
