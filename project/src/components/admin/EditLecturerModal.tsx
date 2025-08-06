@@ -279,6 +279,42 @@ const EditLecturerModal: React.FC<EditLecturerModalProps> = ({
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // useEffect(() => {
+  //   const fetchLecturerAndCourses = async () => {
+  //     try {
+  //       const [lecturerRes, coursesRes] = await Promise.all([
+  //         axios.get(`https://ciu-backend.onrender.com/api/admin/lecturers/${lecturerId}`),
+  //         axios.get('https://ciu-backend.onrender.com/api/admin/courses'),
+  //       ]);
+
+  //       const lecturer = lecturerRes.data;
+  //       const allCourses = coursesRes.data.map((course: any) => ({
+  //         label: course.courseTitle,
+  //         value: course._id,
+  //       }));
+
+  //       setFormData({
+  //         firstName: lecturer.firstName || '',
+  //         lastName: lecturer.lastName || '',
+  //         email: lecturer.email || '',
+  //         universityNumber: lecturer.universityNumber || '',
+  //         password: lecturer.password || '',
+  //       });
+
+  //       const assigned = allCourses.filter((c: CourseOption) =>
+  //         lecturer.assignedCourses?.includes(c.value)
+  //       );
+
+  //       setCourses(allCourses);
+  //       setSelectedCourses(assigned);
+  //     } catch (error) {
+  //       console.error('Error fetching lecturer or courses:', error);
+  //     }
+  //   };
+
+  //   fetchLecturerAndCourses();
+  // }, [lecturerId]);
+
   useEffect(() => {
     const fetchLecturerAndCourses = async () => {
       try {
@@ -286,13 +322,23 @@ const EditLecturerModal: React.FC<EditLecturerModalProps> = ({
           axios.get(`https://ciu-backend.onrender.com/api/admin/lecturers/${lecturerId}`),
           axios.get('https://ciu-backend.onrender.com/api/admin/courses'),
         ]);
-
+  
         const lecturer = lecturerRes.data;
+  
+        // Map all available courses with extra courseCode for easier matching
         const allCourses = coursesRes.data.map((course: any) => ({
           label: course.courseTitle,
           value: course._id,
+          courseCode: course.courseCode,
         }));
-
+  
+        // Match assignedCourses using either _id or courseCode
+        const assigned = allCourses.filter((c: CourseOption) =>
+          lecturer.assignedCourses?.some(
+            (assigned: string) => assigned === c.value || assigned === c.courseCode
+          )
+        );
+  
         setFormData({
           firstName: lecturer.firstName || '',
           lastName: lecturer.lastName || '',
@@ -300,20 +346,17 @@ const EditLecturerModal: React.FC<EditLecturerModalProps> = ({
           universityNumber: lecturer.universityNumber || '',
           password: lecturer.password || '',
         });
-
-        const assigned = allCourses.filter((c: CourseOption) =>
-          lecturer.assignedCourses?.includes(c.value)
-        );
-
+  
         setCourses(allCourses);
         setSelectedCourses(assigned);
       } catch (error) {
         console.error('Error fetching lecturer or courses:', error);
       }
     };
-
+  
     fetchLecturerAndCourses();
   }, [lecturerId]);
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

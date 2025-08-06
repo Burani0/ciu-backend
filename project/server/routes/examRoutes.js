@@ -8,6 +8,7 @@ import Course from '../models/Course.js';
 import mongoose from 'mongoose';
 import PDFDocument from 'pdfkit';
 const router = express.Router();
+import { Server } from 'socket.io';
 
 
 
@@ -218,6 +219,12 @@ router.post('/exam_logs', async (req, res) => {
       logEntries: processedLogEntries,
     });
     await newLog.save();
+
+      io.to(examNo).emit('new-log-entry', {
+      studentRegNo: newLog.studentRegNo,
+      examNo: newLog.examNo,
+      logEntry: newLog.logEntries.at(-1), // only emit the last log entry
+    });
     res.status(201).json({ message: 'Logs created successfully', submissionTime: newLog.submissionTime });
   } catch (error) {
     console.error('Error creating log:', error);
@@ -282,5 +289,23 @@ router.get('/fetch_exam_logs', async (req, res) => {
   }
 });
 
+// Check if student has submitted an exam
+router.get('/check_submission/:studentRegNo/:examNo/:courseId', async (req, res) => {
+  const { studentRegNo, examNo, courseId } = req.params;
 
+  try {
+    let query = { studentRegNo, examNo };
+    if (mongoose.Types.ObjectId.isValid(courseId)) {
+      query.courseId = courseId;
+    } else {
+      query.courseCode = courseId;
+    }
+
+    const submission = await ExamSubmission.findOne(query);
+    res.status(200).json({ hasSubmitted: !!submission });
+  } catch (error) {
+    console.error('Error checking submission status:', error);
+    res.status(500).json({ error: 'Failed to check submission status', details: error.message });
+  }
+});
 export default router;

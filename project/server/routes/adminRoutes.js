@@ -10,6 +10,7 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   adminLogin,
   getSubmissionById,  
   clearToken,
+
  
    adminLogout,
  } from '../controllers/adminController.js';
@@ -18,8 +19,13 @@ import {getLecturerLoginLogs, createCourse, registerLecturer, getDashboardStats,
   import { getCourseById }   from '../controllers/adminController.js';
   import { updateAdmin } from '../controllers/adminController.js';
   import { deleteAdmin } from '../controllers/adminController.js';
+  import { bulkCreateCourses } from '../controllers/adminController.js';
+  import { bulkCreateLecturers } from '../controllers/adminController.js';
+  import { getCourseByCode } from '../controllers/adminController.js';
+
   
   
+
 
 
 const router = express.Router();
@@ -34,6 +40,7 @@ router.get('/courses', getAllCourses);
 router.get('/lecturers', getAllLecturers);
 router.get('/lecturers/:id', getLecturerById);
 router.get('/courses/:id', getCourseById);
+router.get('/course-by-code/:code', getCourseByCode);
 router.get('/admins', getAllAdmins);
 router.get('/lecturer/:lecturerId/submissions', getLecturerSubmissions);
 router.get('/fetch_exam_by_id/:id', getSubmissionById);
@@ -55,4 +62,7 @@ router.post('/admin-login', adminLogin);
 router.post('/cleartoken', clearToken );
 router.delete('/admin/:id', deleteAdmin);
 router.post('/adminlogout', adminLogout);
+router.post('/bulk-create-courses', bulkCreateCourses);
+router.post('/bulk-create-lecturers', bulkCreateLecturers);
+
 export default router;

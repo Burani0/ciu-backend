@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { joinRoom, leaveRoom, onStream, socket } from '../config/socket';
 import { Monitor, ScrollText, Users } from 'lucide-react';
+import Header from '../components/Lecturer/Headerpop';
 
 interface StreamData {
   streamerId: string;
@@ -15,6 +16,7 @@ function Viewer() {
   const [error, setError] = useState<string | null>(null);
   const [fitAll, setFitAll] = useState(true);
   const [roomInfo, setRoomInfo] = useState({ viewerCount: 0, streamerCount: 0 });
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (!roomId) {
@@ -48,24 +50,42 @@ function Viewer() {
       setRoomInfo(data);
     });
 
+   socket.on('new-log-entry', (logEntry: any) => {
+    console.log('🔔 New Exam Log Received:', logEntry);
+
+    // Optional: Show a toast/alert or add it to a notification state
+  });
     const cleanupInterval = setInterval(() => {
       setStreams((prev) => {
         const now = Date.now();
         return prev.filter((stream) => now - stream.lastUpdated < 10000);
       });
     }, 5000);
+  return () => {
+   
+    leaveRoom();
+ 
 
-    return () => {
-      leaveRoom();
+    
+  
       clearInterval(cleanupInterval);
       socket.off('room-update');
+       socket.off('new-log-entry');
     };
-  }, [roomId]);
+
+    
+  },
+   [roomId]);
+
+  
+
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   const toggleLayout = () => setFitAll((prev) => !prev);
 
   return (
     <div className="p-6 text-white bg-gray-100 min-h-screen">
+       <Header toggleMobileMenu={toggleMobileMenu} isMobile={isMobile} />
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold text-[#106053]">Live Viewer Dashboard</h1>

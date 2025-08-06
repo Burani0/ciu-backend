@@ -262,3 +262,4 @@ const CreateCourseModal: React.FC<Props> = ({ onClose, onSuccess }) => {
 };
 
 export default CreateCourseModal;
+

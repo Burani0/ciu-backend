@@ -12,6 +12,8 @@ export default function AdminLogin(): JSX.Element {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [identifier, setIdentifier] = useState("");
+ 
+
 
   const handleAdminLogin = async () => {
     setErrorMessage("");
@@ -58,7 +60,7 @@ const togglePasswordVisibility = () => {
             </div>
           </div>
 
-          {/* Removed toggle UI */}
+          
 
           <div className="relative w-full h-[50px] bg-[#d6d6d6] mb-8">
             <input
