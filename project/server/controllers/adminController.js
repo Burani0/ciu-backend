@@ -160,6 +160,24 @@ export const getCourseById = async (req, res) => {
   }
 };
 
+// GET course by courseCode
+export const getCourseByCode = async (req, res) => {
+  try {
+    const { code } = req.params;
+    const course = await Course.findOne({ courseCode: code });
+
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    res.status(200).json(course);
+  } catch (error) {
+    console.error('Error fetching course by code:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 export const updateLecturer = async (req, res) => {
   try {
     const { id } = req.params;
@@ -239,6 +257,259 @@ export const deleteCourse = async (req, res) => {
 
   res.status(200).json({ message: 'Course deleted successfully' });
 };
+
+
+//csv course
+
+// export const bulkCreateCourses = async (req, res) => {
+//   try {
+//     const { courses } = req.body;
+
+//     if (!Array.isArray(courses)) {
+//       return res.status(400).json({ message: 'Invalid input format' });
+//     }
+
+//     const createdCourses = await Course.insertMany(courses, { ordered: false }); // Ignore duplicates
+//     res.status(201).json(createdCourses);
+//   } catch (err) {
+//     console.error('Bulk insert error:', err);
+//     res.status(500).json({ message: 'Failed to create courses' });
+//   }
+// };
+
+export const bulkCreateCourses = async (req, res) => {
+  try {
+    const { courses } = req.body;
+
+    if (!Array.isArray(courses)) {
+      return res.status(400).json({ message: 'Invalid input format' });
+    }
+
+    // Get all existing courseCodes from DB
+    const existingCodes = await Course.find({
+      courseCode: { $in: courses.map(c => c.courseCode) }
+    }).distinct('courseCode');
+
+    // Filter out duplicates before inserting
+    const newCourses = courses.filter(c => !existingCodes.includes(c.courseCode));
+
+    if (newCourses.length === 0) {
+      return res.status(200).json({ message: "No new courses to insert." });
+    }
+
+    const inserted = await Course.insertMany(newCourses);
+    res.status(201).json({
+      message: `${inserted.length} new courses added successfully.`,
+      inserted
+    });
+  } catch (err) {
+    console.error('Bulk insert error:', err);
+    res.status(500).json({ message: 'Failed to create courses', error: err.message });
+  }
+};
+
+
+//uploaded leactuers 
+
+// export const bulkCreateLecturers = async (req, res) => {
+//   try {
+//     const { lecturers } = req.body;
+
+//     if (!Array.isArray(lecturers)) {
+//       return res.status(400).json({ message: "Invalid lecturers data." });
+//     }
+
+//     const formattedLecturers = [];
+
+//     for (const lect of lecturers) {
+//       const courseCodes = Array.isArray(lect.assignedCourses)
+//         ? lect.assignedCourses
+//         : lect.assignedCourses?.split(',').map((code) => code.trim()).filter(Boolean) || [];
+
+//       // ✅ Look up courses by code
+//       const foundCourses = await Course.find({ courseCode: { $in: courseCodes } });
+
+//       // ✅ Extract valid course IDs
+//       const assignedCourseIds = foundCourses.map(course => course._id);
+
+//       formattedLecturers.push({
+//         firstName: lect.firstName?.trim(),
+//         lastName: lect.lastName?.trim(),
+//         email: lect.email?.trim().toLowerCase(),
+//         universityNumber: lect.universityNumber?.trim(),
+//         password: lect.password, // Hashing should happen later
+//         assignedCourses: assignedCourseIds,
+//       });
+//     }
+
+//     await Lecturer.insertMany(formattedLecturers);
+//     res.status(201).json({ message: "Lecturers uploaded successfully." });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Failed to upload lecturers.", error: err.message });
+//   }
+// };
+
+// export const bulkCreateLecturers = async (req, res) => {
+//   try {
+//     const { lecturers } = req.body;
+
+//     if (!Array.isArray(lecturers)) {
+//       return res.status(400).json({ message: "Invalid lecturers data." });
+//     }
+
+//     const emails = lecturers.map(l => l.email?.trim().toLowerCase());
+//     const universityNumbers = lecturers.map(l => l.universityNumber?.trim());
+
+//     // 🧠 Find existing lecturers by email or university number
+//     const existingLecturers = await Lecturer.find({
+//       $or: [
+//         { email: { $in: emails } },
+//         { universityNumber: { $in: universityNumbers } }
+//       ]
+//     });
+
+//     // Extract existing emails and university numbers
+//     const existingEmails = new Set(existingLecturers.map(l => l.email));
+//     const existingUNumbers = new Set(existingLecturers.map(l => l.universityNumber));
+
+//     // ❌ Filter out duplicates
+//     const uniqueLecturers = lecturers.filter(l =>
+//       !existingEmails.has(l.email?.trim().toLowerCase()) &&
+//       !existingUNumbers.has(l.universityNumber?.trim())
+//     );
+
+//     // 🔄 Resolve course codes into course IDs
+//     const formattedLecturers = [];
+//     for (const lect of uniqueLecturers) {
+//       const courseCodes = Array.isArray(lect.assignedCourses)
+//         ? lect.assignedCourses
+//         : lect.assignedCourses?.split(',').map((code) => code.trim()).filter(Boolean) || [];
+
+//       const foundCourses = await Course.find({ courseCode: { $in: courseCodes } });
+//       const assignedCourseIds = foundCourses.map(course => course._id);
+
+//       formattedLecturers.push({
+//         firstName: lect.firstName?.trim(),
+//         lastName: lect.lastName?.trim(),
+//         email: lect.email?.trim().toLowerCase(),
+//         universityNumber: lect.universityNumber?.trim(),
+//         password: lect.password,
+//         assignedCourses: assignedCourseIds,
+//       });
+//     }
+
+//     if (formattedLecturers.length === 0) {
+//       return res.status(200).json({ message: "No new lecturers to insert." });
+//     }
+
+//     const inserted = await Lecturer.insertMany(formattedLecturers);
+
+//     res.status(201).json({
+//       message: `${inserted.length} new lecturers added successfully.`,
+//       inserted
+//     });
+
+//   } catch (err) {
+//     console.error("Bulk insert error:", err);
+//     res.status(500).json({ message: "Failed to upload lecturers.", error: err.message });
+//   }
+// };
+
+export const bulkCreateLecturers = async (req, res) => {
+  try {
+    const { lecturers } = req.body;
+
+    if (!Array.isArray(lecturers)) {
+      return res.status(400).json({ message: 'Invalid lecturers data.' });
+    }
+
+    // Extract emails and university numbers to check duplicates
+    const emails = lecturers.map(l => l.email?.trim().toLowerCase());
+    const universityNumbers = lecturers.map(l => l.universityNumber?.trim());
+
+    const existingLecturers = await Lecturer.find({
+      $or: [
+        { email: { $in: emails } },
+        { universityNumber: { $in: universityNumbers } },
+      ],
+    });
+
+    const existingEmails = new Set(existingLecturers.map(l => l.email));
+    const existingUNumbers = new Set(existingLecturers.map(l => l.universityNumber));
+
+    const uniqueLecturers = lecturers.filter(
+      l =>
+        !existingEmails.has(l.email?.trim().toLowerCase()) &&
+        !existingUNumbers.has(l.universityNumber?.trim())
+    );
+
+    if (uniqueLecturers.length === 0) {
+      return res.status(200).json({ message: 'No new lecturers to insert.' });
+    }
+
+    const formattedLecturers = [];
+
+    for (const lect of uniqueLecturers) {
+      const courseCodes = Array.isArray(lect.assignedCourses)
+        ? lect.assignedCourses
+        : lect.assignedCourses?.split(',').map(code => code.trim()).filter(Boolean) || [];
+
+      const foundCourses = await Course.find({ courseCode: { $in: courseCodes } });
+      const assignedCourseIds = foundCourses.map(course => course._id);
+
+      const hashedPassword = await bcrypt.hash(lect.password, 10);
+
+      formattedLecturers.push({
+        firstName: lect.firstName?.trim(),
+        lastName: lect.lastName?.trim(),
+        email: lect.email?.trim().toLowerCase(),
+        universityNumber: lect.universityNumber?.trim(),
+        password: hashedPassword,
+        assignedCourses: assignedCourseIds,
+        rawPassword: lect.password, // keep raw password to email later
+      });
+    }
+
+    const insertedLecturers = await Lecturer.insertMany(
+      formattedLecturers.map(({ rawPassword, ...lecturer }) => lecturer)
+    );
+
+    // Send emails after insertion
+    for (let i = 0; i < insertedLecturers.length; i++) {
+      const lect = insertedLecturers[i];
+      const rawPass = formattedLecturers[i].rawPassword;
+
+      // Send email (handle errors per email)
+      sendEmail(
+        lect.email,
+        'Account Created',
+        `Hello ${lect.firstName},
+
+Your lecturer account has been created.
+
+University Number: ${lect.universityNumber}
+Password: ${rawPass}
+
+Please log in and change your password immediately.
+
+Best regards,
+CIU Admin`
+      ).catch(err => console.error(`Failed to send email to ${lect.email}:`, err));
+    }
+
+    res.status(201).json({
+      message: `${insertedLecturers.length} new lecturers added and emailed successfully.`,
+      insertedLecturers,
+    });
+
+  } catch (err) {
+    console.error('Bulk create lecturers error:', err);
+    res.status(500).json({ message: 'Failed to upload lecturers.', error: err.message });
+  }
+};
+
 
 // DELETE lecturer
 export const deleteLecturer = async (req, res) => {

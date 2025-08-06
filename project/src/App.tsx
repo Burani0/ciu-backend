@@ -490,7 +490,8 @@ import AdminLogin from './pages/AdminLogin.tsx';
 import StudentLogin from './pages/StudentLogin.tsx';
 import ExamLogs from './components/ExamLogs.tsx';
 import Examslogs from './components/Examslogs.tsx';
-import Notifications from './components/Notification.tsx';
+// import Notifications from './components/Notification.tsx';
+import SpaceVerification from './components/SpaceVerification.tsx';
 
 const Home = React.lazy(() => import('./components/Home'));
 const Viewer = React.lazy(() => import('./components/Viewer'));
@@ -591,31 +592,8 @@ function AppWrapper() {
     }
   }, []);
 
-  const noLayoutRoutes = [
-    '/admin',
-    '/login',
-    '/register',
-    '/register-course',
-    '/users',
-    '/lecturer',
-    'edit-lecturer',
-    '/admin-courses',
-    '/lecturer-courses',
-    '/loggs',
-    '/timetable',
-    '/verify-token',
-    '/cleartoken',
-    '/',
-    '/admin-create',
-    '/adminlist',
-    '/editadmin',
-    '/Landingpage',
-    '/Submitted-exam',
-    '/answers/:submissionId',
-    '/studentlogin',
-    '/adminlogin',
-    '/instructions',
-  ];
+  const noLayoutRoutes = ['/admin', '/login','/register', '/register-course', '/users', '/lecturer','edit-lecturer','/admin-courses','/lecturer-courses', '/loggs','/timetable','/verify-token','/cleartoken','/','/admin-create','/adminlist','/editadmin','/Landingpage','/Submitted-exam','/answers/:submissionId','/studentlogin','/admin-login',];
+  // const isLayoutVisible = !noLayoutRoutes.includes(location.pathname);
   const isLayoutVisible = !noLayoutRoutes.some(route =>
     matchPath({ path: route, end: false }, location.pathname)
   );
@@ -660,27 +638,29 @@ function AppWrapper() {
                 <Route path="/join-viewer" element={<JoinViewer />} />
                 <Route path="/edit-lecturer" element={<EditLecturerModal />} />
                 <Route path="/ExamInterface" element={<ExamInterface />} />
-                <Route path="/create-course" element={<CreateCoursePage />} />
-                <Route path="/register-lecturer" element={<CreateLecturerPage />} />
-                <Route path="/adminlist" element={<AdminList />} />
-                <Route path="/timetable" element={<LecturerTimetable />} />
-                <Route path="/admin-courses" element={<AdminCourses />} />
-                <Route path="/verify-token" element={<TokenVerificationPage />} />
-                <Route path="/admin-login" element={<AdminLoginPage />} />
-                <Route path="/admin-create" element={<CreateAdminPage />} />
-                <Route path="/editadmin" element={<EditAdminModal />} />
-                <Route path="/loggs" element={<Logs />} />
-                <Route path="/cleartoken" element={<Cleartoken />} />
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/Submitted-exam" element={<LecturerSubmissions />} />
-                <Route path="/answers/:submissionId" element={<ViewExam />} />
-                <Route path="/JoinLogin" element={<JoinLogin />} />
-                <Route path="/adminlogin" element={<AdminLogin />} />
-                <Route path="/studentlogin" element={<StudentLogin />} />
-                <Route path="/student_logs" element={<ExamLogs />} />
-                <Route path="/student_lect_logs" element={<ExamLogs />} />
-
-                <Route path='/notifications' element={<Notifications/>} />
+                {/* <Route path="/login2" element={<LoginPage />} /> */}
+        <Route path="/create-course" element={<CreateCoursePage />} />
+        <Route path="/register-lecturer" element={<CreateLecturerPage />} />
+        <Route path="/adminlist" element={<AdminList />} />
+        <Route path="/timetable" element={<LecturerTimetable />} />
+        <Route path="/admin-courses" element = {<AdminCourses/>} />
+        <Route path="/verify-token" element={<TokenVerificationPage />} />
+        <Route path="/admin-login" element={<AdminLoginPage />} />
+        <Route path="/admin-create" element={<CreateAdminPage />} />
+        <Route path="/editadmin" element={<EditAdminModal/>} />
+        <Route path="/loggs" element={<Logs />} />
+        <Route path="/cleartoken" element={<Cleartoken/>}     />
+        <Route path="/" element={<LandingPage/>}     />
+        <Route path="/Submitted-exam" element={<LecturerSubmissions/>}     />
+        <Route path="/answers/:submissionId" element={<ViewExam />} />
+        <Route path="/JoinLogin" element={<JoinLogin/>}     />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/studentlogin" element={<StudentLogin />} />
+        {/* <Route path="/" element={<LoginWrapper />} /> */}
+        <Route path="/spaceverification" element={<SpaceVerification/>} />
+        
+        <Route path="/student_logs" element={<ExamLogs/>}     />
+<Route path="/student_lect_logs" element={<ExamLogs/>}     />
               </Routes>
             </Suspense>
           </div>
@@ -704,21 +684,22 @@ function AppWrapper() {
               <Route path="/lecturer-courses" element={<LectCourses />} />
               <Route path="/timetable" element={<LecturerTimetable />} />
               <Route path="/ExamInterface" element={<ExamInterface />} />
-              <Route path="/loggs" element={<Logs />} />
-              <Route path="/cleartoken" element={<Cleartoken />} />
-              <Route path="/verify-token" element={<TokenVerificationPage />} />
-              <Route path="/admin-create" element={<CreateAdminPage />} />
-              <Route path="/adminlist" element={<AdminList />} />
-              <Route path="/editadmin" element={<EditAdminModal />} />
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/Submitted-exam" element={<LecturerSubmissions />} />
-              <Route path="/answers/:submissionId" element={<ViewExam />} />
-              <Route path="/JoinLogin" element={<JoinLogin />} />
-              <Route path="/studentlogin" element={<StudentLogin />} />
-              <Route path="/adminlogin" element={<AdminLogin />} />
-              <Route path="/student_logs" element={<ExamLogs />} />
-              <Route path="/student_lect_logs" element={<Examslogs />} />
-              <Route path='/notifications' element={<Notifications/>} />
+                <Route path="/loggs" element={<Logs />} />
+                <Route path="/cleartoken" element={<Cleartoken/>}     />
+                <Route path="/verify-token" element={<TokenVerificationPage />} />
+                <Route path="/admin-create" element={<CreateAdminPage />} />
+                <Route path="/adminlist" element={<AdminList />} />
+                <Route path="/editadmin" element={<EditAdminModal/>} />
+                <Route path="/" element={<LandingPage/>}     />
+                <Route path="/Submitted-exam" element={<LecturerSubmissions/>}     />
+                <Route path="/answers/:submissionId" element={<ViewExam />} />
+                <Route path="/JoinLogin" element={<JoinLogin/>}     />
+                {/* <Route path="/" element={<LoginWrapper />} /> */}
+                 <Route path="/student_logs" element={<ExamLogs/>}     />
+                <Route path="/student_lect_logs" element={<Examslogs/>}     />
+                <Route path="/admin-login" element={<AdminLogin />} />
+                <Route path="/studentlogin" element={<StudentLogin />} />
+                <Route path="/spaceverification" element={<SpaceVerification/>} />
             </Routes>
           </Suspense>
         )}
