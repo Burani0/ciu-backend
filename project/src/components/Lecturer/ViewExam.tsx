@@ -181,31 +181,6 @@ const ViewExam = () => {
 
   const totalScore = scores.reduce((a, b) => Number(a) + Number(b), 0);
 
-  // const downloadPDF = () => {
-  //   const doc = new jsPDF();
-  //   doc.setFontSize(16);
-  //   doc.text(`Exam: ${submission.examName}`, 10, 10);
-  //   doc.setFontSize(12);
-  //   doc.text(`Student: ${submission.studentRegNo}`, 10, 20);
-  //   doc.text(`Course: ${submission.courseCode || submission.courseId}`, 10, 30);
-  //   doc.text(`Submitted at: ${new Date(submission.submissionTime).toLocaleString()}`, 10, 40);
-  //   doc.text(`Total Score: ${totalScore}`, 10, 50);
-
-  //   let y = 60;
-  //   let flatIndex = 0;
-  //   submission.answers.forEach((section: any) => {
-  //     doc.text(`Section ${section.section}`, 10, y);
-  //     y += 10;
-  //     section.questions.forEach((q: any) => {
-  //       doc.text(`Q${q.questionNumber}: ${q.answer}`, 10, y);
-  //       doc.text(`Score: ${scores[flatIndex] || 0}`, 150, y);
-  //       y += 10;
-  //       flatIndex++;
-  //     });
-  //   });
-
-  //   doc.save(`${submission.studentRegNo}_marked_exam.pdf`);
-  // };
 
   const downloadPDF = () => {
     const doc = new jsPDF();
@@ -315,23 +290,28 @@ const ViewExam = () => {
                           {section.questions.map((q: any, questionIndex: number) => {
                             const index = flatIndex++;
                             return (
+                             
                               <div key={questionIndex}>
-                                <p className="font-semibold">
-                                  Question {q.questionNumber}: {q.answer}, Score{" "}
-                                  <select
-                                    value={scores[index]}
-                                    onChange={(e) => handleScoreChange(index, Number(e.target.value))}
-                                    className="px-2 py-1 border rounded bg-white text-sm inline-block ml-2"
-                                  >
-                                    <option value={0}>--</option>
-                                    {[...Array(25)].map((_, i) => (
-                                      <option key={i + 1} value={i + 1}>
-                                        {i + 1}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </p>
-                              </div>
+  <div className="font-semibold whitespace-pre-line">
+    Question {q.questionNumber}: {q.answer}
+  </div>
+  <div className="mt-1">
+    Score{" "}
+    <select
+      value={scores[index]}
+      onChange={(e) => handleScoreChange(index, Number(e.target.value))}
+      className="px-2 py-1 border rounded bg-white text-sm inline-block ml-2"
+    >
+      <option value={0}>--</option>
+      {[...Array(25)].map((_, i) => (
+        <option key={i + 1} value={i + 1}>
+          {i + 1}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
                             );
                           })}
                         </div>

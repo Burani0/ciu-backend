@@ -797,7 +797,12 @@ const handleDownloadPDF = (submission: Submission) => {
                           <h4 className="font-semibold mb-2">Section {section.section}:</h4>
                           {section.questions.map((q, qIdx) => (
                             <div key={qIdx} className="mb-3 ml-4">
-                              <p><strong>Question {q.questionNumber}:</strong> {q.answer}</p>
+                              {/* <p><strong>Question {q.questionNumber}:</strong> {q.answer}</p> */}
+                              <div>
+                                <strong>Question {q.questionNumber}:</strong>
+                                <pre className="whitespace-pre-wrap mt-1 text-gray-800">{q.answer}</pre>
+                              </div>
+
                             </div>
                           ))}
                         </div>
