@@ -35,6 +35,7 @@ import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
+import tabsRoutes from './routes/tabsRoutes.js';
 
 
 
@@ -103,6 +104,7 @@ app.use('/api', proxyRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/admin/uploads', uploadRoutes);
 app.use('/api/lecturer/uploads', lecturerUploadRoutes);
+app.use('/api/tabs', tabsRoutes);
 
  
 
@@ -220,6 +222,12 @@ io.on('connection', (socket) => {
   });
 });
 
+
+
+app.post("/log-multiple-tabs", (req, res) => {
+    console.log("Multiple tabs detected for user:", req.body);
+    res.sendStatus(200);
+});
 const PORT = process.env.PORT || 3001;
 
 httpServer.listen(PORT, () => {
