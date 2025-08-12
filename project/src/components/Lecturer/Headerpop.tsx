@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Bell, Menu } from "lucide-react";
 import UserDetailsPopup from './UserDetailsPopup';
 import { Link } from 'react-router-dom';
-import { socket } from '../../config/socket';
 
 interface HeaderProps {
   toggleMobileMenu: () => void;
@@ -15,13 +14,6 @@ const Header: React.FC<HeaderProps> = ({ toggleMobileMenu, isMobile }) => {
   // ADD userData state here
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  const [hasNewNotif, setHasNewNotif] = useState(false);
-
-useEffect(() => {
-  socket.on('new-log-entry', () => setHasNewNotif(true));
-  return () => socket.off('new-log-entry');
-}, 
-[]);
 
 
   useEffect(() => {
@@ -61,13 +53,13 @@ useEffect(() => {
       </div>
 
       <div className="flex items-center h-12 ml-2 gap-4">
-        <Link to="/notifications">
+        <Link to="/notification">
           <button
             className="relative bg-none border-none cursor-pointer p-2 rounded transition-colors hover:bg-gray-100"
             aria-label="Notifications"
           >
             <Bell className="w-7 h-7 text-[#106053]" />
-            {hasNewNotif && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />}
+             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
 
           </button>
         </Link>

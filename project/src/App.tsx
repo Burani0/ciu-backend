@@ -490,7 +490,7 @@ import AdminLogin from './pages/AdminLogin.tsx';
 import StudentLogin from './pages/StudentLogin.tsx';
 import ExamLogs from './components/ExamLogs.tsx';
 import Examslogs from './components/Examslogs.tsx';
-// import Notifications from './components/Notification.tsx';
+import Notifications from './components/Notification.tsx';
 import SpaceVerification from './components/SpaceVerification.tsx';
 
 const Home = React.lazy(() => import('./components/Home'));
@@ -503,6 +503,9 @@ const CreateCoursePage = React.lazy(() => import('./components/CreateCourseModal
 const CreateLecturerPage = React.lazy(() => import('./components/CreateLecturerModal.tsx'));
 const Logs = React.lazy(() => import('./components/Logs.tsx'));
 const Cleartoken = React.lazy(() => import('./components/cleartoken'));
+
+
+
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
   constructor(props: { children: React.ReactNode }) {
@@ -658,7 +661,7 @@ function AppWrapper() {
         <Route path="/studentlogin" element={<StudentLogin />} />
         {/* <Route path="/" element={<LoginWrapper />} /> */}
         <Route path="/spaceverification" element={<SpaceVerification/>} />
-        
+       <Route path='/notication' element={<Notifications/>} />
         <Route path="/student_logs" element={<ExamLogs/>}     />
 <Route path="/student_lect_logs" element={<ExamLogs/>}     />
               </Routes>
@@ -700,6 +703,7 @@ function AppWrapper() {
                 <Route path="/admin-login" element={<AdminLogin />} />
                 <Route path="/studentlogin" element={<StudentLogin />} />
                 <Route path="/spaceverification" element={<SpaceVerification/>} />
+                <Route path='/notification' element={<Notifications/>} />
             </Routes>
           </Suspense>
         )}
@@ -710,9 +714,11 @@ function AppWrapper() {
 
 function App() {
   return (
+    
     <BrowserRouter>
       <AppWrapper />
     </BrowserRouter>
+    
   );
 }
 

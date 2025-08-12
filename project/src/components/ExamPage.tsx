@@ -6,7 +6,7 @@ import { emitStream, joinRoom, leaveRoom } from '../config/socket';
 
 export type Timer = { hours: number; minutes: number; seconds: number };
 export type SecurityChecks = {
-  // fullscreen: boolean;
+  fullscreen: boolean;
   safeBrowser: boolean;
   noScreenCapture: boolean;
   noCopyPaste: boolean;
@@ -298,7 +298,7 @@ const ExamPage: React.FC = () => {
         new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }) // Increased threshold for better accuracy
       );
 
-      const detectionType: 0 | 1 | 2 = detections.length === 1 ? 1 : detections.length > 1 ? 2 : 0;
+  const detectionType: 0 | 1 | 2 = detections.length === 1 ? 1 : detections.length > 1 ? 2 : 0;
 
       // Immediately handle multiple faces
       if (detectionType === 2) {
@@ -496,8 +496,9 @@ const ExamPage: React.FC = () => {
     }
   };
 
-const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Qn|Q|Question|No)[\.:)]?\s*)?((\d+[a-z]?|[ivxlcdm]+)|[a-z])[\)\.\:\,\-\s→]\s+(.*)$/i;
 
+
+const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Question|Qn|Q|No)[\.:)]?\s*)?(\d+[a-z]|\d+[ivxlcdm]+|\d+|[ivxlcdm]+|[a-z])(?:[\)\.\:\,\-\s→]\s*)(?!\d+[a-z](?:\s|$))(.+)$/i;
 
 const parseQuestionsFromContent = (content: string) => {
   content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -511,31 +512,41 @@ const parseQuestionsFromContent = (content: string) => {
     const match = line.match(questionStartRegex);
 
     if (match) {
+      console.log("Matched question number:", match[1]);
+      console.log("Matched answer start:", match[2]?.slice(0, 30));
+
+      
       if (currentQuestion.questionNumber) {
         questions.push({ ...currentQuestion });
       }
 
+      // Extract and clean question number and answer text
       const rawNum = match[1]?.trim().replace(/[).:\-→]*$/, '');
-      const rawAnswer = match[3]?.trim() || '';
-
+      const rawAnswer = match[2]?.trim() || '';
       const cleanedAnswer = rawAnswer.replace(/^[\s\)\-:.,→•*]+/, '');
 
       currentQuestion = {
         questionNumber: rawNum ? `${rawNum})` : '',
         answer: cleanedAnswer,
       };
-    } else if (currentQuestion.questionNumber) {
-      currentQuestion.answer += '\n' + line;
+    } else {
+      console.log("No match for line:", line);
+
+      
+      if (currentQuestion.questionNumber) {
+        currentQuestion.answer += '\n' + line;
+      }
     }
   }
 
+  
   if (currentQuestion.questionNumber) {
     questions.push({ ...currentQuestion });
   }
 
+  console.log("Parsed questions:", questions);
   return questions;
 };
-
 
   
   
@@ -633,7 +644,8 @@ const parseQuestionsFromContent = (content: string) => {
               localStorage.removeItem(key);
             });
 
-          await submitAllLogs();
+
+      await submitAllLogs();
           setTimeout(() => {
             console.log('Navigating to exam-complete page...');
             navigate('/');
@@ -693,17 +705,17 @@ const parseQuestionsFromContent = (content: string) => {
     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
   }, [isSubmitting, hasSubmitted, examData, answers]);
 
-  // useEffect(() => {
-  //   const handleFullscreenChange = () => {
-  //     console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement);
-  //     if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
-  //       console.log('Fullscreen exited, initiating auto-submit');
-  //       submitExam('auto-submit');
-  //     }
-  //   };
-  //   document.addEventListener('fullscreenchange', handleFullscreenChange);
-  //   return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  // }, [isSubmitting, hasSubmitted, examData, answers]);
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement);
+      if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
+        console.log('Fullscreen exited, initiating auto-submit');
+        submitExam('auto-submit');
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [isSubmitting, hasSubmitted, examData, answers]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -740,13 +752,13 @@ const parseQuestionsFromContent = (content: string) => {
     </div>
   );
 
-  // useEffect(() => {
-  //   if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
-  //     logEvent('security_violation', { violationType: 'fullscreen_exit' });
-  //     incrementViolation();
+  useEffect(() => {
+    if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
+      logEvent('security_violation', { violationType: 'fullscreen_exit' });
+      incrementViolation();
 
-  //   }
-  // }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
+    }
+  }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
 
   useEffect(() => {
     if (isTimerRunning && timer.seconds === 0) {
