@@ -29,7 +29,8 @@ import lecturerUploadRoutes from './routes/lecturerUploadRoutes.js';
  
 import lecturerRoutes from './routes/lecturerRoutes.js';
 import proxyRoutes from './routes/proxy.js';
- 
+import tabsRoutes from './routes/tabsRoutes.js';
+
 
 import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
@@ -97,6 +98,7 @@ mongoose.connect(process.env.MONGO_URI, {
 // const httpServer = createServer(app);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/tabs', tabsRoutes);
  
 app.use('/api/lecturer', lecturerRoutes);
 app.use('/api', proxyRoutes);
@@ -165,18 +167,6 @@ io.on('connection', (socket) => {
     }
   });
   
-  socket.on('violation-detected', (violationData) => {
-  try {
-    const roomId = Array.from(socket.rooms)[1];
-    if (roomId) {
-      console.log(`Violation in room ${studentRegNo}:`, violationData);
-
-      io.to(roomId).emit('violation-alert', violationData);
-    }
-  } catch (error) {
-    console.error('Error in violation-detected:', error);
-  }
-});
 
 
   socket.on('leave-room', () => {

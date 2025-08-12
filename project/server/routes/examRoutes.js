@@ -1,14 +1,12 @@
-
 import ExamLog  from '../models/exam_logs.js'; 
-
+import ExamNotification from '../models/notification.js'
 import express from 'express';
 import ExamSubmission from '../models/examSubmission.js';
 import Lecturer from '../models/Lecturer.js';
 import Course from '../models/Course.js'; 
-import mongoose from 'mongoose';
+
 import PDFDocument from 'pdfkit';
 const router = express.Router();
-import { Server } from 'socket.io';
 
 
 
@@ -219,12 +217,6 @@ router.post('/exam_logs', async (req, res) => {
       logEntries: processedLogEntries,
     });
     await newLog.save();
-
-      io.to(examNo).emit('new-log-entry', {
-      studentRegNo: newLog.studentRegNo,
-      examNo: newLog.examNo,
-      logEntry: newLog.logEntries.at(-1), // only emit the last log entry
-    });
     res.status(201).json({ message: 'Logs created successfully', submissionTime: newLog.submissionTime });
   } catch (error) {
     console.error('Error creating log:', error);
@@ -289,23 +281,63 @@ router.get('/fetch_exam_logs', async (req, res) => {
   }
 });
 
-// Check if student has submitted an exam
-router.get('/check_submission/:studentRegNo/:examNo/:courseId', async (req, res) => {
-  const { studentRegNo, examNo, courseId } = req.params;
 
+
+
+router.get('/fetch_exam_notify', async (req, res) => {
   try {
-    let query = { studentRegNo, examNo };
-    if (mongoose.Types.ObjectId.isValid(courseId)) {
-      query.courseId = courseId;
-    } else {
-      query.courseCode = courseId;
+    const { studentRegNo, examNo, courseId, download, format } = req.query;
+
+    const filter = {};
+    if (studentRegNo) filter.studentRegNo = { $regex: studentRegNo, $options: 'i' };
+    if (examNo) filter.examNo = { $regex: examNo, $options: 'i' };
+    if (courseId) filter.courseId = { $regex: courseId, $options: 'i' };
+
+    const logs = await ExamNotification.find(filter).sort({ 'logEntries.timestamp': -1 }).lean();
+
+    if (!logs || logs.length === 0) {
+      return res.status(404).json({ message: 'No logs found' });
     }
 
-    const submission = await ExamSubmission.findOne(query);
-    res.status(200).json({ hasSubmitted: !!submission });
+    // 📄 Generate PDF if requested
+    if (download === 'true' && format === 'pdf') {
+      const doc = new PDFDocument();
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=exam_logs.pdf');
+      doc.pipe(res);
+
+      doc.fontSize(18).text('Exam Activity Logs', { align: 'center' });
+      doc.moveDown();
+
+      logs.forEach((log, index) => {
+        doc
+          .fontSize(12)
+          .text(`Student Reg No: ${log.studentRegNo}`)
+          .text(`Exam No: ${log.examNo}`)
+          .text(`Course ID: ${log.courseId}`)
+          .text('Log Entries:');
+
+        log.logEntries.forEach((entry, i) => {
+          doc.text(`  ${i + 1}. Event Type: ${entry.eventType}`);
+          Object.entries(entry.details).forEach(([key, value]) => {
+            doc.text(`     ${key}: ${value}`);
+          });
+        });
+
+        doc.moveDown();
+      });
+
+      doc.end();
+      return;
+    }
+
+    // ✅ Return JSON by default
+    res.status(200).json(logs);
   } catch (error) {
-    console.error('Error checking submission status:', error);
-    res.status(500).json({ error: 'Failed to check submission status', details: error.message });
+    console.error('Error fetching logs:', error);
+    res.status(500).json({ error: 'Failed to fetch logs', details: error.message });
   }
 });
+
+
 export default router;
