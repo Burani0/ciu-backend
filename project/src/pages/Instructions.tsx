@@ -11,6 +11,7 @@ interface StatusDisplay {
   subtitle: string;
 }
 
+
 const Instructions: React.FC = () => {
   const navigate = useNavigate();
   const [isChrome, setIsChrome] = useState<boolean>(true);
