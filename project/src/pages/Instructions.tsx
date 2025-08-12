@@ -493,11 +493,10 @@ const Instructions: React.FC = () => {
       <div className="relative w-[420px] bg-white text-teal-800 rounded-lg shadow-lg">
         <div className="grid place-items-center w-full h-[185px] bg-gray-300">
           <div className="grid place-items-center w-full h-[185px] bg-[#d6d6d6]">
-          <img
-            src="/public/CIU-exam-system-logo.png"
-            alt="CIU Exam System Logo"
-            className="max-h-[120px] object-contain"
-          />
+         <img
+  src="/CIU-exam-system-logo.png"
+  alt="CIU Exam System Logo"
+/>
         </div>
         </div>
 
