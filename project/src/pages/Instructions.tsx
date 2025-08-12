@@ -121,7 +121,7 @@ const Instructions: React.FC = () => {
         document.title = "CIU Exam System";
         if (tabCount === 1 && acknowledged && !isCheckingTabs) {
           localStorage.setItem("instructionsViewed", "true");
-          navigate("/Studentlogin");
+          navigate("/studentlogin");
         }
       }
     };
@@ -431,7 +431,7 @@ const Instructions: React.FC = () => {
     }
     if (tabCount !== null && tabCount === 1 && !isCheckingTabs) {
       localStorage.setItem("instructionsViewed", "true");
-      navigate("/Studentlogin");
+      navigate("/studentlogin");
     }
     if (tabSwitchAttempted) {
       setErrorMessage("Cannot login after tab switching. Please refresh and try again.");
