@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Info } from "lucide-react";
 
-const BACKEND_BASE = 'http://localhost:3001/api/tabs';
+const BACKEND_BASE = 'https://ciu-backend.onrender.com/api/tabs';
 
 interface StatusDisplay {
   className: string;
