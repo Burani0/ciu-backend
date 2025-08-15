@@ -50,11 +50,6 @@ function Viewer() {
       setRoomInfo(data);
     });
 
-   socket.on('new-log-entry', (logEntry: any) => {
-    console.log('🔔 New Exam Log Received:', logEntry);
-
-    // Optional: Show a toast/alert or add it to a notification state
-  });
     const cleanupInterval = setInterval(() => {
       setStreams((prev) => {
         const now = Date.now();
@@ -70,7 +65,6 @@ function Viewer() {
   
       clearInterval(cleanupInterval);
       socket.off('room-update');
-       socket.off('new-log-entry');
     };
 
     

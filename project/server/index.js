@@ -29,13 +29,14 @@ import lecturerUploadRoutes from './routes/lecturerUploadRoutes.js';
  
 import lecturerRoutes from './routes/lecturerRoutes.js';
 import proxyRoutes from './routes/proxy.js';
- 
+// import tabsRoutes from './routes/tabsRoutes.js';
+
 
 import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
-import tabsRoutes from './routes/tabsRoutes.js';
+// import tabsRoutes from './routes/tabsRoutes.js';
 
 
 
@@ -98,13 +99,14 @@ mongoose.connect(process.env.MONGO_URI, {
 // const httpServer = createServer(app);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
+
  
 app.use('/api/lecturer', lecturerRoutes);
 app.use('/api', proxyRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/admin/uploads', uploadRoutes);
 app.use('/api/lecturer/uploads', lecturerUploadRoutes);
-app.use('/api/tabs', tabsRoutes);
+// app.use('/api/tabs', tabsRoutes);
 
  
 
@@ -167,18 +169,6 @@ io.on('connection', (socket) => {
     }
   });
   
-  socket.on('violation-detected', (violationData) => {
-  try {
-    const roomId = Array.from(socket.rooms)[1];
-    if (roomId) {
-      console.log(`Violation in room ${studentRegNo}:`, violationData);
-
-      io.to(roomId).emit('violation-alert', violationData);
-    }
-  } catch (error) {
-    console.error('Error in violation-detected:', error);
-  }
-});
 
 
   socket.on('leave-room', () => {
@@ -224,10 +214,7 @@ io.on('connection', (socket) => {
 
 
 
-app.post("/log-multiple-tabs", (req, res) => {
-    console.log("Multiple tabs detected for user:", req.body);
-    res.sendStatus(200);
-});
+
 const PORT = process.env.PORT || 3001;
 
 httpServer.listen(PORT, () => {

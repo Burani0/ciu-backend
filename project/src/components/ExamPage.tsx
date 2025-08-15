@@ -6,7 +6,7 @@ import { emitStream, joinRoom, leaveRoom } from '../config/socket';
 
 export type Timer = { hours: number; minutes: number; seconds: number };
 export type SecurityChecks = {
-  // fullscreen: boolean;
+  fullscreen: boolean;
   safeBrowser: boolean;
   noScreenCapture: boolean;
   noCopyPaste: boolean;
@@ -298,7 +298,7 @@ const ExamPage: React.FC = () => {
         new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }) // Increased threshold for better accuracy
       );
 
-      const detectionType: 0 | 1 | 2 = detections.length === 1 ? 1 : detections.length > 1 ? 2 : 0;
+  const detectionType: 0 | 1 | 2 = detections.length === 1 ? 1 : detections.length > 1 ? 2 : 0;
 
       // Immediately handle multiple faces
       if (detectionType === 2) {
@@ -498,29 +498,6 @@ const ExamPage: React.FC = () => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const questionStartRegex = /^\s*(?:[*\-]?\s*)?(?:(?:Question|Qn|Q|No)[\.:)]?\s*)?(\d+[a-z]|\d+[ivxlcdm]+|\d+|[ivxlcdm]+|[a-z])(?:[\)\.\:\,\-\s→]\s*)(?!\d+[a-z](?:\s|$))(.+)$/i;
 
 const parseQuestionsFromContent = (content: string) => {
@@ -570,7 +547,6 @@ const parseQuestionsFromContent = (content: string) => {
   console.log("Parsed questions:", questions);
   return questions;
 };
-
 
 
   
@@ -668,7 +644,8 @@ const parseQuestionsFromContent = (content: string) => {
               localStorage.removeItem(key);
             });
 
-          await submitAllLogs();
+
+      await submitAllLogs();
           setTimeout(() => {
             console.log('Navigating to exam-complete page...');
             navigate('/');
@@ -728,17 +705,17 @@ const parseQuestionsFromContent = (content: string) => {
     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
   }, [isSubmitting, hasSubmitted, examData, answers]);
 
-  // useEffect(() => {
-  //   const handleFullscreenChange = () => {
-  //     console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement);
-  //     if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
-  //       console.log('Fullscreen exited, initiating auto-submit');
-  //       submitExam('auto-submit');
-  //     }
-  //   };
-  //   document.addEventListener('fullscreenchange', handleFullscreenChange);
-  //   return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  // }, [isSubmitting, hasSubmitted, examData, answers]);
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement);
+      if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
+        console.log('Fullscreen exited, initiating auto-submit');
+        submitExam('auto-submit');
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [isSubmitting, hasSubmitted, examData, answers]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -775,13 +752,13 @@ const parseQuestionsFromContent = (content: string) => {
     </div>
   );
 
-  // useEffect(() => {
-  //   if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
-  //     logEvent('security_violation', { violationType: 'fullscreen_exit' });
-  //     incrementViolation();
+  useEffect(() => {
+    if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
+      logEvent('security_violation', { violationType: 'fullscreen_exit' });
+      incrementViolation();
 
-  //   }
-  // }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
+    }
+  }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
 
   useEffect(() => {
     if (isTimerRunning && timer.seconds === 0) {
