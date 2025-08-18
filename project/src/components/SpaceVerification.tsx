@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Camera, CheckCircle, AlertCircle, User, Lock, X, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const SpaceVerification = () => {
+    const navigate = useNavigate();
+
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [verified, setVerified] = useState(false);
@@ -12,6 +15,7 @@ const SpaceVerification = () => {
   const [violations, setViolations] = useState([]);
   const [stream, setStream] = useState(null);
   const [verificationFailed, setVerificationFailed] = useState(false);
+  
   const [completedChecks, setCompletedChecks] = useState({
     faceDetection: false,
     objectDetection: false,
@@ -265,7 +269,7 @@ const SpaceVerification = () => {
     setTimeout(() => {
       setVerified(true);
       setTimeout(() => {
-        window.location.href = '/instructions';
+        navigate('/instructions');
       }, 1200);
     }, 1000);
   };
