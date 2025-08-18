@@ -29,14 +29,14 @@ import lecturerUploadRoutes from './routes/lecturerUploadRoutes.js';
  
 import lecturerRoutes from './routes/lecturerRoutes.js';
 import proxyRoutes from './routes/proxy.js';
-// import tabsRoutes from './routes/tabsRoutes.js';
+
 
 
 import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
-// import tabsRoutes from './routes/tabsRoutes.js';
+
 
 
 

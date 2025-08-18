@@ -4,6 +4,7 @@ import { Info } from "lucide-react";
 
 const Instructions: React.FC = () => {
   const navigate = useNavigate();
+
   const [isChrome, setIsChrome] = useState<boolean>(true);
   const [acknowledged, setAcknowledged] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -15,6 +16,7 @@ const Instructions: React.FC = () => {
       /chrome/.test(userAgent) &&
       !/edg|opr|samsungbrowser|ucbrowser|brave/.test(userAgent);
     setIsChrome(isChromeBrowser);
+
     if (!isChromeBrowser) {
       setErrorMessage("Please use Google Chrome to access the exam system.");
     }
@@ -26,7 +28,7 @@ const Instructions: React.FC = () => {
       return;
     }
     if (!isChrome) {
-      setErrorMessage("Please use Google Chrome to access the exam system.");
+      setErrorMessage("Please use Google Chrome before proceeding.");
       return;
     }
     localStorage.setItem("instructionsViewed", "true");
@@ -48,15 +50,14 @@ const Instructions: React.FC = () => {
 
         <div className="w-full p-10">
           <div className="flex justify-center mb-6">
-            <div className="h-[40px] w-[40px] bg-white rounded-[10px] flex items-center justify-center shadow-md">
-              <Info className="text-teal-800" size={32} />
+            <div className="h-[40px] w-[40px] bg-white rounded-[10px] flex items-center justify-center">
+              <Info className="text-[#106053]" size={42} />
             </div>
           </div>
 
           <h2 className="text-2xl font-bold text-center mb-6">Exam Instructions</h2>
 
           <ul className="list-disc pl-5 mb-6 text-base text-gray-600">
-            <li>Ensure no other tabs or programs are running.</li>
             <li>Allow microphone, webcam, and audio access.</li>
             <li>Use only Google Chrome.</li>
             <li>Exiting full-screen submits the exam.</li>
@@ -67,11 +68,11 @@ const Instructions: React.FC = () => {
           </ul>
 
           <div className="mb-6">
-            <label className="flex items-center text-base text-gray-600">
+            <label className="flex items-center text-[16px] text-[#4f4e4e]">
               <input
                 type="checkbox"
                 checked={acknowledged}
-                onChange={(e) => setAcknowledged(e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAcknowledged(e.target.checked)}
                 className="mr-2"
               />
               I have read and understood the instructions.
@@ -87,9 +88,7 @@ const Instructions: React.FC = () => {
           </button>
 
           {errorMessage && (
-            <p className="text-red-600 font-bold mt-3 text-center text-sm bg-red-50 p-2 rounded">
-              {errorMessage}
-            </p>
+            <p className="text-red-600 font-bold mt-2 text-center text-sm">{errorMessage}</p>
           )}
         </div>
       </div>
