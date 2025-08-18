@@ -4,6 +4,7 @@ import axios from 'axios';
 import * as faceapi from 'face-api.js';
 import { emitStream, joinRoom, leaveRoom } from '../config/socket';
 
+
 export type Timer = { hours: number; minutes: number; seconds: number };
 export type SecurityChecks = {
   fullscreen: boolean;
