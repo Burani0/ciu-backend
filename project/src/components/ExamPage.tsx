@@ -706,17 +706,17 @@ const parseQuestionsFromContent = (content: string) => {
     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
   }, [isSubmitting, hasSubmitted, examData, answers]);
 
-  // useEffect(() => {
-  //   const handleFullscreenChange = () => {
-  //     console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement);
-  //     if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
-  //       console.log('Fullscreen exited, initiating auto-submit');
-  //       submitExam('auto-submit');
-  //     }
-  //   };
-  //   document.addEventListener('fullscreenchange', handleFullscreenChange);
-  //   return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  // }, [isSubmitting, hasSubmitted, examData, answers]);
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      console.log('Fullscreen change detected, fullscreenElement:', document.fullscreenElement);
+      if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
+        console.log('Fullscreen exited, initiating auto-submit');
+        submitExam('auto-submit');
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [isSubmitting, hasSubmitted, examData, answers]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -753,13 +753,13 @@ const parseQuestionsFromContent = (content: string) => {
     </div>
   );
 
-  // useEffect(() => {
-  //   if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
-  //     logEvent('security_violation', { violationType: 'fullscreen_exit' });
-  //     incrementViolation();
+  useEffect(() => {
+    if (!document.fullscreenElement && !isSubmitting && !hasSubmitted) {
+      logEvent('security_violation', { violationType: 'fullscreen_exit' });
+      incrementViolation();
 
-  //   }
-  // }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
+    }
+  }, [document.fullscreenElement, isSubmitting, hasSubmitted]);
 
   useEffect(() => {
     if (isTimerRunning && timer.seconds === 0) {
