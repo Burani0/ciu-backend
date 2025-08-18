@@ -99,7 +99,6 @@ mongoose.connect(process.env.MONGO_URI, {
 // const httpServer = createServer(app);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
-
  
 app.use('/api/lecturer', lecturerRoutes);
 app.use('/api', proxyRoutes);
