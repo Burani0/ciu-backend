@@ -4,7 +4,7 @@ import express from 'express';
 import ExamSubmission from '../models/examSubmission.js';
 import Lecturer from '../models/Lecturer.js';
 import Course from '../models/Course.js'; 
-
+import mongoose from 'mongoose';
 import PDFDocument from 'pdfkit';
 const router = express.Router();
 

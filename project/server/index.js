@@ -29,7 +29,7 @@ import lecturerUploadRoutes from './routes/lecturerUploadRoutes.js';
  
 import lecturerRoutes from './routes/lecturerRoutes.js';
 import proxyRoutes from './routes/proxy.js';
-import tabsRoutes from './routes/tabsRoutes.js';
+
 
 
 import { connectDB } from './config/db.js';
@@ -98,7 +98,6 @@ mongoose.connect(process.env.MONGO_URI, {
 // const httpServer = createServer(app);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/tabs', tabsRoutes);
  
 app.use('/api/lecturer', lecturerRoutes);
 app.use('/api', proxyRoutes);
