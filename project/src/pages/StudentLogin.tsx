@@ -1308,10 +1308,8 @@ export default function StudentLogin() {
   const [academicYear, setAcademicYear] = useState("");
   const [semester, setSemester] = useState("");
   const [isChrome, setIsChrome] = useState(true);
-  const [tabsAcknowledged, setTabsAcknowledged] = useState(false);
-  const [otherTabsDetected, setOtherTabsDetected] = useState(false);
 
-  // Check instructions, Chrome, and tab/program detection
+  // Check instructions and Chrome
   useEffect(() => {
     // Redirect if instructions not viewed
     if (!localStorage.getItem("instructionsViewed")) {
@@ -1326,90 +1324,22 @@ export default function StudentLogin() {
       setErrorMessage("Please use Google Chrome to access the exam system.");
     }
 
-    // Tab and program detection using BroadcastChannel
-    const channel = new BroadcastChannel("exam_system_channel");
-    const tabId = `tab-${Date.now()}-${Math.random()}`;
-    let pingTimeout: NodeJS.Timeout | undefined; // Explicitly type pingTimeout
-
-    // Send ping to check for other tabs
-    const sendPing = () => {
-      channel.postMessage({ type: "ping", tabId });
-      pingTimeout = setTimeout(() => {
-        if (!otherTabsDetected) {
-          setOtherTabsDetected(false);
-          setErrorMessage(isChrome && tabsAcknowledged ? "" : isChrome ? "Please confirm all other tabs and programs are closed." : "Please use Google Chrome to access the exam system.");
-        }
-      }, 100); // Reduced timeout to 100ms for faster detection
-    };
-
-    // Listen for pings from other tabs
-    channel.onmessage = (event: MessageEvent) => {
-      if (event.data.type === "ping" && event.data.tabId !== tabId) {
-        clearTimeout(pingTimeout);
-        setOtherTabsDetected(true);
-        setErrorMessage("Multiple tabs detected. Please close all other tabs to proceed with login.");
-        setTabsAcknowledged(false);
-        sendPing(); // Resend ping to keep detection active
-      }
-    };
-
-    // Initial ping
-    sendPing();
-
-    // Periodic ping to ensure continuous detection
-    const pingInterval = setInterval(sendPing, 200); // Increased frequency to 200ms for immediate detection
-
-    // Detect window/tab switches
-    const handleBlur = () => {
-      setOtherTabsDetected(true);
-      setErrorMessage("Window focus lost. Please close all other tabs or programs before proceeding.");
-      setTabsAcknowledged(false); // Reset acknowledgment on blur
-    };
-
-    // Reset when window regains focus
-    const handleFocus = () => {
-      sendPing();
-    };
-
-    // Initial focus check
-    if (!document.hasFocus()) {
-      setOtherTabsDetected(true);
-      setErrorMessage("Please close all other tabs or programs before proceeding.");
-      setTabsAcknowledged(false);
-    }
-
-    window.addEventListener("blur", handleBlur);
-    window.addEventListener("focus", handleFocus);
-
     // Debug logging
-    console.log("Initial state:", { isChrome, otherTabsDetected, tabsAcknowledged, errorMessage });
-    const debugState = () => console.log("State updated:", { isChrome, otherTabsDetected, tabsAcknowledged, errorMessage });
+    console.log("Initial state:", { isChrome, errorMessage });
+    const debugState = () => console.log("State updated:", { isChrome, errorMessage });
     const stateListener = () => debugState();
     document.addEventListener("visibilitychange", stateListener);
 
     return () => {
-      clearInterval(pingInterval);
-      if (pingTimeout) clearTimeout(pingTimeout); // Safely clear timeout
-      window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("focus", handleFocus);
-      channel.close();
       document.removeEventListener("visibilitychange", stateListener);
     };
-  }, [navigate, isChrome, tabsAcknowledged]);
+  }, [navigate, isChrome]);
 
   const handleStudentLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
     if (!isChrome) {
       setErrorMessage("Please use Google Chrome to access the exam system.");
-      return;
-    }
-    if (otherTabsDetected) {
-      setErrorMessage("Multiple tabs detected. Please close all other tabs to proceed with login.");
-      return;
-    }
-    if (!tabsAcknowledged) {
-      setErrorMessage("Please confirm all other tabs and programs are closed.");
       return;
     }
     if (!regNo.trim() || !academicYear.trim() || !semester.trim()) {
@@ -1572,22 +1502,9 @@ export default function StudentLogin() {
               />
             </div>
 
-            <div className="mb-6">
-              <label className="flex items-center text-[16px] text-[#4f4e4e]">
-                <input
-                  type="checkbox"
-                  checked={tabsAcknowledged}
-                  onChange={(e) => setTabsAcknowledged(e.target.checked)}
-                  className="mr-2"
-                  disabled={otherTabsDetected} // Disable checkbox if other tabs are detected
-                />
-                I confirm all other tabs and programs are closed.
-              </label>
-            </div>
-
             <button
               type="submit"
-              disabled={isSubmitting || !isChrome || otherTabsDetected || !tabsAcknowledged}
+              disabled={isSubmitting || !isChrome}
               className="w-full h-[45px] bg-[#106053] text-white font-bold hover:bg-[#0b3f37] disabled:opacity-50 flex items-center justify-center rounded-[40px]"
             >
               {isSubmitting ? (

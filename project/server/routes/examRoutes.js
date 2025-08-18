@@ -4,6 +4,8 @@ import express from 'express';
 import ExamSubmission from '../models/examSubmission.js';
 import Lecturer from '../models/Lecturer.js';
 import Course from '../models/Course.js'; 
+import mongoose from 'mongoose';
+
 
 import PDFDocument from 'pdfkit';
 const router = express.Router();
@@ -280,6 +282,33 @@ router.get('/fetch_exam_logs', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch logs', details: error.message });
   }
 });
+
+
+
+
+
+
+
+// // Check if student has submitted an exam
+// router.get('/check_submission/:studentRegNo/:examNo/:courseId', async (req, res) => {
+//   const { studentRegNo, examNo, courseId } = req.params;
+
+//   try {
+//     let query = { studentRegNo, examNo };
+//     if (mongoose.Types.ObjectId.isValid(courseId)) {
+//       query.courseId = courseId;
+//     } else {
+//       query.courseCode = courseId;
+//     }
+
+//     const submission = await ExamSubmission.findOne(query);
+//     res.status(200).json({ hasSubmitted: !!submission });
+//   } catch (error) {
+//     console.error('Error checking submission status:', error);
+//     res.status(500).json({ error: 'Failed to check submission status', details: error.message });
+//   }
+// });
+
 
 
 
