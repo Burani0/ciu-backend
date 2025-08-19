@@ -7,7 +7,7 @@ import { emitStream, joinRoom, leaveRoom } from '../config/socket';
 
 export type Timer = { hours: number; minutes: number; seconds: number };
 export type SecurityChecks = {
-  // fullscreen: boolean;
+  fullscreen: boolean;
   safeBrowser: boolean;
   noScreenCapture: boolean;
   noCopyPaste: boolean;
