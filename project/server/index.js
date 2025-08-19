@@ -26,8 +26,7 @@ import dotenv from 'dotenv';
 import examRoutes from './routes/examRoutes.js'; 
 import uploadRoutes from './routes/uploadRoutes.js';
 import lecturerUploadRoutes from './routes/lecturerUploadRoutes.js';
-import tabsRoutes from './routes/tabsRoutes.js';
- 
+
 import lecturerRoutes from './routes/lecturerRoutes.js';
 import proxyRoutes from './routes/proxy.js';
  
@@ -98,7 +97,7 @@ mongoose.connect(process.env.MONGO_URI, {
 // const httpServer = createServer(app);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/tabs', tabsRoutes);
+
 app.use('/api/lecturer', lecturerRoutes);
 app.use('/api', proxyRoutes);
 app.use('/api/exams', examRoutes);
