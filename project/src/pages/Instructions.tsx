@@ -360,7 +360,16 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BiSolidInfoCircle } from "react-icons/bi";
+import { Info } from "lucide-react";
+
+const BACKEND_BASE = 'https://ciu-backend.onrender.com/api/tabs';
+
+interface StatusDisplay {
+  className: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+}
 
 const Instructions: React.FC = () => {
   const navigate = useNavigate();
@@ -479,14 +488,16 @@ const Instructions: React.FC = () => {
   };
 
   return (
-    <div className="font-['Roboto'] flex justify-center items-center min-h-screen bg-[#ebebeb] py-5">
-      <div className="relative w-[420px] bg-white text-[#106053] rounded-lg shadow-lg">
-        <div className="grid place-items-center w-full h-[185px] bg-[#d6d6d6]">
+    <div className="font-sans flex justify-center items-center min-h-screen bg-gray-100 py-5">
+      <div className="relative w-[420px] bg-white text-teal-800 rounded-lg shadow-lg">
+        <div className="grid place-items-center w-full h-[185px] bg-gray-300">
+          <div className="grid place-items-center w-full h-[185px] bg-[#d6d6d6]">
           <img
             src="/public/CIU-exam-system-logo.png"
             alt="CIU Exam System Logo"
             className="max-h-[120px] object-contain"
           />
+        </div>
         </div>
 
         <div className="w-full p-10">
