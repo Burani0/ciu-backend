@@ -275,19 +275,19 @@ const ExamPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [isTimerRunning]);
 
-  // useEffect(() => {
-  //   const loadModels = async (): Promise<void> => {
-  //     try {
-  //       await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-  //       setIsModelLoaded(true);
-  //       console.log('Face detection models loaded successfully');
-  //     } catch (error) {
-  //       setFaceDetectionError('Face detection model failed to load.');
-  //       console.log('Face detection model load error:', error);
-  //     }
-  //   };
-  //   loadModels();
-  // }, []);
+  useEffect(() => {
+    const loadModels = async (): Promise<void> => {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+        setIsModelLoaded(true);
+        console.log('Face detection models loaded successfully');
+      } catch (error) {
+        setFaceDetectionError('Face detection model failed to load.');
+        console.log('Face detection model load error:', error);
+      }
+    };
+    loadModels();
+  }, []);
 
   
   const DETECTION_BUFFER_SIZE = 3; // Reduced buffer size for faster response
