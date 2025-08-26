@@ -106,30 +106,15 @@ app.use('/api/lecturer/uploads', lecturerUploadRoutes);
 
  
 
-// const io = new Server(httpServer, {
-//   cors: {
-//     origin: allowedOrigins,
-//     methods: ["GET", "POST"],
-//     credentials: true,
-//     transports: ['websocket', 'polling']
-//   },
-// });
-
-
 const io = new Server(httpServer, {
   cors: {
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS (Socket.IO)'));
-      }
-    },
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
     credentials: true,
     transports: ['websocket', 'polling']
   },
 });
+
 
 
 
