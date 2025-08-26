@@ -44,44 +44,11 @@ const calculateDuration = (startTime: string, endTime: string): string => {
   }
 };
 
-// Helper function to check if current time is within 5 minutes before start and 5 minutes after end
-const isExamActive = (exam: Exam, current: Date): boolean => {
-  try {
-    // Combine ExamDate with StartTime and EndTime
-    const startDateTime = new Date(`${exam.ExamDate}T${exam.StartTime}`);
-    const endDateTime = new Date(`${exam.ExamDate}T${exam.EndTime}`);
-
-    // Handle case where exam ends after midnight
-    if (endDateTime < startDateTime) {
-      endDateTime.setDate(endDateTime.getDate() + 1);
-    }
-
-    // Adjust for 5 minutes before start and 5 minutes after end
-    const startWindow = new Date(startDateTime.getTime() - 5 * 60 * 1000); // 5 minutes before start
-    const endWindow = new Date(endDateTime.getTime() + 5 * 60 * 1000); // 5 minutes after end
-
-    // Check if current time is within the window
-    return current >= startWindow && current <= endWindow;
-  } catch (error) {
-    console.error("Error checking exam time window:", error);
-    return false; // Disable button if there's an error
-  }
-};
-
 const ExamInterface: React.FC = () => {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [currentTime, setCurrentTime] = useState(new Date());
   const navigate = useNavigate();
-
-  // Update current time every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Update every minute
-    return () => clearInterval(interval); // Clean up interval on component unmount
-  }, []);
 
   useEffect(() => {
     const regNo = localStorage.getItem("studentRegNo");
@@ -102,7 +69,7 @@ const ExamInterface: React.FC = () => {
 
     axios
       .get(apiUrl)
-      .then(async (res) => {
+      .then((res) => {
         let data = res.data;
 
         // Clean malformed API response
@@ -143,7 +110,7 @@ const ExamInterface: React.FC = () => {
     localStorage.setItem("currentExamDate", exam.ExamDate);
     localStorage.setItem("currentExamStartTime", exam.StartTime);
     localStorage.setItem("currentExamEndTime", exam.EndTime);
-    localStorage.setItem("currentExamDuration", duration);
+    localStorage.setItem("currentExamDuration", duration); // Store duration
 
     // Extract examNo from ExamLink if present
     let examNo = "";
@@ -172,16 +139,14 @@ const ExamInterface: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto mt-20 p-6 bg-white rounded-xl shadow-lg m-4">
-      <h2 className="text-2xl font-bold mb-6 text-center" style={{ color: '#1A3C1A' }}>
-        Your Exams
-      </h2>
+      <h2 className="text-2xl font-bold mb-6 text-center" style={{ color: '#1A3C1A' }}>Your Exams</h2>
 
       {loading ? (
         <div className="text-center py-4">Loading exams...</div>
       ) : error ? (
         <div className="text-center text-red-600 py-4">{error}</div>
       ) : exams.length === 0 ? (
-        <div className="text-center py-4">No exams found.</div>
+        <div className="text-center py-4">No cleared exams found.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
@@ -198,41 +163,27 @@ const ExamInterface: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {exams.map((exam, index) => {
-                let examNo = "";
-                if (exam.ExamLink) {
-                  const match = exam.ExamLink.match(/ExamNo=([\w-]+)/);
-                  if (match) {
-                    examNo = match[1];
-                  }
-                }
-                return (
-                  <tr key={index} className="hover:bg-gray-50 transition-colors">
-                    <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.courseName}</td>
-                    <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.courseID}</td>
-                    <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.course_status}</td>
-                    <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.ExamDate}</td>
-                    <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.StartTime}</td>
-                    <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.EndTime}</td>
-                    <td className="py-2 px-2 border-b border-gray-200 text-sm">
-                      {calculateDuration(exam.StartTime, exam.EndTime)}
-                    </td>
-                    <td className="py-2 px-2 border-b border-gray-200">
-                      <button
-                        onClick={() => handleStartExam(exam)}
-                        disabled={!isExamActive(exam, currentTime)}
-                        className={`px-2 py-1 rounded-md text-xs ${
-                          !isExamActive(exam, currentTime)
-                            ? "bg-gray-400 text-white cursor-not-allowed"
-                            : "bg-[#1A3C1A] hover:bg-[#143D14] text-white"
-                        }`}
-                      >
-                        {!isExamActive(exam, currentTime) ? "Exam Not Available" : "Start Exam"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {exams.map((exam, index) => (
+                <tr key={index} className="hover:bg-gray-50 transition-colors">
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.courseName}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.courseID}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.course_status}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.ExamDate}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.StartTime}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">{exam.EndTime}</td>
+                  <td className="py-2 px-2 border-b border-gray-200 text-sm">
+                    {calculateDuration(exam.StartTime, exam.EndTime)}
+                  </td>
+                  <td className="py-2 px-2 border-b border-gray-200">
+                    <button
+                      onClick={() => handleStartExam(exam)}
+                      className="bg-[#1A3C1A] hover:bg-[#143D14] text-white px-2 py-1 rounded-md text-xs"
+                    >
+                      Start Exam
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
