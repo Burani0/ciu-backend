@@ -109,7 +109,7 @@ app.use('/api/lecturer/uploads', lecturerUploadRoutes);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "https://examiner.ciu.ac.ug",
     methods: ["GET", "POST"],
     credentials: true,
     transports: ['websocket', 'polling']
