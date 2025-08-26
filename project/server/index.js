@@ -71,7 +71,7 @@ app.use(cors({
       'https://ciu-backend.onrender.com',
       'https://ciu-backend-huhl.vercel.app',
       'https://examiner.ciu.ac.ug',
-      // 'http://81.199.139.112'
+      'http://81.199.139.112'
 
     ];
     if (!origin || allowedOrigins.includes(origin)) {
@@ -106,15 +106,30 @@ app.use('/api/lecturer/uploads', lecturerUploadRoutes);
 
  
 
+// const io = new Server(httpServer, {
+//   cors: {
+//     origin: allowedOrigins,
+//     methods: ["GET", "POST"],
+//     credentials: true,
+//     transports: ['websocket', 'polling']
+//   },
+// });
+
+
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS (Socket.IO)'));
+      }
+    },
     methods: ["GET", "POST"],
     credentials: true,
     transports: ['websocket', 'polling']
   },
 });
-
 
 
 
