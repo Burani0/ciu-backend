@@ -15,7 +15,16 @@ export default function StudentLogin() {
   const [academicYear, setAcademicYear] = useState("");
   const [semester, setSemester] = useState("");
   const [isChrome, setIsChrome] = useState(true);
+  
+   const academicYears: string[] = [];
+  const startYear = 2024;
+  const totalYears = 50;
 
+  for (let i = 0; i < totalYears; i++) {
+    const year1 = startYear + i;
+    const year2 = year1 + 1;
+    academicYears.push(`${year1}/${year2}`);
+  }
   // Check instructions and Chrome
   useEffect(() => {
     // Redirect if instructions not viewed
@@ -174,14 +183,21 @@ export default function StudentLogin() {
             </div>
 
             <div className="relative w-full h-[50px] bg-[#d6d6d6] mb-8">
-              <input
-                type="text"
-                placeholder="Academic Year"
+              <select
                 value={academicYear}
                 onChange={(e) => setAcademicYear(e.target.value)}
                 className="w-full h-full bg-transparent border-none outline-none border-[2px] border-white/10 rounded-[40px] text-[16px] text-black px-[20px] pr-[45px] placeholder:text-[#4f4e4e]"
                 aria-label="Academic Year"
-              />
+              >
+                <option value="" disabled>
+                  Select Academic Year
+                </option>
+                {academicYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="relative w-full h-[50px] bg-[#d6d6d6] mb-8">

@@ -1,17 +1,3 @@
-// import express from 'express';
-// import { createServer } from 'http';
-// import { Server } from 'socket.io';
-// import { fileURLToPath } from 'url';
-// import { dirname } from 'path';
-// import cors from 'cors';
-
-// import mongoose from 'mongoose';
-// import dotenv from 'dotenv';
-// import examRoutes from './routes/examRoutes.js'; 
-
-
-
-
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -36,12 +22,6 @@ import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
-
-
-
-// import { connectDB } from './config/db.js';
-// import adminRoutes from './routes/adminRoutes.js';
-// import authRoutes from './routes/authRoutes.js';
 
 
 dotenv.config();
