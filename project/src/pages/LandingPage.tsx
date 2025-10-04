@@ -1,55 +1,204 @@
+// import React from "react";
+// import { Link } from "react-router-dom";
+
+// const LandingPage: React.FC = () => {
+//   return ( 
+//    <div className="font-sans flex flex-col justify-center items-center min-h-screen bg-[#ebebeb] p-5">
+//   <div className="mb-6">
+//     <h1 className="text-2xl font-bold text-gray-800 text-center mb-6">
+//       ONLINE EXAMINATION SYSTEM
+//     </h1>
+//   </div>
+//   <div className="flex justify-center w-full">
+//     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl p-2 justify-items-center">
+      
+//       <div className="grid grid-rows-[auto_1fr_auto] bg-white rounded-lg shadow-md text-center">
+//         <div className="flex justify-between items-center p-2">
+//           <p className="text-2xl md:text-[28px] font-bold text-gray-800 ml-3">Admin/Lecturer</p>
+//           <img src="\public\ciu-logo-2.png" alt="" className="w-[50px] md:w-[70px]" />
+//         </div>
+//         <div className="flex justify-center items-center">
+//           <img src="\public\Landing Page Admin Pic.png.jpeg" alt="Logo" className="w-4/5 md:w-[70%]" />
+//         </div>
+//         <Link
+//           to="/admin-login"
+//           className="flex justify-center items-center w-full py-2 mt-1 font-bold text-[#105f53] bg-white hover:bg-[#105f53] hover:text-white transition"
+//         >
+//           Get Started
+//         </Link>
+//       </div>
+
+
+// <div className="grid grid-rows-[auto_1fr_auto] bg-white rounded-lg shadow-md text-center">
+//         <div className="flex justify-between items-center p-2">
+//           <p className="text-2xl md:text-[28px] font-bold text-gray-800 ml-3">Student</p>
+//           <img src="\public\ciu-logo-2.png" alt="" className="w-[50px] md:w-[70px]" />
+//         </div>
+//         <div className="flex justify-center items-center">
+//           <img src="\public\Landing Page Student Pic.png.jpeg" alt="Logo" className="w-4/5 md:w-[70%]" />
+//         </div>
+//         <Link
+//           to="/spaceverification"
+//           className="flex justify-center items-center w-full py-2 mt-1 font-bold text-[#105f53] bg-white hover:bg-[#105f53] hover:text-white transition"
+//         >
+//           Get Started
+//         </Link>
+      
+       
+//       </div>
+//     </div>
+//   </div>
+// </div>
+
+//   );
+// };
+
+// export default LandingPage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React from "react";
+// import { Link } from "react-router-dom";
+
+// const LandingPage: React.FC = () => {
+//   return ( 
+//    <div className="font-sans flex flex-col justify-center items-center min-h-screen bg-[#ebebeb] p-5">
+//      {/* Chartered Logo Section - Added at the top */}
+//      <div className="mb-4">
+//        <img 
+//          src="/public/chartered-logo.jpg" 
+//          alt="chartered Logo" 
+//          className="h-12 md:h-16 object-contain"
+//        />
+//      </div>
+     
+//      <div className="mb-6">
+//        <h1 className="text-2xl font-bold text-gray-800 text-center mb-6">
+//          ONLINE EXAMINATION SYSTEM
+//        </h1>
+//      </div>
+     
+//      <div className="flex justify-center w-full">
+//        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl p-2 justify-items-center">
+         
+//          <div className="grid grid-rows-[auto_1fr_auto] bg-white rounded-lg shadow-md text-center">
+//            <div className="flex justify-between items-center p-2">
+//              <p className="text-2xl md:text-[28px] font-bold text-gray-800 ml-3">Admin/Lecturer</p>
+//              <img src="/public/ciu-logo-2.png" alt="" className="w-[50px] md:w-[70px]" />
+//            </div>
+//            <div className="flex justify-center items-center">
+//              <img src="/public/Landing Page Admin Pic.png.jpeg" alt="Logo" className="w-4/5 md:w-[70%]" />
+//            </div>
+//            <Link
+//              to="/admin-login"
+//              className="flex justify-center items-center w-full py-2 mt-1 font-bold text-[#105f53] bg-white hover:bg-[#105f53] hover:text-white transition"
+//            >
+//              Get Started
+//            </Link>
+//          </div>
+
+//          <div className="grid grid-rows-[auto_1fr_auto] bg-white rounded-lg shadow-md text-center">
+//            <div className="flex justify-between items-center p-2">
+//              <p className="text-2xl md:text-[28px] font-bold text-gray-800 ml-3">Student</p>
+//              <img src="/public/ciu-logo-2.png" alt="" className="w-[50px] md:w-[70px]" />
+//            </div>
+//            <div className="flex justify-center items-center">
+//              <img src="/public/Landing Page Student Pic.png.jpeg" alt="Logo" className="w-4/5 md:w-[70%]" />
+//            </div>
+//            <Link
+//              to="/spaceverification"
+//              className="flex justify-center items-center w-full py-2 mt-1 font-bold text-[#105f53] bg-white hover:bg-[#105f53] hover:text-white transition"
+//            >
+//              Get Started
+//            </Link>
+//          </div>
+//        </div>
+//      </div>
+//    </div>
+//   );
+// };
+
+// // export default LandingPage;
+
+
+
+
+
+
+
+
+
 import React from "react";
 import { Link } from "react-router-dom";
 
 const LandingPage: React.FC = () => {
   return ( 
    <div className="font-sans flex flex-col justify-center items-center min-h-screen bg-[#ebebeb] p-5">
-  <div className="mb-6">
-    <h1 className="text-2xl font-bold text-gray-800 text-center mb-6">
-      ONLINE EXAMINATION SYSTEM
-    </h1>
-  </div>
-  <div className="flex justify-center w-full">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl p-2 justify-items-center">
-      
-      <div className="grid grid-rows-[auto_1fr_auto] bg-white rounded-lg shadow-md text-center">
-        <div className="flex justify-between items-center p-2">
-          <p className="text-2xl md:text-[28px] font-bold text-gray-800 ml-3">Admin/Lecturer</p>
-          <img src="\public\ciu-logo-2.png" alt="" className="w-[50px] md:w-[70px]" />
-        </div>
-        <div className="flex justify-center items-center">
-          <img src="\public\Landing Page Admin Pic.png.jpeg" alt="Logo" className="w-4/5 md:w-[70%]" />
-        </div>
-        <Link
-          to="/admin-login"
-          className="flex justify-center items-center w-full py-2 mt-1 font-bold text-[#105f53] bg-white hover:bg-[#105f53] hover:text-white transition"
-        >
-          Get Started
-        </Link>
-      </div>
+     {/* Chartered Logo Section - Improved styling */}
+     <div className="mb-6 flex justify-center">
+       <div className="bg-white p-4 rounded-lg shadow-md">
+         <img 
+           src="/public/chartered-logo.jpg" 
+           alt="Chartered Logo" 
+           className="h-16 md:h-20 object-contain"
+         />
+       </div>
+     </div>
+     
+     <div className="mb-6">
+       <h1 className="text-2xl font-bold text-gray-800 text-center mb-6">
+         ONLINE EXAMINATION SYSTEM
+       </h1>
+     </div>
+     
+     <div className="flex justify-center w-full">
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl p-2 justify-items-center">
+         
+         <div className="grid grid-rows-[auto_1fr_auto] bg-white rounded-lg shadow-md text-center">
+           <div className="flex justify-between items-center p-2">
+             <p className="text-2xl md:text-[28px] font-bold text-gray-800 ml-3">Admin/Lecturer</p>
+             <img src="/public/ciu-logo-2.png" alt="" className="w-[50px] md:w-[70px]" />
+           </div>
+           <div className="flex justify-center items-center">
+             <img src="/public/Landing Page Admin Pic.png.jpeg" alt="Logo" className="w-4/5 md:w-[70%]" />
+           </div>
+           <Link
+             to="/admin-login"
+             className="flex justify-center items-center w-full py-2 mt-1 font-bold text-[#105f53] bg-white hover:bg-[#105f53] hover:text-white transition"
+           >
+             Get Started
+           </Link>
+         </div>
 
-
-<div className="grid grid-rows-[auto_1fr_auto] bg-white rounded-lg shadow-md text-center">
-        <div className="flex justify-between items-center p-2">
-          <p className="text-2xl md:text-[28px] font-bold text-gray-800 ml-3">Student</p>
-          <img src="\public\ciu-logo-2.png" alt="" className="w-[50px] md:w-[70px]" />
-        </div>
-        <div className="flex justify-center items-center">
-          <img src="\public\Landing Page Student Pic.png.jpeg" alt="Logo" className="w-4/5 md:w-[70%]" />
-        </div>
-        <Link
-          to="/spaceverification"
-          className="flex justify-center items-center w-full py-2 mt-1 font-bold text-[#105f53] bg-white hover:bg-[#105f53] hover:text-white transition"
-        >
-          Get Started
-        </Link>
-      
-       
-      </div>
-    </div>
-  </div>
-</div>
-
+         <div className="grid grid-rows-[auto_1fr_auto] bg-white rounded-lg shadow-md text-center">
+           <div className="flex justify-between items-center p-2">
+             <p className="text-2xl md:text-[28px] font-bold text-gray-800 ml-3">Student</p>
+             <img src="/public/ciu-logo-2.png" alt="" className="w-[50px] md:w-[70px]" />
+           </div>
+           <div className="flex justify-center items-center">
+             <img src="/public/Landing Page Student Pic.png.jpeg" alt="Logo" className="w-4/5 md:w-[70%]" />
+           </div>
+           <Link
+             to="/spaceverification"
+             className="flex justify-center items-center w-full py-2 mt-1 font-bold text-[#105f53] bg-white hover:bg-[#105f53] hover:text-white transition"
+           >
+             Get Started
+           </Link>
+         </div>
+       </div>
+     </div>
+   </div>
   );
 };
 

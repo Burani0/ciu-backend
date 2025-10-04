@@ -1375,7 +1375,7 @@ export default function StudentLogin() {
         throw new Error("Invalid data format received from the server.");
       }
 
-      const studentCleared = clearedStudents.some((student) => {
+      const studentCleared = clearedStudents.some((student: any) => {
         const studentRegNo = student?.RegistrationNo?.trim().toLowerCase();
         return studentRegNo === regNo.trim().toLowerCase();
       });
@@ -1419,16 +1419,17 @@ export default function StudentLogin() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      if (err.response) {
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const response = (err as any).response;
         setErrorMessage(
-          `Server Error: ${err.response.status} - ${err.response.statusText}`
+          `Server Error: ${response.status} - ${response.statusText}`
         );
-      } else if (err.message.includes("Network Error")) {
+      } else if (typeof err === "object" && err !== null && "message" in err && typeof (err as any).message === "string" && (err as any).message.includes("Network Error")) {
         setErrorMessage(
           "Network error: Please check your internet connection."
         );
       } else {
-        setErrorMessage(err.message || "Unexpected error occurred.");
+        setErrorMessage((typeof err === "object" && err !== null && "message" in err) ? (err as any).message : "Unexpected error occurred.");
       }
     } finally {
       setIsSubmitting(false);
