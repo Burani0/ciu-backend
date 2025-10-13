@@ -1,17 +1,3 @@
-// import express from 'express';
-// import { createServer } from 'http';
-// import { Server } from 'socket.io';
-// import { fileURLToPath } from 'url';
-// import { dirname } from 'path';
-// import cors from 'cors';
-
-// import mongoose from 'mongoose';
-// import dotenv from 'dotenv';
-// import examRoutes from './routes/examRoutes.js'; 
-
-
-
-
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -27,6 +13,7 @@ import examRoutes from './routes/examRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import lecturerUploadRoutes from './routes/lecturerUploadRoutes.js';
 
+ 
 import lecturerRoutes from './routes/lecturerRoutes.js';
 import proxyRoutes from './routes/proxy.js';
  
@@ -35,12 +22,6 @@ import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
-
-
-
-// import { connectDB } from './config/db.js';
-// import adminRoutes from './routes/adminRoutes.js';
-// import authRoutes from './routes/authRoutes.js';
 
 
 dotenv.config();
