@@ -42,7 +42,7 @@ const TokenVerificationPage = () => {
     console.log('Attempting verification with:', { universityNumber, token });
 
     try {
-      const response = await axios.post('https://ciu-backend.vercel.app/api/auth/verify', {
+      const response = await axios.post('https://ciu-backend-buranis-projects.vercel.app/api/auth/verify', {
         universityNumber,
         token,
       });
