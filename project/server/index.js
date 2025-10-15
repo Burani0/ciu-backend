@@ -52,6 +52,7 @@ app.use(cors({
       'https://ciu-backend.onrender.com',
       'https://ciu-backend-huhl.vercel.app',
       'https://examiner.ciu.ac.ug',
+      'https://ciu-backend.vercel.app',
       'https://4306572b40b9.ngrok-free.app',
       'http://81.199.139.112'
 
