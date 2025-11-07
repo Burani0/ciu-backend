@@ -19,7 +19,7 @@ export default function AdminLogin(): JSX.Element {
     setErrorMessage("");
     setIsSubmitting(true);
     try {
-      const adminResponse = await axios.post("https://ciu-backend-buranis-projects.vercel.app/api/admin/admin-login", {
+      const adminResponse = await axios.post('https://examiner.ciu.ac.ug/api/admin/admin-login', {
         username: identifier,
         password,
       });
@@ -27,7 +27,7 @@ export default function AdminLogin(): JSX.Element {
       return navigate('/cleartoken', { state: { username: identifier } });
     } catch {
       try {
-        const lecturerResponse = await axios.post("https://ciu-backend-buranis-projects.vercel.app/api/auth/login", {
+        const lecturerResponse = await axios.post('https://examiner.ciu.ac.ug/api/auth/login', {
           universityNumber: identifier,
           password,
         });

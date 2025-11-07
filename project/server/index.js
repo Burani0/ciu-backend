@@ -24,7 +24,8 @@ import authRoutes from './routes/authRoutes.js';
 
 
 
-dotenv.config();
+
+
 const filename = fileURLToPath(import.meta.url);
 const currentDirname = dirname(filename);
 
@@ -47,15 +48,15 @@ app.use(cors({
     console.log('Incoming origin:', origin);
     const allowedOrigins = [
       'http://localhost:5173',
-      'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
-      'https://ciu-backend-1.onrender.com',
-      'https://ciu-backend.onrender.com',
-      'https://ciu-backend-huhl.vercel.app',
+      // 'https://ciu-backend-huhl-git-deployment-buranis-projects.vercel.app',
+      // 'https://ciu-backend-1.onrender.com',
+      // 'https://ciu-backend.onrender.com',
+      // 'https://ciu-backend-huhl.vercel.app',
       'https://examiner.ciu.ac.ug',
-      'https://ciu-backend-buranis-projects.vercel.app',
-       'https://ciu-backend.vercel.app',
-    'https://4306572b40b9.ngrok-free.app',
-      'http://81.199.139.112'
+    //   'https://ciu-backend-buranis-projects.vercel.app',
+    //    'https://ciu-backend.vercel.app',
+    // 'https://4306572b40b9.ngrok-free.app',
+    //   'http://81.199.139.112'
 
     ];
     if (!origin || allowedOrigins.includes(origin)) {

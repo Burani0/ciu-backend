@@ -46,7 +46,7 @@ const handleAdminLogin = async () => {
   setErrorMessage('');
   setIsSubmitting(true); // <-- add this
   try {
-    const adminResponse = await axios.post('https://ciu-backend.onrender.com/api/admin/admin-login', {
+    const adminResponse = await axios.post('https://examiner.ciu.ac.ug/api/admin/admin-login', {
       username: identifier,
       password,
     });
@@ -54,7 +54,7 @@ const handleAdminLogin = async () => {
     return navigate('/cleartoken');
   } catch {
     try {
-      const lecturerResponse = await axios.post('https://ciu-backend.onrender.com/api/auth/login', {
+      const lecturerResponse = await axios.post('https://examiner.ciu.ac.ug/api/auth/login', {
         universityNumber: identifier,
         password,
       });
@@ -82,7 +82,8 @@ const handleAdminLogin = async () => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    const apiUrl = `https://ciu-backend.onrender.com/api/cleared-students?acad=${academicYear}&sem=${semester}`;
+    const apiUrl = `https://examiner.ciu.ac.ug/api/cleared-students?acad=${academicYear}&sem=${semester}
+`;
      try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -119,7 +120,8 @@ const handleAdminLogin = async () => {
         // Fetch cleared students and store extra details for the logged-in student
         try {
           const clearedRes = await axios.get(
-            `https://ciu-backend.onrender.com/api/cleared-students?acad=${academicYear}&sem=${semester}`
+            `https://examiner.ciu.ac.ug/api/cleared-students?acad=${academicYear}&sem=${semester}
+`
           );
           let clearedStudents = clearedRes.data;
           if (typeof clearedStudents === "string") {
