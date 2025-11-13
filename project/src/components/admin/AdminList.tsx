@@ -262,7 +262,7 @@ function Adminuser() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("https://ciu-backend.onrender.com/api/admin/admins");
+        const response = await axios.get("http://localhost:3001/api/admin/admins");
         setUsers(response.data);
         setError(null);
       } catch (err: any) {
@@ -276,7 +276,8 @@ function Adminuser() {
 
   const deleteUser = async (id: string) => {
     try {
-      await axios.delete(`https://ciu-backend.onrender.com/api/admin/admin/${id}`);
+      await axios.delete(`http://localhost:3001/api/admin/admin/${id}
+`);
       setUsers((prev) => prev.filter((user) => user._id !== id));
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to delete user");
@@ -310,7 +311,7 @@ function Adminuser() {
   const refreshUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("https://ciu-backend.onrender.com/api/admin/admins");
+      const response = await axios.get("http://localhost:3001/api/admin/admins");
       setUsers(response.data);
       setError(null);
     } catch (err: any) {

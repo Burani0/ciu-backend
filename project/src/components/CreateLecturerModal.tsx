@@ -261,7 +261,7 @@ const CreateLecturerModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     setIsSubmitting(true);
 
     try {
-      await axios.post('https://ciu-backend.onrender.com/api/admin/register-lecturer', {
+      await axios.post('http://localhost:3001/api/admin/register-lecturer', {
         firstName,
         lastName,
         email,

@@ -689,7 +689,7 @@ export default function UsersContent() {
   useEffect(() => {
     const fetchLecturersWithCourses = async () => {
       try {
-        const res = await fetch("https://ciu-backend.onrender.com/api/admin/lecturers");
+        const res = await fetch("http://localhost:3001/api/admin/lecturers");
         const lecturers = await res.json();
 
         const enrichedLecturers = await Promise.all(
@@ -740,7 +740,7 @@ export default function UsersContent() {
   }, []);
 
   const deleteUser = (id) => {
-    fetch(`https://ciu-backend.onrender.com/api/admin/lecturers/${id}`, {
+    fetch(`http://localhost:3001/api/admin/lecturers/${id}`, {
       method: "DELETE",
     })
       .then((res) => {

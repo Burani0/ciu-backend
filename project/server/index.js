@@ -21,6 +21,7 @@ import proxyRoutes from './routes/proxy.js';
 import { connectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import morgan from 'morgan';
 
 
 
@@ -38,6 +39,8 @@ app.use(express.json());
 connectDB();
 
 app.use('/uploads', express.static('uploads'));
+app.use(morgan('dev'));
+
 
 
 
@@ -99,6 +102,13 @@ const io = new Server(httpServer, {
     transports: ['websocket', 'polling']
   },
 });
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('💥 ERROR:', err);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
+
 
 
 

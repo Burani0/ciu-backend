@@ -34,7 +34,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get('https://ciu-backend.onrender.com/api/exams/fetch_exam_logs');
+      const response = await axios.get('http://localhost:3001/api/exams/fetch_exam_logs');
       const logs = response.data;
       
       // Count notifications newer than last checked time

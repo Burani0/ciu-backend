@@ -600,7 +600,7 @@ const LecturerSubmissions = () => {
     const fetchSubmissions = async () => {
       try {
         const res = await fetch(
-          `https://ciu-backend.onrender.com/api/exams/lecturer/${lecturerId}/submissions`
+          `http://localhost:3001/api/exams/lecturer/${lecturerId}/submissions`
         );
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();

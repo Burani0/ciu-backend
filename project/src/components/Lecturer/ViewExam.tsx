@@ -159,7 +159,7 @@ const ViewExam = () => {
 
   useEffect(() => {
     const fetchSubmission = async () => {
-      const res = await fetch(`https://ciu-backend.onrender.com/api/exams/fetch_exam_by_id/${submissionId}`);
+      const res = await fetch(`http://localhost:3001/api/exams/fetch_exam_by_id/${submissionId}`);
       const data = await res.json();
       console.log("Submission answers:", data.answers);
       setSubmission(data);

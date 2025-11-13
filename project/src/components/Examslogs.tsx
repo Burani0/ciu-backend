@@ -31,7 +31,7 @@ const Examslogs = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('https://ciu-backend.onrender.com/api/exams/fetch_exam_logs');
+      const response = await axios.get('http://localhost:3001/api/exams/fetch_exam_logs');
       setLogs(response.data);
     } catch (error) {
       setError('Failed to fetch logs');

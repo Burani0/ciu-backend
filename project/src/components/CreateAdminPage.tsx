@@ -11,7 +11,7 @@ const CreateAdminPage = () => {
 
   const handleCreate = async () => {
     try {
-      await axios.post('https://ciu-backend.onrender.com/api/admin/create-admin', {
+      await axios.post('http://localhost:3001/api/admin/create-admin', {
         first_name,
         last_name,
         username,

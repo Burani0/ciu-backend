@@ -241,7 +241,7 @@ export default function LecturerDashboard() {
     setLoading(true);
     setError('');
     try {
-      const url = `https://ciu-backend.onrender.com/api/exam-timetable?acadyr=${academicYear}&sem=${semester}&StartDate=${startDate}`;
+      const url = `http://localhost:3001/api/exam-timetable?acadyr=${academicYear}&sem=${semester}&StartDate=${startDate}`;
       const response = await axios.get(url);
       setTimetable(response.data);
     } catch (err: any) {
