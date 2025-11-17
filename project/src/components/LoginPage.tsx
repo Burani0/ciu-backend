@@ -87,7 +87,7 @@ const LoginPage = () => {
     setMessage('');
 
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/login', {
+      const response = await axios.post('https://examiner.ciu.ac.ug/api/auth/login', {
         universityNumber,
         password,
       });

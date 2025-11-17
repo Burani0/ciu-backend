@@ -24,7 +24,7 @@ const Cleartoken = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:3001/api/admin/cleartoken', {
+      const response = await axios.post('https://examiner.ciu.ac.ug/api/admin/cleartoken', {
         username,
         token,
       });

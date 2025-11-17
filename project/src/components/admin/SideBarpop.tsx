@@ -23,7 +23,7 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      await axios.post("https://ciu-backend.onrender.com/api/admin/adminlogout");
+      await axios.post("https://examiner.ciu.ac.ug/api/admin/adminlogout");
       localStorage.removeItem("adminToken");
       navigate("/");
     } catch (error) {

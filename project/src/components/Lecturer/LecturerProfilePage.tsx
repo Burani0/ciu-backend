@@ -27,7 +27,7 @@ const LecturerProfilePage = () => {
       }
 
       try {
-        const response = await axios.get(`http://localhost:3001/api/lecturer/profile/${lecturerId}`, {
+        const response = await axios.get(`https://examiner.ciu.ac.ug/api/lecturer/profile/${lecturerId}`, {
           headers: {
             Authorization: `Bearer ${token}`, // Optional, if route is protected
           },

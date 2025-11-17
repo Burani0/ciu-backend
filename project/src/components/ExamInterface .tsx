@@ -98,7 +98,7 @@ const ExamInterface: React.FC = () => {
       return;
     }
 
-    const apiUrl = `http://localhost:3001/api/student-exams?reg=${regNo}&yr=${year}&sem=${sem}`;
+    const apiUrl = `https://examiner.ciu.ac.ug/api/student-exams?reg=${regNo}&yr=${year}&sem=${sem}`;
 
     axios
       .get(apiUrl)

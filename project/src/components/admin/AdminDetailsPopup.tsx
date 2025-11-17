@@ -31,7 +31,7 @@ const fetchAdminData = async () => {
   try {
     const adminId = localStorage.getItem('adminId');
     const token = localStorage.getItem('token');
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://examiner.ciu.ac.ug';
 
     if (!adminId || !token) {
       setError('User is not authenticated.');

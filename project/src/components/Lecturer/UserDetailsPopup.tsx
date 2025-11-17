@@ -33,7 +33,7 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
         return;
       }
   
-      const res = await axios.get(`http://localhost:3001/api/admin/lecturers/${id}`);
+      const res = await axios.get(`https://examiner.ciu.ac.ug/api/admin/lecturers/${id}`);
       const { firstName, lastName, email, universityNumber, profileImageSrc } = res.data;
       
       setUserData({
@@ -142,7 +142,7 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
                     setIsUploading(true);
                     const lecturerId = localStorage.getItem('lecturerId');
                     const res = await axios.post(
-                      `http://localhost:3001/api/lecturer/uploads/upload-profile-image/${lecturerId}`,
+                      `https://examiner.ciu.ac.ug/api/lecturer/uploads/upload-profile-image/${lecturerId}`,
                       formData
                     );
                     const imageUrl = res.data.imageUrl;
@@ -192,7 +192,7 @@ export default function UserDetailsPopup({ userData, setUserData }: Props) {
                       if (!lecturerId) return;
 
                       // Send a request to clear profile image
-                      await axios.put(`http://localhost:3001/api/lecturer/uploads/remove-profile-image/${lecturerId}`);
+                      await axios.put(`https://examiner.ciu.ac.ug/api/lecturer/uploads/remove-profile-image/${lecturerId}`);
 
                       // Reset frontend to default image
                       setUserData((prev) =>

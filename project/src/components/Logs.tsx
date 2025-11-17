@@ -18,7 +18,7 @@ const Logs = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('http://localhost:3001/api/admin/login-logs', {
+      const response = await axios.get('https://examiner.ciu.ac.ug/api/admin/login-logs', {
         params: filters,
         timeout: 10000
       });
@@ -48,7 +48,7 @@ const Logs = () => {
       const params = new URLSearchParams(filters);
       params.append('download', 'true');
       params.append('format', 'pdf');
-      const downloadUrl = `http://localhost:3001/api/admin/login-logs?${params.toString()}`;
+      const downloadUrl = `https://examiner.ciu.ac.ug/api/admin/login-logs?${params.toString()}`;
       window.open(downloadUrl, '_blank');
     } catch (error) {
       setError('Failed to download PDF');

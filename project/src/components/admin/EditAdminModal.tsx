@@ -29,7 +29,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ adminId, onClose, onSuc
     const fetchAdmin = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3001/api/admin/admin/${adminId}`
+          `https://examiner.ciu.ac.ug/api/admin/admin/${adminId}`
         );
         console.log("Fetched admin data:", response.data);
         setFormData({
@@ -62,7 +62,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({ adminId, onClose, onSuc
       console.log("Submitting updated admin data:", formData);
 
       const response = await axios.put(
-        `http://localhost:3001/api/admin/admin/${adminId}`,
+        `https://examiner.ciu.ac.ug/api/admin/admin/${adminId}`,
         formData
       );
 

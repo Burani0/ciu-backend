@@ -605,7 +605,7 @@ function UserList({ users, deleteUser }) {
                       assignedCourses: row.assignedCourses?.split(",").map(c => c.trim()) || []
                     }));
 
-                    const res = await fetch("http://localhost:3001/api/admin/bulk-create-lecturers", {
+                    const res = await fetch("https://examiner.ciu.ac.ug/api/admin/bulk-create-lecturers", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ lecturers: formatted }),
@@ -689,7 +689,7 @@ export default function UsersContent() {
   useEffect(() => {
     const fetchLecturersWithCourses = async () => {
       try {
-        const res = await fetch("http://localhost:3001/api/admin/lecturers");
+        const res = await fetch("https://examiner.ciu.ac.ug/api/admin/lecturers");
         const lecturers = await res.json();
 
         const enrichedLecturers = await Promise.all(
@@ -709,8 +709,8 @@ export default function UsersContent() {
                 const isObjectId = /^[0-9a-fA-F]{24}$/.test(identifier); // Check if it's a MongoDB ObjectId
             
                 const endpoint = isObjectId
-                  ? `http://localhost:3001/api/admin/courses/${identifier}`
-                  : `http://localhost:3001/api/admin/course-by-code/${identifier}`;
+                  ? `https://examiner.ciu.ac.ug/api/admin/courses/${identifier}`
+                  : `https://examiner.ciu.ac.ug/api/admin/course-by-code/${identifier}`;
             
                 try {
                   const res = await fetch(endpoint);
@@ -740,7 +740,7 @@ export default function UsersContent() {
   }, []);
 
   const deleteUser = (id) => {
-    fetch(`http://localhost:3001/api/admin/lecturers/${id}`, {
+    fetch(`https://examiner.ciu.ac.ug/api/admin/lecturers/${id}`, {
       method: "DELETE",
     })
       .then((res) => {

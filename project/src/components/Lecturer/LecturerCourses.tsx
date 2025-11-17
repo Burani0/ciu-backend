@@ -43,7 +43,7 @@ const LectCourses = () => {
 
     const fetchCourses = async () => {
   try {
-    const res = await fetch(`http://localhost:3001/api/admin/lecturers/${lecturerId}`);
+    const res = await fetch(`https://examiner.ciu.ac.ug/api/admin/lecturers/${lecturerId}`);
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
@@ -51,7 +51,7 @@ const LectCourses = () => {
     const courseIds = data.assignedCourses || [];
 
     const coursePromises = courseIds.map(async (courseId: string) => {
-      const res = await fetch(`https://ciu-backend.onrender.com/api/admin/courses/${courseId}`);
+      const res = await fetch(`https://examiner.ciu.ac.ug/api/admin/courses/${courseId}`);
       if (!res.ok) throw new Error(`Failed to fetch course ${courseId}`);
       return await res.json();
     });

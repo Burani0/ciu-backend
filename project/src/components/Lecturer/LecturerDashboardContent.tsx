@@ -14,7 +14,7 @@ export default function LecturerDashboardContent() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/exam-paper/count');
+        const response = await axios.get('https://examiner.ciu.ac.ug:3001/exam-paper/count');
         const { data } = response;
 
         setLecturerMetrics([

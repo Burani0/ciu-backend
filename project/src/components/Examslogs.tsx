@@ -31,7 +31,7 @@ const Examslogs = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('http://localhost:3001/api/exams/fetch_exam_logs');
+      const response = await axios.get('https://examiner.ciu.ac.ug/api/exams/fetch_exam_logs');
       setLogs(response.data);
     } catch (error) {
       setError('Failed to fetch logs');
@@ -42,7 +42,7 @@ const Examslogs = () => {
 
   const handleDownload = () => {
     try {
-      const url = `https://ciu-backend.onrender.com/api/exams/fetch_exam_logs?download=true&format=pdf`;
+      const url = `https://examiner.ciu.ac.ug/api/exams/fetch_exam_logs?download=true&format=pdf`;
       window.open(url, '_blank');
     } catch (error) {
       setError('Failed to download PDF');

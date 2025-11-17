@@ -42,7 +42,7 @@ const Notifications = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('http://localhost:3001/api/exams/fetch_exam_logs');
+      const response = await axios.get('https://examiner.ciu.ac.ug/api/exams/fetch_exam_logs');
        const logsWithTimestamp = response.data.map((log) => ({
       ...log,
       displayedAt: Date.now()

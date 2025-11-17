@@ -52,7 +52,7 @@ const Sidebar: React.FC = () => {
     if (!lecturerId) return;
 
     try {
-      await axios.post('https://ciu-backend.onrender.com/api/auth/lecturerlogout', { lecturerId });
+      await axios.post('https://examiner.ciu.ac.ug/api/auth/lecturerlogout', { lecturerId });
       localStorage.removeItem('lecturerId');
       window.location.href = '/';
     } catch (error) {

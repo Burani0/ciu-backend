@@ -9,7 +9,7 @@ const AdminLoginPage = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://localhost:3001/api/admin/admin-login', {
+      const response = await axios.post('https://examiner.ciu.ac.ug/api/admin/admin-login', {
         username,
         password,
       });

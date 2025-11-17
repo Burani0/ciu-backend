@@ -28,7 +28,7 @@ export const LecturerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!id) return;
 
       try {
-        const res = await axios.get(`http://localhost:3001/api/admin/lecturers/${id}`);
+        const res = await axios.get(`https://examiner.ciu.ac.ug/api/admin/lecturers/${id}`);
         const { firstName, lastName, email, universityNumber, profileImageSrc } = res.data;
         
         

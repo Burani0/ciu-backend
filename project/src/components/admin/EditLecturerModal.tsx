@@ -319,8 +319,8 @@ const EditLecturerModal: React.FC<EditLecturerModalProps> = ({
     const fetchLecturerAndCourses = async () => {
       try {
         const [lecturerRes, coursesRes] = await Promise.all([
-          axios.get(`http://localhost:3001/api/admin/lecturers/${lecturerId}`),
-          axios.get('http://localhost:3001/api/admin/courses'),
+          axios.get(`https://examiner.ciu.ac.ug/api/admin/lecturers/${lecturerId}`),
+          axios.get('https://examiner.ciu.ac.ug/api/admin/courses'),
         ]);
   
         const lecturer = lecturerRes.data;
@@ -370,7 +370,7 @@ const EditLecturerModal: React.FC<EditLecturerModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      await axios.put(`http://localhost:3001/api/admin/lecturers/${lecturerId}`, {
+      await axios.put(`https://examiner.ciu.ac.ug/api/admin/lecturers/${lecturerId}`, {
         ...formData,
         assignedCourses: selectedCourses.map((c) => c.value),
       });
