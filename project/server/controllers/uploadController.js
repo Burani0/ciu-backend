@@ -23,7 +23,7 @@ export const uploadProfileImage = async (req, res) => {
       }
   
       const imagePath = path.posix.join('uploads', req.file.filename);
-      const imageUrl = `http://localhost:3001/${imagePath}`;
+      const imageUrl = `https://examiner.ciu.ac.ug/${imagePath}`;
   
       await Admin.findByIdAndUpdate(adminId, { profileImageSrc: imageUrl });
   

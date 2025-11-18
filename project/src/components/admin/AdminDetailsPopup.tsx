@@ -145,7 +145,7 @@ const togglePopup = () => {
                   try {
                     setIsUploading(true);
                     const token = localStorage.getItem('token');
-                    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+                    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://examiner.ciu.ac.ug';
 
                     const response = await axios.post(
                       `${BASE_URL}/api/admin/uploads/upload-profile-image/${userData._id}`,
@@ -210,7 +210,7 @@ const togglePopup = () => {
                       if (!userData) return;
 
                       await axios.put(
-                        `http://localhost:3001/api/admin/uploads/remove-profile-image/${userData._id}`
+                        `https://examiner.ciu.ac.ug/api/admin/uploads/remove-profile-image/${userData._id}`
                       );
 
                       setUserData((prev) =>

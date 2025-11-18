@@ -19,16 +19,6 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon }) => 
     </div>
   );
 };
-// const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon }) => {
-//   return (
-//     <div className="bg-[#e6f7ef] aspect-[1/1] p-4 rounded-md shadow-md flex flex-col justify-between text-[#105F53]">
-//       <div>
-//         <h3 className="text-base mb-2">{title}</h3>
-//         <p className="text-2xl font-bold">{value}</p>
-//       </div>
-//       <div className="text-[32px] self-end">{icon}</div>
-//     </div>
-//   );
-// };
+
 
 export default DashboardCard;

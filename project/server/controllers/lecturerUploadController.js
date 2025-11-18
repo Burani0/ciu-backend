@@ -82,7 +82,7 @@ export const uploadProfileImage = async (req, res) => {
     }
 
     const imagePath = path.posix.join('uploads', req.file.filename); // Ensure forward slashes
-    const imageUrl = `http://localhost:3001/${imagePath}`; // Match admin controller's format
+    const imageUrl = `https://examiner.ciu.ac.ug/${imagePath}`; // Match admin controller's format
 
     await Lecturer.findByIdAndUpdate(lecturerId, { profileImageSrc: imageUrl });
 

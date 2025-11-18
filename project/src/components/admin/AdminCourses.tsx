@@ -14,7 +14,7 @@ import { SidebarProvider1 } from "../../components/admin/SidebarContext";
 import EditCourseModal from "./EditCourseModal";
 import RegCourseModal from "../modals/RegCourseModal";
 
-// const BASE_URL = "http://localhost:3001/api/admin";
+
 const BASE_URL = "https://examiner.ciu.ac.ug/api/admin";
 
 

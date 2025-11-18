@@ -26,7 +26,7 @@ const RegForm: React.FC = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await fetch('https://ciu-backend.onrender.com/coursesAdd');
+        const response = await fetch('https://examiner.ciu.ac.ug/coursesAdd');
         if (!response.ok) throw new Error('Failed to fetch courses');
         const data = await response.json();
         setCourses(data);
@@ -69,7 +69,7 @@ const RegForm: React.FC = () => {
     };
 
     try {
-      const response = await fetch('https://ciu-backend.onrender.com/students', {
+      const response = await fetch('https://examiner.ciu.ac.ug/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
