@@ -149,7 +149,7 @@ const LandingPage: React.FC = () => {
       /> */}
 
         <img
-          src="/public/public/chartered.png"
+          src="/chartered.png"
           alt="Chartered"
           className="absolute bottom-0 left-0 w-36 md:w-52 lg:w-72 opacity-30 mix-blend-multiply pointer-events-none select-none"
         />
