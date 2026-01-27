@@ -8,8 +8,11 @@ import LecturerLoginLog from '../models/LecturerLoginLog.js';
 import PDFDocument from 'pdfkit';
 import AdminToken from '../models/AdminToken.js';
 import ExamSubmission from '../models/examSubmission.js';
+import crypto from 'crypto';
 
-
+const hashSession = (sid) => crypto.createHash('sha256').update(sid).digest('hex');
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const SESSION_MS = 60 * 60 * 1000; // 1 hour
 
 
 export const createCourse = async (req, res) => {
@@ -497,19 +500,32 @@ export const adminLogin = async (req, res) => {
     return res.status(400).json({ message: 'Invalid credentials' });
   }
 
+  // 🔒 block OTP spam if already logged in
+  const now = new Date();
+  if (
+    admin.activeSessionHash !== null &&
+    admin.activeSessionExpiresAt !== null &&
+    admin.activeSessionExpiresAt > now
+  ) {
+    return res.status(409).json({
+      message: 'Account already logged in on another device or browser. Please logout first.',
+      alreadyLoggedIn: true,
+    });
+  }
+
   const token = Math.floor(100000 + Math.random() * 900000).toString();
-  const tokenDoc = new AdminToken({ adminId: admin._id, token });
 
   try {
-    await tokenDoc.save();
+    await AdminToken.create({ adminId: admin._id, token });
     await sendEmail(admin.email, 'Login Verification Code', `Your code: ${token}`);
-    res.json({ message: 'Token sent to email' });
+    return res.json({ message: 'Token sent to email' });
   } catch (error) {
     console.error('Email or token error:', error);
-    res.status(500).json({ message: 'Failed to send token email' });
+    return res.status(500).json({ message: 'Failed to send token email' });
   }
 };
 
+// ✅ this is your "verify" step (formerly clearToken)
 export const clearToken = async (req, res) => {
   const { username, token } = req.body;
 
@@ -518,33 +534,81 @@ export const clearToken = async (req, res) => {
   }
 
   try {
-    // Find the admin by username
     const admin = await Admin.findOne({ username });
-    if (!admin) {
-      return res.status(404).json({ message: 'Admin not found' });
-    }
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
-    // Check if the token exists for this admin
     const tokenDoc = await AdminToken.findOne({ adminId: admin._id, token });
-    if (!tokenDoc) {
-      return res.status(401).json({ message: 'Invalid token' });
+    if (!tokenDoc) return res.status(401).json({ message: 'Invalid token' });
+
+    const sessionId = crypto.randomBytes(32).toString('hex');
+    const sessionExpiresAt = new Date(Date.now() + SESSION_MS);
+    const newHash = hashSession(sessionId);
+    const now = new Date();
+
+    // ✅ ATOMIC claim (prevents same-time double login)
+    const claimed = await Admin.findOneAndUpdate(
+      {
+        _id: admin._id,
+        $or: [
+          { activeSessionHash: null },
+          { activeSessionExpiresAt: null },
+          { activeSessionExpiresAt: { $lte: now } },
+        ],
+      },
+      { $set: { activeSessionHash: newHash, activeSessionExpiresAt: sessionExpiresAt } },
+      { new: true }
+    );
+
+    if (!claimed) {
+      return res.status(409).json({
+        message: 'Account already logged in on another device/browser. Please logout there first.',
+        alreadyLoggedIn: true,
+      });
     }
 
-    // Token is valid, optionally you might want to delete the token after verification
-    await AdminToken.deleteOne({ _id: tokenDoc._id });
+    // delete OTPs
+    await AdminToken.deleteMany({ adminId: admin._id });
 
-    // Respond with success and admin info
-    res.status(200).json({
+    // ✅ issue JWT for admin
+    const access_token = jwt.sign(
+      { id: admin._id, username: admin.username, sid: sessionId, role: 'admin' },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    return res.status(200).json({
       message: 'Token verified',
       adminId: admin._id,
       username: admin.username,
       email: admin.email,
+      access_token,
     });
   } catch (error) {
     console.error('Error verifying token:', error);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const adminLogout = async (req, res) => {
+  const { adminId } = req.body;
+
+  try {
+    const admin = await Admin.findById(adminId);
+    if (!admin) return res.status(404).json({ message: 'Admin not found' });
+
+    admin.activeSessionHash = null;
+    admin.activeSessionExpiresAt = null;
+    await admin.save();
+
+    await AdminToken.deleteMany({ adminId });
+
+    return res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    return res.status(500).json({ message: 'Logout failed' });
+  }
+};
+
 
 
 export const getLecturerSubmissions = async (req, res) => {
@@ -605,14 +669,14 @@ export const getSubmissionById = async (req, res) => {
   }
 };
 
-export const adminLogout = async (req, res) => {
-  const { adminId } = req.body;
+// export const adminLogout = async (req, res) => {
+//   const { adminId } = req.body;
 
-  try {
-    await AdminToken.deleteMany({ adminId });
-    res.json({ message: 'Logged out successfully' });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ message: 'Logout failed' });
-  }
-};
+//   try {
+//     await AdminToken.deleteMany({ adminId });
+//     res.json({ message: 'Logged out successfully' });
+//   } catch (error) {
+//     console.error('Logout error:', error);
+//     res.status(500).json({ message: 'Logout failed' });
+//   }
+// };

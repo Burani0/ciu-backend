@@ -22,9 +22,11 @@ export default function Sidebar() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = async () => {
+    const adminId = localStorage.getItem('adminId');
+    if (!adminId) return;
     try {
-      await axios.post("https://examiner.ciu.ac.ug/api/admin/adminlogout");
-      localStorage.removeItem("adminToken");
+      await axios.post("https://examiner.ciu.ac.ug/api/admin/adminlogout", { adminId });
+      localStorage.removeItem("adminId");
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);

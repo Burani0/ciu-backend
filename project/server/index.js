@@ -260,6 +260,7 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:5173',
       'https://examiner.ciu.ac.ug',
+      // 'http://localhost:3001',
     ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);

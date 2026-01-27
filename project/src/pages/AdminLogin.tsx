@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +24,15 @@ export default function AdminLogin(): JSX.Element {
       });
       alert(adminResponse.data.message);
       return navigate('/cleartoken', { state: { username: identifier } });
-    } catch {
+    } catch (adminError: any) {
+      // Check if it's a session conflict for admin
+      if (adminError.response?.status === 409 && adminError.response?.data?.alreadyLoggedIn) {
+        setErrorMessage(adminError.response.data.message);
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Try lecturer login if admin login fails
       try {
         const lecturerResponse = await axios.post('https://examiner.ciu.ac.ug/api/auth/login', {
           universityNumber: identifier,
@@ -33,8 +40,13 @@ export default function AdminLogin(): JSX.Element {
         });
         alert(lecturerResponse.data.message);
         return navigate('/verify-token', { state: { username: identifier } });
-      } catch {
-        setErrorMessage("Invalid credentials for both admin and lecturer.");
+      } catch (lecturerError: any) {
+        // Check if it's a session conflict for lecturer
+        if (lecturerError.response?.status === 409 && lecturerError.response?.data?.alreadyLoggedIn) {
+          setErrorMessage(lecturerError.response.data.message);
+        } else {
+          setErrorMessage("Invalid credentials for both admin and lecturer.");
+        }
       }
     }
     setIsSubmitting(false);
